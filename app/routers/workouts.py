@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.db import session_local
 from app.schemas.workout import CreateWorkout
 from app.models.workout_table import Workout
+from app.dependencies import get_current_user
+from app.models.user_table import User
 
 router = APIRouter()
 
@@ -16,11 +18,15 @@ def get_db():
 
 
 @router.post("/workouts")
-def create_workout(workout : CreateWorkout, db: Session = Depends(get_db)):
+def create_workout(workout : CreateWorkout,
+                   db: Session = Depends(get_db),
+                   current_user: User = Depends(get_current_user),
+                   ):
     if not workout.exercise.strip():
         raise HTTPException(status_code=400, detail="exercise cannot be empty")
 
     workout_row = Workout(
+        user_id = current_user.id,
         exercise = workout.exercise.strip(),
         sets = workout.sets,
         reps = workout.reps,
@@ -45,7 +51,9 @@ def create_workout(workout : CreateWorkout, db: Session = Depends(get_db)):
     return {k: v for k, v in response.items() if v is not None}
 
 @router.get("/workouts")
-def get_workouts(db: Session = Depends(get_db)):
+def get_workouts(db: Session = Depends(get_db),
+                 current_user: User = Depends(get_current_user),
+                 ):
     workout_rows = db.query(Workout).order_by(Workout.date.desc(), Workout.id.desc()).all()
 
     results = []
