@@ -7,7 +7,7 @@ from app.models.workout_table import Workout
 from app.dependencies import get_current_user
 from app.models.user_table import User
 
-router = APIRouter()
+router = APIRouter(tags = ["Workouts"])
 
 def get_db():
     db = session_local()
@@ -75,6 +75,7 @@ def get_workouts(db: Session = Depends(get_db),
         results.append({k:v for k, v in record.items() if v is not None})
     return results
 
+#displays workouts for the specified user
 @router.get("/workouts/{workout_id}")
 def get_workout_by_id(
         workout_id: int,
@@ -100,3 +101,24 @@ def get_workout_by_id(
         "notes": workout_row.notes,
     }
     return {k:v for k, v in record.items() if v is not None}
+
+#router for deleting workout tied to specific user
+@router.delete("/workouts/{workout_id}")
+def delete_workout(
+        workout_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    workout_row = (
+        db.query(Workout)
+        .filter(Workout.id == workout_id, Workout.user_id == current_user.id)
+        .first()
+    )
+    #raise exception is workout is not found
+    if workout_row is None:
+        raise HTTPException(status_code=404, detail = "workout not found")
+
+    db.delete(workout_row)
+    db.commit()
+
+    return {"message": f"Workout {workout_id} deleted"}
