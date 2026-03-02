@@ -54,7 +54,11 @@ def create_workout(workout : CreateWorkout,
 def get_workouts(db: Session = Depends(get_db),
                  current_user: User = Depends(get_current_user),
                  ):
-    workout_rows = db.query(Workout).order_by(Workout.date.desc(), Workout.id.desc()).all()
+    workout_rows = (db.query(Workout)
+                    .filter(Workout.user_id == current_user.id)
+                    .order_by(Workout.date.desc(), Workout.id.desc())
+                    .all()
+                    )
 
     results = []
 
@@ -70,3 +74,29 @@ def get_workouts(db: Session = Depends(get_db),
         }
         results.append({k:v for k, v in record.items() if v is not None})
     return results
+
+@router.get("/workouts/{workout_id}")
+def get_workout_by_id(
+        workout_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    workout_row = (
+        db.query(Workout)
+        .filter(Workout.id == workout_id, Workout.user_id == current_user.id)
+        .first()
+    )
+    #Workout doesn't belong to anyone
+    if workout_row is None:
+        raise HTTPException(status_code=404, detail="workout not found")
+
+    record = {
+        "id": workout_row.id,
+        "exercise": workout_row.exercise,
+        "sets": workout_row.sets,
+        "reps": workout_row.reps,
+        "weight": workout_row.weight,
+        "date": workout_row.date,
+        "notes": workout_row.notes,
+    }
+    return {k:v for k, v in record.items() if v is not None}
