@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db import session_local
-from app.schemas.workout import CreateWorkout
+from app.schemas.workout import CreateWorkout, UpdateWorkout
 from app.models.workout_table import Workout
 from app.dependencies import get_current_user
 from app.models.user_table import User
@@ -122,3 +122,48 @@ def delete_workout(
     db.commit()
 
     return {"message": f"Workout {workout_id} deleted"}
+
+@router.patch("/workouts/{workout_id}")
+def update_workout(
+        workout_id: int,
+        workout_update: UpdateWorkout,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    #Retrieves workout only if belongs to current authenticated user
+    workout_row = (db.query(Workout)
+                   .filter(Workout.id == workout_id, Workout.user_id == current_user.id)
+                   .first()
+                   )
+    #Prevents error if no workout is found
+    if workout_row is None:
+        raise HTTPException(status_code=404, detail="Workout Not Found")
+
+    #Extracts only items that were actually provided in the PATCH request
+    update_data = workout_update.model_dump(exclude_none=True)
+
+    #Prevents any empty PATCH requests
+    if len(update_data) == 0:
+        raise HTTPException(status_code=400, detail="No Fields Provided to Update")
+
+    #Updates provided fields
+    for key, value in update_data.items():
+        setattr(workout_row, key, value)
+
+    db.commit()
+    #Makes sure the changes are shown on the lastest state of the DB
+    db.refresh(workout_row)
+
+    #Build response payload
+    record = {
+        "id": workout_row.id,
+        "exercise": workout_row.exercise,
+        "sets": workout_row.sets,
+        "reps": workout_row.reps,
+        "weight": workout_row.weight,
+        "date": workout_row.date,
+        "notes": workout_row.notes,
+    }
+
+    #Remove any items that are None
+    return {k: v for k, v in record.items() if v is not None}

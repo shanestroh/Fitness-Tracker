@@ -31,3 +31,40 @@ class CreateWorkout(BaseModel):
             if v == "" or v.lower() == "string":
                 return None
         return v
+
+class UpdateWorkout(BaseModel):
+    exercise: Optional[str] = None
+    sets: Optional[int] = None
+    reps: Optional[float] = None
+    weight: Optional[float] = None
+    date: Optional[date] = None
+    notes: Optional[str] = None
+
+    @field_validator("sets", "reps", "weight", mode = "before")
+    @classmethod
+    def zero_to_none(cls, v):
+        if v == 0 or v == 0.0:
+            return None
+        return v
+
+    @field_validator("notes", mode = "before")
+    @classmethod
+    def clean_notes(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            if v== "" or v.lower() == "string":
+                return None
+        return v
+
+    @field_validator("exercise", mode = "before")
+    @classmethod
+    def clean_exercise(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            if v == "":
+                return None
+        return v
