@@ -8,7 +8,7 @@ from app.models.user_table import User
 from app.models.workout_session_table import WorkoutSession
 from app.models.exercise_entry_table import ExerciseEntry
 from app.models.set_entry_table import SetEntry
-from app.schemas.set_entry import CreateSetEntry
+from app.schemas.set_entry import CreateSetEntry, UpdateSetEntry
 
 router = APIRouter(tags=["Set Entries"])
 
@@ -41,6 +41,25 @@ def get_owned_exercise_entry(
     if exercise_row is None:
         raise HTTPException(status_code=404, detail="Exercise Entry Not Found")
     return exercise_row
+
+def get_owned_set_entry(
+    set_id: int,
+    db: Session,
+    current_user: User,
+) -> SetEntry:
+    set_row = (
+        db.query(SetEntry)
+        .join(ExerciseEntry, ExerciseEntry.id == SetEntry.exercise_entry_id)
+        .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)
+        .filter(
+            SetEntry.id == set_id,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+    if set_row is None:
+        raise HTTPException(status_code=404, detail="Set Entry Not Found")
+    return set_row
 
 @router.post("/exercises/{exercise_entry_id}/sets")
 def create_set_entry(
@@ -84,3 +103,47 @@ def create_set_entry(
         "intensity": set_row.intensity,
     }
     return {k: v for k, v in record.items() if v is not None}
+
+
+@router.patch("/sets/{set_id}")
+def update_set_entry(
+    set_id: int,
+    payload: UpdateSetEntry,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    set_row = get_owned_set_entry(set_id, db, current_user)
+
+    # Only update fields that were provided
+    data = payload.model_dump(exclude_unset=True)
+
+    if not data:
+        raise HTTPException(status_code=400, detail="No fields provided to update")
+
+    for field, value in data.items():
+        setattr(set_row, field, value)
+
+    db.commit()
+    db.refresh(set_row)
+
+    return {k: v for k, v in {
+        "exercise_entry_id": set_row.exercise_entry_id,
+        "set_number": set_row.set_number,
+        "reps": set_row.reps,
+        "weight": set_row.weight,
+        "time_seconds": set_row.time_seconds,
+        "intensity": set_row.intensity,
+    }.items() if v is not None}
+
+@router.delete("/sets/{set_id}")
+def delete_set_entry(
+    set_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    set_row = get_owned_set_entry(set_id, db, current_user)
+
+    db.delete(set_row)
+    db.commit()
+
+    return {"deleted": True, "set_id": set_id}
