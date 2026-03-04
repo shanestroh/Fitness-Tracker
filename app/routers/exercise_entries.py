@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 
 from app.db import session_local
 from app.dependencies import get_current_user
+from app.models.set_entry_table import SetEntry
 from app.models.user_table import User
 from app.models.workout_session_table import WorkoutSession
 from app.models.exercise_entry_table import ExerciseEntry
-from app.schemas.exercise_entry import CreateExerciseEntry
+from app.schemas.exercise_entry import CreateExerciseEntry, UpdateExerciseEntry
 
 router = APIRouter(tags=["Exercise Entries"])
 
@@ -16,6 +17,26 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_owned_exercise_entry(
+        exercise_entry_id: int,
+        db: Session,
+        current_user: User,
+)-> ExerciseEntry:
+    exercise_row = (
+        db.query(ExerciseEntry)
+        .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)
+        .filter(
+            ExerciseEntry.id == exercise_entry_id,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+    if exercise_row is None:
+        raise HTTPException(status_code=404, detail = "Exercise Entry Not Found")
+    return exercise_row
+
 
 @router.post("/sessions/{session_id}/exercises")
 def create_exercise_entry(
@@ -65,3 +86,48 @@ def create_exercise_entry(
         "order_index": exercise_row.order_index,
     }
     return {k: v for k, v in record.items() if v is not None}
+
+@router.patch("/exercises/{exercise_entry_id}")
+def update_exercise_entry(
+        exercise_entry_id: int,
+        payload: UpdateExerciseEntry,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    exercise_row = get_owned_exercise_entry(exercise_entry_id, db, current_user)
+
+    data = payload.model_dump(exclude_unset=True)
+    data = {k: v for k, v in data.items() if v is not None}
+    if not data:
+        raise HTTPException(status_code=400, detail = "No Fields Provided To Update")
+
+    for field, value in data.items():
+        setattr(exercise_row, field, value)
+
+    db.commit()
+    db.refresh(exercise_row)
+
+    record = {
+        "id": exercise_row.id,
+        "session_id": exercise_row.session_id,
+        "exercise": exercise_row.exercise,
+        "order_index": exercise_row.order_index,
+    }
+    return {k: v for k, v in record.items() if v is not None}
+
+@router.delete("/exercises/{exercise_entry_id}")
+def delete_exercise_entry(
+        exercise_entry_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    exercise_row = get_owned_exercise_entry(exercise_entry_id, db, current_user)
+
+    #Delete sets for this exercise
+    db.query(SetEntry).filter(SetEntry.exercise_entry_id == exercise_entry_id).delete()
+
+    #Delete exercise entry
+    db.delete(exercise_row)
+    db.commit()
+
+    return {"deleted": True, "exercise_entry_id": exercise_entry_id}
