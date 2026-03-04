@@ -5,7 +5,7 @@ from app.db import session_local
 from app.dependencies import get_current_user
 from app.models.user_table import User
 from app.models.workout_session_table import WorkoutSession
-from app.schemas.session import CreateSession
+from app.schemas.session import CreateSession, UpdateSession
 from app.models.exercise_entry_table import ExerciseEntry
 from app.models.set_entry_table import SetEntry
 
@@ -138,3 +138,72 @@ def get_session_full(
         **session_record,
         "exercises": exercises
     }
+
+@router.patch("/sessions/{session_id}")
+def update_session(
+    session_id: int,
+    payload: UpdateSession,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    session_row = (
+        db.query(WorkoutSession)
+        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id)
+        .first()
+    )
+    if session_row is None:
+        raise HTTPException(status_code=404, detail="Workout Session Not Found")
+
+    data = payload.model_dump(exclude_unset=True)
+    data = {k: v for k, v in data.items() if v is not None}
+    if not data:
+        raise HTTPException(status_code=400, detail="No Fields Provided To Update")
+
+    for field, value in data.items():
+        setattr(session_row, field, value)
+
+    db.commit()
+    db.refresh(session_row)
+
+    record = {
+        "id": session_row.id,
+        "date": session_row.date,
+        "split": session_row.split,
+        "notes": session_row.notes,
+    }
+    return {k: v for k, v in record.items() if v is not None}
+
+@router.delete("/sessions/{session_id}")
+def delete_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    session_row = (
+        db.query(WorkoutSession)
+        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id)
+        .first()
+    )
+    if session_row is None:
+        raise HTTPException(status_code=404, detail="Workout Session Not Found")
+
+    # Get exercise entry ids for this session
+    exercise_ids = (
+        db.query(ExerciseEntry.id)
+        .filter(ExerciseEntry.session_id == session_id)
+        .all()
+    )
+    exercise_ids = [row[0] for row in exercise_ids]
+
+    # Delete sets
+    if exercise_ids:
+        db.query(SetEntry).filter(SetEntry.exercise_entry_id.in_(exercise_ids)).delete(synchronize_session=False)
+
+    # Delete exercises
+    db.query(ExerciseEntry).filter(ExerciseEntry.session_id == session_id).delete(synchronize_session=False)
+
+    # Delete session
+    db.delete(session_row)
+    db.commit()
+
+    return {"deleted": True, "session_id": session_id}
