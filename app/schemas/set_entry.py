@@ -8,6 +8,14 @@ class CreateSetEntry(BaseModel):
     time_seconds: Optional[int] = None
     intensity: Optional[str] = None
 
+    #Swagger's default 0 is treated as "Not provided"
+    @field_validator("set_number", "reps", "weight", "time_seconds", mode="before")
+    @classmethod
+    def zero_to_none(cls, v):
+        if v == 0 or v == 0.0:
+            return None
+        return v
+    
     @field_validator("intensity", mode="before")
     @classmethod
     def clean_intensity(cls, v):
