@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from app.db import Base, engine
 
-from app.routers.workouts import router as workouts_router
 from app.routers.auth import router as auth_router
 from app.routers.sessions import router as sessions_router
 from app.routers.exercise_entries import router as exercise_entries_router
@@ -19,7 +18,6 @@ Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
-app.include_router(workouts_router)
 app.include_router(auth_router)
 app.include_router(sessions_router)
 app.include_router(exercise_entries_router)
