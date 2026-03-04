@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.db import session_local
 from app.dependencies import get_current_user
@@ -54,34 +55,27 @@ def create_set_entry(
 
     #Auto-assign set number if not provided
     max_set_number = (
-        db.query(SetEntry.set_number)
-        .filter(SetEntry.exercise_entry_id == exercise_entry_id, SetEntry.set_number.isnot(None))
-        .order_by(SetEntry.set_number.desc())
-        .first()
+        db.query(func.max(SetEntry.set_number))
+        .filter(SetEntry.exercise_entry_id == exercise_entry_id)
+        .scalar()
     )
 
-    if set_data.set_number is None:
-        if max_set_number is None or max_set_number[0] is None:
-            next_set_number = 1
-        else:
-            next_set_number = max_set_number[0] + 1
-    else:
-        next_set_number = set_data.set_number
+    next_set_number = 1 if max_set_number is None else max_set_number + 1
 
     set_row = SetEntry(
-        exercise_entry_id = exercise_entry_id,
-        set_number = next_set_number,
-        reps = set_data.reps,
-        weight = set_data.weight,
-        time_seconds = set_data.time_seconds,
-        intensity = set_data.intensity,
+        exercise_entry_id=exercise_entry_id,
+        set_number=next_set_number,
+        reps=set_data.reps,
+        weight=set_data.weight,
+        time_seconds=set_data.time_seconds,
+        intensity=set_data.intensity,
     )
     db.add(set_row)
     db.commit()
     db.refresh(set_row)
 
     record = {
-        "id": set_row.id,
+        #"id": set_row.id,
         "exercise_entry_id": set_row.exercise_entry_id,
         "set_number": set_row.set_number,
         "reps": set_row.reps,
@@ -90,34 +84,3 @@ def create_set_entry(
         "intensity": set_row.intensity,
     }
     return {k: v for k, v in record.items() if v is not None}
-
-@router.get("/exercises/{exercise_entry_id}/sets")
-def get_set_entries(
-        exercise_entry_id: int,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
-):
-    # Ensure exercise entry belongs to current user
-    _ = get_owned_exercise_entry(exercise_entry_id, db, current_user)
-
-    set_rows = (
-        db.query(SetEntry)
-        .filter(SetEntry.exercise_entry_id == exercise_entry_id)
-        .order_by(SetEntry.set_number.asc().nulls_last(), SetEntry.id.asc())
-        .all()
-    )
-
-    results = []
-    for row in set_rows:
-        record = {
-            "id": row.id,
-            "exercise_entry_id": row.exercise_entry_id,
-            "set_number": row.set_number,
-            "reps": row.reps,
-            "weight": row.weight,
-            "time_seconds": row.time_seconds,
-            "intensity": row.intensity,
-        }
-        results.append({k: v for k, v in record.items() if v is not None})
-
-    return results

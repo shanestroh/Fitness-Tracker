@@ -65,33 +65,3 @@ def create_exercise_entry(
         "order_index": exercise_row.order_index,
     }
     return {k: v for k, v in record.items() if v is not None}
-
-@router.get("/sessions/{session_id}/exercises")
-def get_exercise_entries(
-        session_id: int,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
-):
-    session_row = (
-        db.query(WorkoutSession)
-        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id)
-        .first()
-    )
-    if session_row is None:
-        raise HTTPException(status_code=404, detail="Workout Session not Found")
-    exercise_rows = (
-        db.query(ExerciseEntry)
-        .filter(ExerciseEntry.session_id == session_id)
-        .order_by(ExerciseEntry.order_index.asc().nulls_last(), ExerciseEntry.id.asc())
-        .all()
-    )
-    results = []
-    for row in exercise_rows:
-        record = {
-            "id": row.id,
-            "session_id": row.session_id,
-            "exercise": row.exercise,
-            "order_index": row.order_index,
-        }
-        results.append({k: v for k, v in record.items() if v is not None})
-    return results

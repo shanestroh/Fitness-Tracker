@@ -2,14 +2,13 @@ from pydantic import BaseModel, field_validator
 from typing import Optional
 
 class CreateSetEntry(BaseModel):
-    set_number: Optional[int] = None
     reps: Optional[int] = None
     weight: Optional[float] = None
     time_seconds: Optional[int] = None
     intensity: Optional[str] = None
 
     #Swagger's default 0 is treated as "Not provided"
-    @field_validator("set_number", "reps", "weight", "time_seconds", mode="before")
+    @field_validator("weight", "time_seconds", mode="before")
     @classmethod
     def zero_to_none(cls, v):
         if v == 0 or v == 0.0:

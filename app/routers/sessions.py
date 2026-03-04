@@ -8,7 +8,6 @@ from app.models.workout_session_table import WorkoutSession
 from app.schemas.session import CreateSession
 from app.models.exercise_entry_table import ExerciseEntry
 from app.models.set_entry_table import SetEntry
-from app.schemas.session_full import CreateSessionFull
 
 router = APIRouter(tags = ["Workout Sessions"])
 
@@ -136,96 +135,6 @@ def get_session_full(
     session_record = {k: v for k, v in session_record.items() if v is not None}
 
     return {
-        "session": session_record,
+        **session_record,
         "exercises": exercises
-    }
-
-@router.post("/sessions/{session_id}/full")
-def create_session_full(
-        session_id: int,
-        payload: CreateSessionFull,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
-):
-    #Ownership Check
-    session_row = (
-        db.query(WorkoutSession)
-        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id)
-        .first()
-    )
-    if session_row is None:
-        raise HTTPException(status_code=404, detail="Workout Session Not Found")
-
-    #Determine next available order_index
-    max_order_index = (
-        db.query(ExerciseEntry.order_index)
-        .filter(ExerciseEntry.session_id == session_id, ExerciseEntry.order_index.isnot(None))
-        .order_by(ExerciseEntry.order_index.desc())
-        .first()
-    )
-    next_order_index = 1 if (max_order_index is None or max_order_index[0] is None) else max_order_index[0] + 1
-
-    created_exercises = []
-
-    #Either everything is created or nothing is
-    try:
-        with db.begin():
-            for exercise_input in payload.exercises:
-                exercise_order_index = exercise_input.order_index
-                if exercise_order_index is None:
-                    exercsie_order_index = next_order_index
-                    next_order_index += 1
-
-                exercise_row = ExerciseEntry(
-                    session_id=session_id,
-                    exercise=exercise_input.exercise,
-                    order_index=exercise_order_index,
-                )
-                db.add(exercise_row)
-                db.flush()  #Ensures exercise_row.id exists
-
-                next_set_number = 1
-                created_sets = []
-
-                for set_input in exercise_input.sets:
-                    set_number = set_input.set_number
-                    if set_number is None:
-                        set_number = next_set_number
-                        next_set_number += 1
-
-                    set_row = SetEntry(
-                        exercise_entry_id = exercise_row.id,
-                        set_number = set_number,
-                        reps = set_input.reps,
-                        weight = set_input.weight,
-                        time_seconds = set_input.time_seconds,
-                        intensity = set_input.intensity,
-                    )
-                    db.add(set_row)
-                    db.flush()
-
-                    created_sets.append(
-                        {k: v for k, v in {
-                            "id": set_row.id,
-                            "set_number": set_row.set_number,
-                            "reps": set_row.reps,
-                            "weight": set_row.weight,
-                            "time_seconds": set_row.time_seconds,
-                            "intensity": set_row.intensity,
-                        }.items() if v is not None}
-                    )
-
-                created_exercises.append({
-                    "id": exercise_row.id,
-                    "exercise": exercise_row.exercise,
-                    "order_index": exercise_row.order_index,
-                    "sets": created_sets,
-                })
-
-    except Exception:
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to Create Full Session Payload")
-    return{
-        "session_id": session_id,
-        "exercises": created_exercises,
     }
