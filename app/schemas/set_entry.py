@@ -37,3 +37,28 @@ class UpdateSetEntry(BaseModel):
     weight: Optional[float] = None
     time_seconds: Optional[int] = None
     intensity: Optional[str] = None
+
+    @model_validator(mode="after")
+    def require_something(self):
+        if all(getattr(self, f) is None for f in ("reps", "weight", "time_seconds", "intensity")):
+            raise ValueError("Provide at least one field to update.")
+        return self
+
+        # Turn Swagger defaults into None
+    @field_validator("reps", "weight", "time_seconds", mode="before")
+    @classmethod
+    def zero_to_none(cls, v):
+        if v == 0 or v == 0.0:
+            return None
+        return v
+
+    @field_validator("intensity", mode="before")
+    @classmethod
+    def clean_intensity(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            if v == "" or v.lower() == "string":
+                return None
+        return v

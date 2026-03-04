@@ -51,10 +51,7 @@ def get_owned_set_entry(
         db.query(SetEntry)
         .join(ExerciseEntry, ExerciseEntry.id == SetEntry.exercise_entry_id)
         .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)
-        .filter(
-            SetEntry.id == set_id,
-            WorkoutSession.user_id == current_user.id,
-        )
+        .filter(SetEntry.id == set_id, WorkoutSession.user_id == current_user.id)
         .first()
     )
     if set_row is None:
@@ -147,3 +144,35 @@ def delete_set_entry(
     db.commit()
 
     return {"deleted": True, "set_id": set_id}
+
+@router.patch("/sets/{set_id}")
+def update_set_entry(
+    set_id: int,
+    payload: UpdateSetEntry,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    set_row = get_owned_set_entry(set_id, db, current_user)
+
+    data = payload.model_dump(exclude_unset=True)
+    #Optional: if you used Optional fields defaulting to None, also exclude None:
+    data = {k: v for k, v in data.items() if v is not None}
+
+    if not data:
+        raise HTTPException(status_code=400, detail="No fields provided to update")
+
+    for field, value in data.items():
+        setattr(set_row, field, value)
+
+    db.commit()
+    db.refresh(set_row)
+
+    return {
+        "id": set_row.id,
+        "exercise_entry_id": set_row.exercise_entry_id,
+        "set_number": set_row.set_number,
+        "reps": set_row.reps,
+        "weight": set_row.weight,
+        "time_seconds": set_row.time_seconds,
+        "intensity": set_row.intensity,
+    }
