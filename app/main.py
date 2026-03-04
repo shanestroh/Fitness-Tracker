@@ -7,7 +7,6 @@ from app.routers.exercise_entries import router as exercise_entries_router
 from app.routers.set_entries import router as set_entries_router
 
 from app.models.user_table import User
-from app.models.workout_table import Workout
 
 from app.models.workout_session_table import WorkoutSession
 from app.models.exercise_entry_table import ExerciseEntry
