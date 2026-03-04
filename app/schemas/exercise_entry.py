@@ -13,3 +13,10 @@ class CreateExerciseEntry(BaseModel):
         if not v:
             raise ValueError("exercise cannot be empty")
         return v
+
+    @field_validator("order_index", mode="before")
+    @classmethod
+    def zero_to_none(cls, v):
+        if v == 0:
+            return None
+        return v

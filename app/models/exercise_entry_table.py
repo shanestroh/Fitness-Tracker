@@ -7,4 +7,4 @@ class ExerciseEntry(Base):
     session_id = Column(Integer, ForeignKey("workout_sessions.id"), nullable=False)
     exercise = Column(String, nullable=False)
     #orders the exercises
-    order_index = Column (Integer, nullable=False)
+    order_index = Column(Integer, nullable=True)
