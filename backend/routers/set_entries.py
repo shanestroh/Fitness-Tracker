@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
-from Backend.db import session_local
-from Backend.dependencies import get_current_user
-from Backend.models.user_table import User
-from Backend.models.workout_session_table import WorkoutSession
-from Backend.models.exercise_entry_table import ExerciseEntry
-from Backend.models.set_entry_table import SetEntry
-from Backend.schemas.set_entry import CreateSetEntry, UpdateSetEntry
+from backend.db import session_local
+from backend.dependencies import get_current_user
+from backend.models.user_table import User
+from backend.models.workout_session_table import WorkoutSession
+from backend.models.exercise_entry_table import ExerciseEntry
+from backend.models.set_entry_table import SetEntry
+from backend.schemas.set_entry import CreateSetEntry, UpdateSetEntry
 
 router = APIRouter(tags=["Set Entries"])
 

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey
-from Backend.db import Base
+from backend.db import Base
 
 class WorkoutSession(Base):
     __tablename__ = "workout_sessions"
