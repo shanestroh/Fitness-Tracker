@@ -1,0 +1,27 @@
+from fastapi import FastAPI
+from Backend.db import Base, engine
+
+from Backend.routers.auth import router as auth_router
+from Backend.routers.sessions import router as sessions_router
+from Backend.routers.exercise_entries import router as exercise_entries_router
+from Backend.routers.set_entries import router as set_entries_router
+
+from Backend.models.user_table import User
+
+from Backend.models.workout_session_table import WorkoutSession
+from Backend.models.exercise_entry_table import ExerciseEntry
+from Backend.models.set_entry_table import SetEntry
+
+
+Base.metadata.create_all(bind = engine)
+
+app = FastAPI()
+
+app.include_router(auth_router)
+app.include_router(sessions_router)
+app.include_router(exercise_entries_router)
+app.include_router(set_entries_router)
+
+@app.get("/")
+def home():
+    return {"message" : "Fitness Tracker is running"}

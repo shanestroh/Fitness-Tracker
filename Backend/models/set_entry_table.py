@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, Float, String, ForeignKey, UniqueConstraint, CheckConstraint, Index
-from app.db import Base
+from Backend.db import Base
 
 class SetEntry(Base):
     __tablename__ = "set_entries"

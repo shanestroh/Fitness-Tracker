@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.db import session_local
-from app.dependencies import get_current_user
-from app.models.user_table import User
-from app.models.workout_session_table import WorkoutSession
-from app.schemas.session import CreateSession, UpdateSession
-from app.models.exercise_entry_table import ExerciseEntry
-from app.models.set_entry_table import SetEntry
+from Backend.db import session_local
+from Backend.dependencies import get_current_user
+from Backend.models.user_table import User
+from Backend.models.workout_session_table import WorkoutSession
+from Backend.schemas.session import CreateSession, UpdateSession
+from Backend.models.exercise_entry_table import ExerciseEntry
+from Backend.models.set_entry_table import SetEntry
 
 router = APIRouter(tags = ["Workout Sessions"])
 

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, CheckConstraint, Index
-from app.db import Base
+from Backend.db import Base
 
 class ExerciseEntry(Base):
     __tablename__ = "exercise_entries"
