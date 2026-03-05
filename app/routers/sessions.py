@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import session_local
@@ -30,7 +31,11 @@ def create_session(
         notes = session_data.notes,
     )
     db.add(session_row)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail = "Session Update Conflict")
     db.refresh(session_row)
 
     record = {

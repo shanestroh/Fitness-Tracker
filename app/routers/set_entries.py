@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from app.db import session_local
 from app.dependencies import get_current_user
@@ -87,7 +88,12 @@ def create_set_entry(
         intensity=set_data.intensity,
     )
     db.add(set_row)
-    db.commit()
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail = "Set Number Conflict")
     db.refresh(set_row)
 
     record = {
@@ -113,6 +119,7 @@ def update_set_entry(
 
     # Only update fields that were provided
     data = payload.model_dump(exclude_unset=True)
+    data = {k: v for k, v in data.items() if v is not None}
 
     if not data:
         raise HTTPException(status_code=400, detail="No fields provided to update")
@@ -120,7 +127,11 @@ def update_set_entry(
     for field, value in data.items():
         setattr(set_row, field, value)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Constraint violation")
     db.refresh(set_row)
 
     return {k: v for k, v in {

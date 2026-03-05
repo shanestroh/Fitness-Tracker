@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import session_local
@@ -76,7 +77,11 @@ def create_exercise_entry(
         order_index = next_index,
     )
     db.add(exercise_row)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail = "Exercise Order Conflict")
     db.refresh(exercise_row)
 
     record = {
@@ -104,7 +109,11 @@ def update_exercise_entry(
     for field, value in data.items():
         setattr(exercise_row, field, value)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Exercise order_index conflict")
     db.refresh(exercise_row)
 
     record = {

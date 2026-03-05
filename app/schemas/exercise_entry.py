@@ -22,7 +22,7 @@ class CreateExerciseEntry(BaseModel):
         return v
 
 class UpdateExerciseEntry(BaseModel):
-    exercise: str
+    exercise: Optional[str] = None
     order_index: Optional[int] = None
 
     @model_validator(mode="after")
@@ -36,4 +36,15 @@ class UpdateExerciseEntry(BaseModel):
     def zero_to_none(cls, v):
         if v == 0:
             return None
+        return v
+
+    @field_validator("exercise", mode="before")
+    @classmethod
+    def clean_exercise(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            if v == "" or v.lower() == "string":
+                return None
         return v
