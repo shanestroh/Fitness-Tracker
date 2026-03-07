@@ -44,6 +44,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [exerciseError, setExerciseError] = useState<string | null>(null);
   const [deletingExerciseById, setDeletingExerciseById] = useState<Record<number, boolean>>({});
   const [deleteExerciseError, setDeleteExerciseError] = useState<string | null>(null);
+  const [deletingSetById, setDeletingSetById] = useState<Record<number, boolean>>({});
+  const [deleteSetError, setDeleteSetError] = useState<string | null>(null);
 
   const [setFormByExercise, setSetFormByExercise] = useState<
     Record<
@@ -250,6 +252,37 @@ async function handleDeleteExercise(exerciseId: number) {
   }
 }
 
+async function handleDeleteSet(setId: number) {
+  if (!sessionId) return;
+
+  setDeleteSetError(null);
+
+  setDeletingSetById((prev) => ({
+    ...prev,
+    [setId]: true,
+  }));
+
+  try {
+    const res = await fetch(`http://localhost:8000/sets/${setId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to delete set: ${res.status}`);
+    }
+
+    await loadSession(sessionId);
+  } catch (err: any) {
+    setDeleteSetError(err?.message ?? "Failed to delete set");
+  } finally {
+    setDeletingSetById((prev) => ({
+      ...prev,
+      [setId]: false,
+    }));
+  }
+}
+
   if (loading) {
     return (
       <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
@@ -362,6 +395,12 @@ async function handleDeleteExercise(exerciseId: number) {
             {deleteExerciseError}
         </div>
         )}
+
+        {deleteSetError && (
+            <div style = {{ color : "crimson", whiteSpace: "pre-wrap", marginBottom: 12}}>
+            {deleteSetError}
+            </div>
+            )}
 
 
       {session.exercises.length === 0 ? (
@@ -484,9 +523,35 @@ async function handleDeleteExercise(exerciseId: number) {
                         borderRadius: 8,
                       }}
                     >
+                      <div
+                      style = {{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 12,
+                          marginBottom: 6,
+                          }}
+                    >
                       <div>
                         <strong>Set {set.set_number ?? "?"}</strong>
                       </div>
+
+                      <button
+                        type = "button"
+                        onClick = {() => handleDeleteSet(set.id)}
+                        disabled = {deletingSetById[set.id]}
+                        style = {{
+                            padding: "6px 10px",
+                            borderRadius: 8,
+                            border: "1px solid #ccc",
+                            cursor: deletingSetById[set.id] ? "not-allowed" : "pointer",
+                            fontWeight: 700,
+                            }}
+                        >
+                        {deletingSetById[set.id] ? "Deleting..." : "Delete Set"}
+                        </button>
+                        </div>
+
                       {set.reps !== undefined && <div>Reps: {set.reps}</div>}
                       {set.weight !== undefined && <div>Weight: {set.weight}</div>}
                       {set.time_seconds !== undefined && (
