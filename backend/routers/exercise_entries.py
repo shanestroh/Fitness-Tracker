@@ -44,13 +44,13 @@ def create_exercise_entry(
         session_id: int,
         exercise_data: CreateExerciseEntry,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
+        #current_user: User = Depends(get_current_user),
 ):
 
     #Ensures session exists and belongs to a user
     session_row = (
         db.query(WorkoutSession)
-        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id)
+        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == 1)
         .first()
     )
     if session_row is None:
