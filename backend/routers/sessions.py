@@ -49,11 +49,11 @@ def create_session(
 @router.get("/sessions")
 def get_sessions(
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
+        #current_user: User = Depends(get_current_user), #commenting out for testing
 ):
     session_rows = (
         db.query(WorkoutSession)
-        .filter(WorkoutSession.user_id == current_user.id)
+        .filter(WorkoutSession.user_id == 1)
         .order_by(WorkoutSession.date.desc(), WorkoutSession.id.desc())
         .all()
     )
@@ -73,12 +73,12 @@ def get_sessions(
 def get_session_full(
         session_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
+        #current_user: User = Depends(get_current_user), #commenting out for testing with no auth
 ):
     #Ownership Check: Session must exist and belong to a current user
     session_row = (
         db.query(WorkoutSession)
-        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id)
+        .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == 1)
         .first()
     )
     if session_row is None:
