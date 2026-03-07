@@ -42,6 +42,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [orderIndex, setOrderIndex] = useState("");
   const [addingExercise, setAddingExercise] = useState(false);
   const [exerciseError, setExerciseError] = useState<string | null>(null);
+  const [deletingExerciseById, setDeletingExerciseById] = useState<Record<number, boolean>>({});
+  const [deleteExerciseError, setDeleteExerciseError] = useState<string | null>(null);
 
   const [setFormByExercise, setSetFormByExercise] = useState<
     Record<
@@ -146,6 +148,7 @@ function updateSetForm(
     }
   }
 
+
 async function handleAddSet(e: React.FormEvent, exerciseId: number) {
   e.preventDefault();
 
@@ -210,6 +213,37 @@ async function handleAddSet(e: React.FormEvent, exerciseId: number) {
     }));
   } finally {
     setAddingSetByExercise((prev) => ({
+      ...prev,
+      [exerciseId]: false,
+    }));
+  }
+}
+
+async function handleDeleteExercise(exerciseId: number) {
+  if (!sessionId) return;
+
+  setDeleteExerciseError(null);
+
+  setDeletingExerciseById((prev) => ({
+    ...prev,
+    [exerciseId]: true,
+  }));
+
+  try {
+    const res = await fetch(`http://localhost:8000/exercises/${exerciseId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to delete exercise: ${res.status}`);
+    }
+
+    await loadSession(sessionId);
+  } catch (err: any) {
+    setDeleteExerciseError(err?.message ?? "Failed to delete exercise");
+  } finally {
+    setDeletingExerciseById((prev) => ({
       ...prev,
       [exerciseId]: false,
     }));
@@ -323,6 +357,13 @@ async function handleAddSet(e: React.FormEvent, exerciseId: number) {
         Exercises
       </h2>
 
+       {deleteExerciseError && (
+        <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+            {deleteExerciseError}
+        </div>
+        )}
+
+
       {session.exercises.length === 0 ? (
         <p>No exercises yet.</p>
       ) : (
@@ -336,9 +377,34 @@ async function handleAddSet(e: React.FormEvent, exerciseId: number) {
                 padding: 16,
               }}
             >
-              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10 }}>
-                {exercise.exercise}
-              </h3>
+              <div
+                style = {{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 10,
+                    gap: 12,
+                    }}
+                >
+                 <h3 style = {{ fontSize: 18, fontWeight: 700, margin: 0}}>
+                    {exercise.exercise}
+                 </h3>
+
+                 <button
+                    type = "button"
+                    onClick = {() => handleDeleteExercise(exercise.id)}
+                    disabled = {deletingExerciseById[exercise.id]}
+                    style = {{
+                        padding: "8px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #ccc",
+                        cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
+                        fontWeight: 700,
+                        }}
+                    >
+                        {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
+                    </button>
+                 </div>
 
               {exercise.order_index !== undefined && (
                 <p style={{ marginBottom: 10 }}>

@@ -128,9 +128,20 @@ def update_exercise_entry(
 def delete_exercise_entry(
         exercise_entry_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
+        #current_user: User = Depends(get_current_user), #commented out for testing with no authentication
 ):
-    exercise_row = get_owned_exercise_entry(exercise_entry_id, db, current_user)
+    #exercise_row = get_owned_exercise_entry(exercise_entry_id, db, current_user) #commented out for no authentication
+    exercise_row = (
+        db.query(ExerciseEntry)
+        .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)
+        .filter(
+            ExerciseEntry.id == exercise_entry_id,
+            WorkoutSession.user_id == 1,
+        )
+        .first()
+    )
+    if exercise_row is None:
+        raise HTTPException(status_code=404, detail="Exercise Entry Not Found")
 
     #Delete sets for this exercise
     db.query(SetEntry).filter(SetEntry.exercise_entry_id == exercise_entry_id).delete()
