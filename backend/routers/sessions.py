@@ -22,10 +22,10 @@ def get_db():
 def create_session(
         session_data: CreateSession,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
+        #current_user: User = Depends(get_current_user), # blocked out for testing frontend
 ):
     session_row = WorkoutSession(
-        user_id = current_user.id,
+        user_id = 1,
         date = session_data.date,
         split = session_data.split,
         notes = session_data.notes,
