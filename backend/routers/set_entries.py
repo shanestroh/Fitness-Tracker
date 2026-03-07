@@ -64,11 +64,19 @@ def create_set_entry(
         exercise_entry_id: int,
         set_data: CreateSetEntry,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user),
+        #current_user: User = Depends(get_current_user),
 ):
-
-    #Ensure exercise entry belongs to current user
-    _ = get_owned_exercise_entry(exercise_entry_id, db, current_user)
+    exercise_row = (
+        db.query(ExerciseEntry)
+        .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)
+        .filter(
+            ExerciseEntry.id == exercise_entry_id,
+            WorkoutSession.user_id == 1,
+        )
+        .first()
+    )
+    if exercise_row is None:
+        raise HTTPException(status_code=404, detail="Exercise Entry Not Found")
 
     #Auto-assign set number if not provided
     max_set_number = (

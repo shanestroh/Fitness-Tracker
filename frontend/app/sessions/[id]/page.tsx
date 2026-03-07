@@ -43,6 +43,21 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [addingExercise, setAddingExercise] = useState(false);
   const [exerciseError, setExerciseError] = useState<string | null>(null);
 
+  const [setFormByExercise, setSetFormByExercise] = useState<
+    Record<
+        number,
+        {
+            reps: string;
+            weight: string;
+            time_seconds: string;
+            intensity: string;
+        }
+    >
+    >({});
+
+    const [setErrorByExercise, setSetErrorByExercise] = useState<Record<number, string | null>>({});
+    const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
+
   async function loadSession(id: string) {
     setLoading(true);
     setPageError(null);
@@ -65,6 +80,23 @@ export default function SessionPage({ params }: SessionPageProps) {
       setLoading(false);
     }
   }
+
+function updateSetForm(
+  exerciseId: number,
+  field: "reps" | "weight" | "time_seconds" | "intensity",
+  value: string
+) {
+  setSetFormByExercise((prev) => ({
+    ...prev,
+    [exerciseId]: {
+      reps: prev[exerciseId]?.reps ?? "",
+      weight: prev[exerciseId]?.weight ?? "",
+      time_seconds: prev[exerciseId]?.time_seconds ?? "",
+      intensity: prev[exerciseId]?.intensity ?? "",
+      [field]: value,
+    },
+  }));
+}
 
   useEffect(() => {
     async function unwrapParams() {
@@ -113,6 +145,76 @@ export default function SessionPage({ params }: SessionPageProps) {
       setAddingExercise(false);
     }
   }
+
+async function handleAddSet(e: React.FormEvent, exerciseId: number) {
+  e.preventDefault();
+
+  setSetErrorByExercise((prev) => ({
+    ...prev,
+    [exerciseId]: null,
+  }));
+
+  setAddingSetByExercise((prev) => ({
+    ...prev,
+    [exerciseId]: true,
+  }));
+
+  const form = setFormByExercise[exerciseId] ?? {
+    reps: "",
+    weight: "",
+    time_seconds: "",
+    intensity: "",
+  };
+
+  const payload: {
+    reps?: number;
+    weight?: number;
+    time_seconds?: number;
+    intensity?: string;
+  } = {};
+
+  if (form.reps.trim()) payload.reps = Number(form.reps);
+  if (form.weight.trim()) payload.weight = Number(form.weight);
+  if (form.time_seconds.trim()) payload.time_seconds = Number(form.time_seconds);
+  if (form.intensity.trim()) payload.intensity = form.intensity.trim();
+
+  try {
+    const res = await fetch(`http://localhost:8000/exercises/${exerciseId}/sets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to add set: ${res.status}`);
+    }
+
+    setSetFormByExercise((prev) => ({
+      ...prev,
+      [exerciseId]: {
+        reps: "",
+        weight: "",
+        time_seconds: "",
+        intensity: "",
+      },
+    }));
+
+    await loadSession(sessionId);
+  } catch (err: any) {
+    setSetErrorByExercise((prev) => ({
+      ...prev,
+      [exerciseId]: err?.message ?? "Failed to add set",
+    }));
+  } finally {
+    setAddingSetByExercise((prev) => ({
+      ...prev,
+      [exerciseId]: false,
+    }));
+  }
+}
 
   if (loading) {
     return (
@@ -243,6 +345,65 @@ export default function SessionPage({ params }: SessionPageProps) {
                   <strong>Order:</strong> {exercise.order_index}
                 </p>
               )}
+
+            <section
+                style = {{
+                border: "1px solid #eee",
+                borderRadius: 10,
+                padding: 12,
+                marginBottom: 14,
+                }}
+            >
+                <h4 style = {{ fontSize: 16, fontWeight: 700, marginBottom: 10}}>
+                    Add Set
+                </h4>
+
+                <form onSubmit = {(e) => handleAddSet(e, exercise.id)} style = {{ display: "grid", gap: 10}}>
+                    <label style = {{ display: "grid", gap: 4 }}>
+                        <span>Reps</span>
+                        <input
+                            type = "number"
+                            value = {setFormByExercise[exercise.id]?.reps ?? ""}
+                            onChange = {(e) => updateSetForm(exercise.id, "reps", e.target.value)}
+                            placeholder = "10"
+                            style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                        />
+                        </label>
+
+                        <label style = {{ display: "grid", gap: 4}}>
+                            <span>Weight</span>
+                            <input
+                            type = "number"
+                            value = {setFormByExercise[exercise.id]?.weight ?? ""}
+                            onChange = {(e) => updateSetForm(exercise.id, "weight", e.target.value)}
+                            placeholder = "135"
+                            style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                            />
+                        </label>
+
+                        <button
+                            type = "submit"
+                            disabled = {addingSetByExercise[exercise.id]}
+                            style = {{
+                                padding: 10,
+                                borderRadius: 8,
+                                border: "none",
+                                cursor: addingSetByExercise[exercise.id] ? "not-allowed" : "pointer",
+                                fontWeight: 700,
+                                }}
+                            >
+                                {addingSetByExercise[exercise.id] ? "Adding..." : "Add Set"}
+                            </button>
+                        </form>
+
+                        {setErrorByExercise[exercise.id] && (
+                            <div style = {{ color: "crimson", whiteSpace: "pre-wrap"}}>
+                                {setErrorByExercise[exercise.id]}
+                            </div>
+                            )}
+                        </section>
+
+
 
               {exercise.sets.length === 0 ? (
                 <p>No sets yet.</p>
