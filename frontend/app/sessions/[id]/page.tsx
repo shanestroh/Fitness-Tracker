@@ -3,30 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SetRow from "./SetRow";
-
-type SetEntry = {
-    id: number;
-    set_number?: number;
-    reps?: number;
-    weight?: number;
-    time_seconds?: number;
-    intensity?: string;
-    };
-
-type ExerciseEntry = {
-  id: number;
-  exercise: string;
-  order_index?: number;
-  sets: SetEntry[];
-};
-
-type SessionFull = {
-  id: number;
-  date: string;
-  split: string;
-  notes?: string;
-  exercises: ExerciseEntry[];
-};
+import { SetEntry } from "@/types/workout";
+import ExerciseCard from "./ExerciseCard";
 
 type SessionPageProps = {
   params: Promise<{
@@ -704,145 +682,35 @@ async function handleUpdateSession(e: React.FormEvent) {
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           {session.exercises.map((exercise) => (
-            <section
-              key={exercise.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 16,
-                padding: 18,
-                background: "#fff",
-                color: cardText,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-              }}
-            >
-              <div
-                style = {{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 10,
-                    gap: 12,
-                    }}
-                >
-                 <h3 style = {{ fontSize: 20, fontWeight: 700, margin: 0}}>
-                    {exercise.exercise}
-                 </h3>
-
-                 <button
-                    type = "button"
-                    onClick = {() => handleDeleteExercise(exercise.id)}
-                    disabled = {deletingExerciseById[exercise.id]}
-                    style = {{
-                        padding: "8px 12px",
-                        borderRadius: 8,
-                        border: "1px solid #d0d0d0",
-                        background: "#fff",
-                        cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
-                        fontWeight: 600,
-                        }}
-                    >
-                        {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
-                    </button>
-                 </div>
-
-              {exercise.order_index !== undefined && (
-                  <p style = {{ margin: "0 0 14px 0", color: "#666" }}>
-                    Order {exercise.order_index}
-                </p>
-              )}
-
-            <section
-                style = {{
-                border: "1px solid #eee",
-                borderRadius: 12,
-                padding: 14,
-                marginBottom: 16,
-                background: "#fcfcfc",
-                color: cardText,
-                }}
-            >
-                <h4 style = {{ fontSize: 16, fontWeight: 700, margin: "0 0 12px 0"}}>
-                    Add Set
-                </h4>
-
-                <form onSubmit = {(e) => handleAddSet(e, exercise.id)} style = {{ display: "grid", gap: 10}}>
-                    <label style = {{ display: "grid", gap: 4 }}>
-                        <span>Reps</span>
-                        <input
-                            type = "number"
-                            value = {setFormByExercise[exercise.id]?.reps ?? ""}
-                            onChange = {(e) => updateSetForm(exercise.id, "reps", e.target.value)}
-                            placeholder = "10"
-                            style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
-                        />
-                        </label>
-
-                        <label style = {{ display: "grid", gap: 4}}>
-                            <span>Weight</span>
-                            <input
-                            type = "number"
-                            value = {setFormByExercise[exercise.id]?.weight ?? ""}
-                            onChange = {(e) => updateSetForm(exercise.id, "weight", e.target.value)}
-                            placeholder = "135"
-                            style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
-                            />
-                        </label>
-
-                        <button
-                            type = "submit"
-                            disabled = {addingSetByExercise[exercise.id]}
-                            style = {{
-                                padding: 10,
-                                borderRadius: 8,
-                                border: "none",
-                                cursor: addingSetByExercise[exercise.id] ? "not-allowed" : "pointer",
-                                fontWeight: 700,
-                                }}
-                            >
-                                {addingSetByExercise[exercise.id] ? "Adding..." : "Add Set"}
-                            </button>
-                        </form>
-
-                        {setErrorByExercise[exercise.id] && (
-                            <div style = {{ color: "crimson", whiteSpace: "pre-wrap"}}>
-                                {setErrorByExercise[exercise.id]}
-                            </div>
-                            )}
-                        </section>
-
-
-
-              {exercise.sets.length === 0 ? (
-                <p style = {{ color: "#666", marginTop: 8 }}>No sets yet.</p>
-              ) : (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {exercise.sets.map((set) => (
-                    <SetRow
-                        key={set.id}
-                        set={set}
-                        cardText={cardText}
-                        editingSetId={editingSetId}
-                        editSetReps={editSetReps}
-                        setEditSetReps={setEditSetReps}
-                        editSetWeight={editSetWeight}
-                        setEditSetWeight={setEditSetWeight}
-                        editSetTimeSeconds={editSetTimeSeconds}
-                        setEditSetTimeSeconds={setEditSetTimeSeconds}
-                        editSetIntensity={editSetIntensity}
-                        setEditSetIntensity={setEditSetIntensity}
-                        updateSetError={updateSetError}
-                        updatingSet={updatingSet}
-                        handleUpdateSet={handleUpdateSet}
-                        startEditingSet={startEditingSet}
-                        handleDeleteSet={handleDeleteSet}
-                        deletingSetById={deletingSetById}
-                        setEditingSetId={setEditingSetId}
-                        setUpdateSetError={setUpdateSetError}
-                    />
-                  ))}
-                    </div>
-                    )}
-            </section>
+            <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                cardText={cardText}
+                handleDeleteExercise={handleDeleteExercise}
+                deletingExerciseById={deletingExerciseById}
+                setFormByExercise={setFormByExercise}
+                updateSetForm={updateSetForm}
+                handleAddSet={handleAddSet}
+                addingSetByExercise={addingSetByExercise}
+                setErrorByExercise={setErrorByExercise}
+                editingSetId={editingSetId}
+                editSetReps={editSetReps}
+                setEditSetReps={setEditSetReps}
+                editSetWeight={editSetWeight}
+                setEditSetWeight={setEditSetWeight}
+                editSetTimeSeconds={editSetTimeSeconds}
+                setEditSetTimeSeconds={setEditSetTimeSeconds}
+                editSetIntensity={editSetIntensity}
+                setEditSetIntensity={setEditSetIntensity}
+                updateSetError={updateSetError}
+                updatingSet={updatingSet}
+                handleUpdateSet={handleUpdateSet}
+                startEditingSet={startEditingSet}
+                handleDeleteSet={handleDeleteSet}
+                deletingSetById={deletingSetById}
+                setEditingSetId={setEditingSetId}
+                setUpdateSetError={setUpdateSetError}
+            />
           ))}
         </div>
       )}

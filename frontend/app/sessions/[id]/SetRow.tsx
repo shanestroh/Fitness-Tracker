@@ -1,11 +1,4 @@
-type SetEntry = {
-  id: number;
-  set_number?: number;
-  reps?: number;
-  weight?: number;
-  time_seconds?: number;
-  intensity?: string;
-};
+import { SetEntry } from "@/types/workout";
 
 type SetRowProps = {
   set: SetEntry;
