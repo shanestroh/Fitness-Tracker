@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import SetRow from "./SetRow";
 import { SetEntry } from "@/types/workout";
 import ExerciseCard from "./ExerciseCard";
+import SessionHeader from "./SessionHeader";
 
 type SessionPageProps = {
   params: Promise<{
@@ -435,171 +436,27 @@ async function handleUpdateSession(e: React.FormEvent) {
         ← Back to Sessions
       </a>
 
-      <section
-        style = {{
-            border: "1px solid #ddd",
-            borderRadius: 16,
-            padding: 20,
-            marginBottom:24,
-            background: "#fafafa",
-            color: cardText,
-            }}
-        >
-        <div
-            style = {{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: 16,
-                marginBottom: 12,
-                }}
-            >
-                <div style = {{ flex: 1 }}>
-                    {!isEditingSession ? (
-                        <>
-                            <h1 style = {{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0"}}>
-                                {session.split}
-                            </h1>
-
-                            <p style = {{ margin: "0 0 8px 0", color: "#555" }}>
-                                {session.date}
-                            </p>
-
-                            {session.notes && (
-                                <p style ={{ margin: 0, lineHeight: 1.5 }}>
-                                    <strong>Notes:</strong> {session.notes}
-                                </p>
-                                )}
-                            </>
-                            ) : (
-                                <form onSubmit={handleUpdateSession} style={{ display: "grid", gap: 12 }}>
-                                    <label style={{ display: "grid", gap: 6}}>
-                                        <span>Split</span>
-                                        <input
-                                            value = {editSplit}
-                                            onChange = {(e) => setEditSplit(e.target.value)}
-                                            required
-                                            style = {{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
-                                        />
-                                    </label>
-
-                                        <label style={{ display: "grid", gap: 6 }}>
-                                            <span>Date</span>
-                                            <input
-                                                type = "date"
-                                                value = {editDate}
-                                                onChange = {(e) => setEditDate(e.target.value)}
-                                                required
-                                                style = {{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
-                                            />
-                                        </label>
-
-                                        <label style={{ display: "grid", gap: 6 }}>
-                                            <span>Notes</span>
-                                            <textarea
-                                                value = {editNotes}
-                                                onChange = {(e) => setEditNotes(e.target.value)}
-                                                rows = {3}
-                                                style = {{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
-                                            />
-                                        </label>
-
-                                        {updateSessionError && (
-                                            <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-                                                {updateSessionError}
-                                            </div>
-                                        )}
-
-                                        <div style = {{ display: "flex", gap: 10}}>
-                                            <button
-                                                type = "submit"
-                                                disabled = {updatingSession}
-                                                style = {{
-                                                    padding: "10px 14px",
-                                                    borderRadius: 10,
-                                                    border: "1px solid #d0d0d0",
-                                                    background: "#fff",
-                                                    cursor: updatingSession ? "not-allowed" : "pointer",
-                                                    fontWeight: 700,
-                                                    color: cardText,
-                                                }}
-                                            >
-                                                {updatingSession ? "Saving..." : "Save Changes"}
-                                            </button>
-
-                                            <button
-                                                type = "button"
-                                                onClick = {() => {
-                                                    setIsEditingSession(false);
-                                                    setEditSplit(session.split ?? "");
-                                                    setEditDate(session.date ?? "");
-                                                    setEditNotes(session.notes ?? "");
-                                                    setUpdateSessionError(null);
-                                                }}
-                                                style = {{
-                                                    padding: "10px 14px",
-                                                    borderRadius: 10,
-                                                    border: "1px solid #d0d0d0",
-                                                    background: "#fff",
-                                                    cursor: "pointer",
-                                                    fontWeight: 700,
-                                                    color: cardText,
-                                                }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                )}
-                            </div>
-
-                            {!isEditingSession && (
-                                <div style = {{ display: "flex", gap: 10 }}>
-                                    <button
-                                        type = "button"
-                                        onClick = {() => {
-                                            setIsEditingSession(true);
-                                            setUpdateSessionError(null);
-                                        }}
-                                        style = {{
-                                            padding: "10px 14px",
-                                            borderRadius: 10,
-                                            border: "1px solid #d0d0d0",
-                                            background: "#fff",
-                                            cursor: "pointer",
-                                            fontWeight: 700,
-                                            color: cardText,
-                                        }}
-                                    >
-                                        Edit Session
-                                    </button>
-
-                                    <button
-                                        type = "button"
-                                        onClick = {handleDeleteSession}
-                                        disabled = {deletingSession}
-                                        style = {{
-                                            padding: "10px 14px",
-                                            borderRadius: 10,
-                                            border: "1px solid #d0d0d0",
-                                            background: "#fff",
-                                            cursor: deletingSession ? "not-allowed" : "pointer",
-                                            fontWeight: 700,
-                                            color: cardText,
-                                        }}
-                                    >
-                                        {deletingSession ? "Deleting..." : "Delete Session"}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {deleteSessionError && (
-                            <div style = {{ color: "crimson" , whiteSpace: "pre-wrap", marginTop: 12 }}>
-                                {deleteSessionError}
-                            </div>
-                            )}
-                        </section>
+      <SessionHeader
+        split={session.split}
+        date={session.date}
+        notes={session.notes}
+        cardText={cardText}
+        isEditingSession={isEditingSession}
+        setIsEditingSession={setIsEditingSession}
+        editSplit={editSplit}
+        setEditSplit={setEditSplit}
+        editDate={editDate}
+        setEditDate={setEditDate}
+        editNotes={editNotes}
+        setEditNotes={setEditNotes}
+        updatingSession={updatingSession}
+        updateSessionError={updateSessionError}
+        handleUpdateSession={handleUpdateSession}
+        setUpdateSessionError={setUpdateSessionError}
+        deletingSession={deletingSession}
+        deleteSessionError={deleteSessionError}
+        handleDeleteSession={handleDeleteSession}
+/>
 
       <section
         style={{
