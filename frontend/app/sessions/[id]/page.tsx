@@ -46,6 +46,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [deleteExerciseError, setDeleteExerciseError] = useState<string | null>(null);
   const [deletingSetById, setDeletingSetById] = useState<Record<number, boolean>>({});
   const [deleteSetError, setDeleteSetError] = useState<string | null>(null);
+  const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
     Record<
@@ -315,26 +316,38 @@ async function handleDeleteSet(setId: number) {
         ← Back to Sessions
       </a>
 
-      <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 8 }}>
-        {session.split}
-      </h1>
+      <section
+        style = {{
+            border: "1px solid #ddd",
+            borderRadius: 16,
+            padding: 20,
+            marginBottom:24,
+            background: "#fafafa",
+            color: cardText,
+            }}
+        >
+        <h1 style = {{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0"}}>
+            {session.split}
+            </h1>
 
-      <p style={{ marginBottom: 8 }}>
-        <strong>Date:</strong> {session.date}
-      </p>
-
-      {session.notes && (
-        <p style={{ marginBottom: 20 }}>
-          <strong>Notes:</strong> {session.notes}
+        <p style = {{ margin: "0 0 8px 0", color: "#555" }}>
+            {session.date}
         </p>
-      )}
+            {session.notes && (
+                <p style = {{ margin: 0, lineHeight: 1.5}}>
+                    <strong>Notes:</strong> {session.notes}
+                </p>
+                )}
+            </section>
 
       <section
         style={{
           border: "1px solid #ddd",
-          borderRadius: 12,
-          padding: 16,
-          marginBottom: 24,
+          borderRadius: 16,
+          padding: 18,
+          marginBottom: 28,
+          background: "#fff",
+          color: cardText,
         }}
       >
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>
@@ -412,8 +425,11 @@ async function handleDeleteSet(setId: number) {
               key={exercise.id}
               style={{
                 border: "1px solid #ddd",
-                borderRadius: 12,
-                padding: 16,
+                borderRadius: 16,
+                padding: 18,
+                background: "#fff",
+                color: cardText,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
               }}
             >
               <div
@@ -425,7 +441,7 @@ async function handleDeleteSet(setId: number) {
                     gap: 12,
                     }}
                 >
-                 <h3 style = {{ fontSize: 18, fontWeight: 700, margin: 0}}>
+                 <h3 style = {{ fontSize: 20, fontWeight: 700, margin: 0}}>
                     {exercise.exercise}
                  </h3>
 
@@ -436,9 +452,10 @@ async function handleDeleteSet(setId: number) {
                     style = {{
                         padding: "8px 12px",
                         borderRadius: 8,
-                        border: "1px solid #ccc",
+                        border: "1px solid #d0d0d0",
+                        background: "#fff",
                         cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
-                        fontWeight: 700,
+                        fontWeight: 600,
                         }}
                     >
                         {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
@@ -446,20 +463,22 @@ async function handleDeleteSet(setId: number) {
                  </div>
 
               {exercise.order_index !== undefined && (
-                <p style={{ marginBottom: 10 }}>
-                  <strong>Order:</strong> {exercise.order_index}
+                  <p style = {{ margin: "0 0 14px 0", color: "#666" }}>
+                    Order {exercise.order_index}
                 </p>
               )}
 
             <section
                 style = {{
                 border: "1px solid #eee",
-                borderRadius: 10,
-                padding: 12,
-                marginBottom: 14,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 16,
+                background: "#fcfcfc",
+                color: cardText,
                 }}
             >
-                <h4 style = {{ fontSize: 16, fontWeight: 700, marginBottom: 10}}>
+                <h4 style = {{ fontSize: 16, fontWeight: 700, margin: "0 0 12px 0"}}>
                     Add Set
                 </h4>
 
@@ -511,29 +530,32 @@ async function handleDeleteSet(setId: number) {
 
 
               {exercise.sets.length === 0 ? (
-                <p>No sets yet.</p>
+                <p style = {{ color: "#666", marginTop: 8 }}>No sets yet.</p>
               ) : (
-                <div style={{ display: "grid", gap: 8 }}>
+                <div style={{ display: "grid", gap: 10 }}>
                   {exercise.sets.map((set) => (
                     <div
-                      key={set.id}
+                      key= {set.id}
                       style={{
-                        padding: 10,
+                        padding: "12px 14px",
                         border: "1px solid #eee",
-                        borderRadius: 8,
+                        borderRadius: 10,
+                        background: "#fafafa",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 12,
                       }}
-                    >
-                      <div
-                      style = {{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: 12,
-                          marginBottom: 6,
-                          }}
+
                     >
                       <div>
                         <strong>Set {set.set_number ?? "?"}</strong>
+                        <span style = {{ marginLeft: 10}}>
+                            {set.reps !== undefined ? `${set.reps} reps` : ""}
+                            {set.weight !== undefined ? ` @ ${set.weight}` : ""}
+                            {set.time_seconds !== undefined ? ` · ${set.time_seconds}s` : ""}
+                            {set.intensity ? ` · ${set.intensity}` : ""}
+                        </span>
                       </div>
 
                       <button
@@ -544,24 +566,17 @@ async function handleDeleteSet(setId: number) {
                             padding: "6px 10px",
                             borderRadius: 8,
                             border: "1px solid #ccc",
+                            background: "#fff",
                             cursor: deletingSetById[set.id] ? "not-allowed" : "pointer",
-                            fontWeight: 700,
+                            fontWeight: 600,
                             }}
                         >
                         {deletingSetById[set.id] ? "Deleting..." : "Delete Set"}
                         </button>
                         </div>
-
-                      {set.reps !== undefined && <div>Reps: {set.reps}</div>}
-                      {set.weight !== undefined && <div>Weight: {set.weight}</div>}
-                      {set.time_seconds !== undefined && (
-                        <div>Time: {set.time_seconds}s</div>
-                      )}
-                      {set.intensity && <div>Intensity: {set.intensity}</div>}
+                        ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                    )}
             </section>
           ))}
         </div>
