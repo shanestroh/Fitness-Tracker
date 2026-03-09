@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type SetEntry = {
     id: number;
@@ -33,6 +34,7 @@ type SessionPageProps = {
 };
 
 export default function SessionPage({ params }: SessionPageProps) {
+  const router = useRouter();
   const [sessionId, setSessionId] = useState<string>("");
   const [session, setSession] = useState<SessionFull | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +48,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [deleteExerciseError, setDeleteExerciseError] = useState<string | null>(null);
   const [deletingSetById, setDeletingSetById] = useState<Record<number, boolean>>({});
   const [deleteSetError, setDeleteSetError] = useState<string | null>(null);
+  const [deletingSession, setDeletingSession] = useState(false);
+  const [deleteSessionError, setDeleteSessionError] = useState<string | null>(null);
   const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
@@ -284,6 +288,33 @@ async function handleDeleteSet(setId: number) {
   }
 }
 
+async function handleDeleteSession() {
+  if (!sessionId) return;
+
+  const confirmed = window.confirm("Are you sure you want to delete this session?");
+  if (!confirmed) return;
+
+  setDeleteSessionError(null);
+  setDeletingSession(true);
+
+  try {
+    const res = await fetch(`http://localhost:8000/sessions/${sessionId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to delete session: ${res.status}`);
+    }
+
+    router.push("/sessions");
+  } catch (err: any) {
+    setDeleteSessionError(err?.message ?? "Failed to delete session");
+  } finally {
+    setDeletingSession(false);
+  }
+}
+
   if (loading) {
     return (
       <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
@@ -326,6 +357,16 @@ async function handleDeleteSet(setId: number) {
             color: cardText,
             }}
         >
+        <div
+            style = {{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 16,
+                marginBottom: 8,
+                }}
+            >
+            <div>
         <h1 style = {{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0"}}>
             {session.split}
             </h1>
@@ -333,10 +374,36 @@ async function handleDeleteSet(setId: number) {
         <p style = {{ margin: "0 0 8px 0", color: "#555" }}>
             {session.date}
         </p>
+
+        </div>
+
+        <button
+            type = "button"
+            onClick = {handleDeleteSession}
+            disabled = {deletingSession}
+            style = {{
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid #d0d0d0",
+                background: "#fff",
+                cursor: deletingSession ? "not-allowed" : "pointer",
+                fontWeight: 700,
+                color: cardText,
+                }}
+            >
+                {deletingSession ? "Deleting..." : "Delete Session"}
+                </button>
+                </div>
+
             {session.notes && (
                 <p style = {{ margin: 0, lineHeight: 1.5}}>
                     <strong>Notes:</strong> {session.notes}
                 </p>
+                )}
+            {deleteSessionError && (
+                <div style = {{ color: "crimson", whiteSpace: "pre-wrap", marginTop: 12 }}>
+                    {deleteSessionError}
+                </div>
                 )}
             </section>
 
