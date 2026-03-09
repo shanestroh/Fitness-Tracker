@@ -56,6 +56,13 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [editNotes, setEditNotes] = useState("");
   const [updatingSession, setUpdatingSession] = useState(false);
   const [updateSessionError, setUpdateSessionError] = useState<string | null>(null);
+  const [editingSetId, setEditingSetId] = useState<number | null>(null);
+  const [editSetReps, setEditSetReps] = useState("");
+  const [editSetWeight, setEditSetWeight] = useState("");
+  const [editSetTimeSeconds, setEditSetTimeSeconds] = useState("");
+  const [editSetIntensity, setEditSetIntensity] = useState("");
+  const [updatingSet, setUpdatingSet] = useState(false);
+  const [updateSetError, setUpdateSetError] = useState<string | null>(null);
   const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
@@ -294,6 +301,58 @@ async function handleDeleteSet(setId: number) {
       ...prev,
       [setId]: false,
     }));
+  }
+}
+
+function startEditingSet(set: SetEntry) {
+  setEditingSetId(set.id);
+  setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
+  setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
+  setEditSetTimeSeconds(set.time_seconds !== undefined ? String(set.time_seconds) : "");
+  setEditSetIntensity(set.intensity ?? "");
+  setUpdateSetError(null);
+}
+
+async function handleUpdateSet(e: React.FormEvent) {
+  e.preventDefault();
+
+  if (editingSetId === null) return;
+
+  setUpdateSetError(null);
+  setUpdatingSet(true);
+
+  const payload: {
+    reps?: number;
+    weight?: number;
+    time_seconds?: number;
+    intensity?: string;
+  } = {};
+
+  if (editSetReps.trim()) payload.reps = Number(editSetReps);
+  if (editSetWeight.trim()) payload.weight = Number(editSetWeight);
+  if (editSetTimeSeconds.trim()) payload.time_seconds = Number(editSetTimeSeconds);
+  if (editSetIntensity.trim()) payload.intensity = editSetIntensity.trim();
+
+  try {
+    const res = await fetch(`http://localhost:8000/sets/${editingSetId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to update set: ${res.status}`);
+    }
+
+    await loadSession(sessionId);
+    setEditingSetId(null);
+  } catch (err: any) {
+    setUpdateSetError(err?.message ?? "Failed to update set");
+  } finally {
+    setUpdatingSet(false);
   }
 }
 
@@ -764,40 +823,148 @@ async function handleUpdateSession(e: React.FormEvent) {
                         border: "1px solid #eee",
                         borderRadius: 10,
                         background: "#fafafa",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: 12,
+                        color: cardText,
                       }}
-
                     >
-                      <div>
-                        <strong>Set {set.set_number ?? "?"}:</strong>
-                        <span style = {{ marginLeft: 12}}>
-                            {set.reps !== undefined ? `${set.reps} reps` : ""}
-                            {set.weight !== undefined ? ` @ ${set.weight} lb` : ""}
-                            {set.time_seconds !== undefined ? ` · ${set.time_seconds}s` : ""}
-                            {set.intensity ? ` · ${set.intensity}` : ""}
-                        </span>
-                      </div>
+                      {editingSetId === set.id ? (
+                          <form onSubmit = {handleUpdateSet} style = {{ display: "grid", gap: 10}}>
+                            <div style = {{ fontWeight: 700 }}>Edit Set {set.set_number ?? "?"}</div>
 
-                      <button
-                        type = "button"
-                        onClick = {() => handleDeleteSet(set.id)}
-                        disabled = {deletingSetById[set.id]}
-                        style = {{
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "1px solid #ccc",
-                            background: "#fff",
-                            cursor: deletingSetById[set.id] ? "not-allowed" : "pointer",
-                            fontWeight: 600,
+                            <label style= {{ display: "grid", gap: 4}}>
+                                <span>Reps</span>
+                                <input
+                                    type = "number"
+                                    value = {editSetReps}
+                                    onChange = {(e) => setEditSetReps(e.target.value)}
+                                    style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                                />
+                            </label>
+
+                            <label style = {{ display: "grid", gap: 4}}>
+                                <span>Weight</span>
+                                <input
+                                    type = "number"
+                                    value = {editSetWeight}
+                                    onChange = {(e) => setEditSetWeight(e.target.value)}
+                                    style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                                />
+                            </label>
+
+                            <label style = {{ display: "grid", gap: 4}}>
+                                <span>Time in Seconds</span>
+                                <input
+                                    type = "number"
+                                    value = {editSetTimeSeconds}
+                                    onChange = {(e) => setEditSetTimeSeconds(e.target.value)}
+                                    style = {{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                                />
+                            </label>
+
+                            <label style = {{ display: "grid", gap: 4 }}>
+                                <span>Intensity</span>
+                                <input
+                                    value={editSetIntensity}
+                                    onChange={(e) => setEditSetIntensity(e.target.value)}
+                                    style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                                />
+                            </label>
+
+                            {updateSetError && (
+                                <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
+                                    {updateSetError}
+                                </div>
+                            )}
+
+                            <div style={{ display: "flex", gap: 10 }}>
+                                <button
+                                    type="submit"
+                                    disabled={updatingSet}
+                                    style={{
+                                        padding: "8px 12px",
+                                        borderRadius: 8,
+                                        border: "1px solid #ccc",
+                                        background: "#fff",
+                                        cursor: updatingSet ? "not-allowed" : "pointer",
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {updatingSet ? "Saving..." : "Save"}
+                                </button>
+
+                                <button
+                                    type = "button"
+                                    onClick = {() => {
+                                        setEditingSetId(null);
+                                        setUpdateSetError(null);
+                                    }}
+                                    style = {{
+                                        padding: "8px 12px",
+                                        borderRadius: 8,
+                                        border: "1px solid #ccc",
+                                        background: "#fff",
+                                        cursor: "pointer",
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                          </form>
+                      ) : (
+                          <div
+                            style = {{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 12,
                             }}
                         >
-                        {deletingSetById[set.id] ? "Deleting..." : "Delete Set"}
-                        </button>
+                            <div>
+                                <strong>Set {set.set_number ?? "?"}:</strong>
+                                <span style={{ marginLeft: 12 }}>
+                                    {set.reps !== undefined ? `${set.reps} reps` : ""}
+                                    {set.weight !== undefined ? ` @ ${set.weight} lb` : ""}
+                                    {set.time_seconds !== undefined ? ` · ${set.time_seconds}s` : ""}
+                                    {set.intensity ? ` · ${set.intensity}` : ""}
+                                </span>
+                            </div>
+
+                            <div style={{ display: "flex", gap: 8 }}>
+                                <button
+                                    type = "button"
+                                    onClick = {() => startEditingSet(set)}
+                                    style = {{
+                                        padding: "6px 10px",
+                                        borderRadius: 8,
+                                        border: "1px solid #ccc",
+                                        background: "#fff",
+                                        cursor: "pointer",
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    Edit Set
+                                </button>
+
+                                <button
+                                    type = "button"
+                                    onClick = {() => handleDeleteSet(set.id)}
+                                    disabled = {deletingSetById[set.id]}
+                                    style = {{
+                                        padding: "6px 10px",
+                                        borderRadius: 8,
+                                        border: "1px solid #ccc",
+                                        background: "#fff",
+                                        cursor: deletingSetById[set.id] ? "not-allowed" : "pointer",
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {deletingSetById[set.id] ? "Deleting..." : "Delete Set"}
+                                </button>
+                            </div>
                         </div>
-                        ))}
+                      )}
+                  </div>
+                  ))}
                     </div>
                     )}
             </section>

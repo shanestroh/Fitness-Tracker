@@ -141,9 +141,17 @@ def update_set_entry(
     set_id: int,
     payload: UpdateSetEntry,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    #current_user: User = Depends(get_current_user),
 ):
-    set_row = get_owned_set_entry(set_id, db, current_user)
+    set_row = (
+        db.query(SetEntry)
+        .join(ExerciseEntry, ExerciseEntry.id == SetEntry.exercise_entry_id)
+        .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)
+        .filter(SetEntry.id == set_id, WorkoutSession.user_id == 1)
+        .first()
+    )
+    if set_row is None:
+        raise HTTPException(status_code=404, detail="Set Entry Not Found")
 
     data = payload.model_dump(exclude_unset=True)
     #Optional: if you used Optional fields defaulting to None, also exclude None:
