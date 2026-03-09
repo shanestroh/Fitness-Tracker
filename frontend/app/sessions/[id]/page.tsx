@@ -50,6 +50,12 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [deleteSetError, setDeleteSetError] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState(false);
   const [deleteSessionError, setDeleteSessionError] = useState<string | null>(null);
+  const [isEditingSession, setIsEditingSession] = useState(false);
+  const [editSplit, setEditSplit] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [updatingSession, setUpdatingSession] = useState(false);
+  const [updateSessionError, setUpdateSessionError] = useState<string | null>(null);
   const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
@@ -83,6 +89,9 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       const data = await res.json();
       setSession(data);
+      setEditSplit(data.split ?? "");
+      setEditDate(data.date ?? "");
+      setEditNotes(data.notes ?? "");
     } catch (err: any) {
       setPageError(err?.message ?? "Failed to load session");
     } finally {
@@ -315,6 +324,47 @@ async function handleDeleteSession() {
   }
 }
 
+async function handleUpdateSession(e: React.FormEvent) {
+  e.preventDefault();
+
+  if (!sessionId) return;
+
+  setUpdateSessionError(null);
+  setUpdatingSession(true);
+
+  const payload: {
+    split?: string;
+    date?: string;
+    notes?: string;
+  } = {
+    split: editSplit,
+    date: editDate,
+    notes: editNotes.trim(),
+  };
+
+  try {
+    const res = await fetch(`http://localhost:8000/sessions/${sessionId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to update session: ${res.status}`);
+    }
+
+    await loadSession(sessionId);
+    setIsEditingSession(false);
+  } catch (err: any) {
+    setUpdateSessionError(err?.message ?? "Failed to update session");
+  } finally {
+    setUpdatingSession(false);
+  }
+}
+
   if (loading) {
     return (
       <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
@@ -363,49 +413,155 @@ async function handleDeleteSession() {
                 justifyContent: "space-between",
                 alignItems: "flex-start",
                 gap: 16,
-                marginBottom: 8,
+                marginBottom: 12,
                 }}
             >
-            <div>
-        <h1 style = {{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0"}}>
-            {session.split}
-            </h1>
+                <div style = {{ flex: 1 }}>
+                    {!isEditingSession ? (
+                        <>
+                            <h1 style = {{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0"}}>
+                                {session.split}
+                            </h1>
 
-        <p style = {{ margin: "0 0 8px 0", color: "#555" }}>
-            {session.date}
-        </p>
+                            <p style = {{ margin: "0 0 8px 0", color: "#555" }}>
+                                {session.date}
+                            </p>
 
-        </div>
+                            {session.notes && (
+                                <p style ={{ margin: 0, lineHeight: 1.5 }}>
+                                    <strong>Notes:</strong> {session.notes}
+                                </p>
+                                )}
+                            </>
+                            ) : (
+                                <form onSubmit={handleUpdateSession} style={{ display: "grid", gap: 12 }}>
+                                    <label style={{ display: "grid", gap: 6}}>
+                                        <span>Split</span>
+                                        <input
+                                            value = {editSplit}
+                                            onChange = {(e) => setEditSplit(e.target.value)}
+                                            required
+                                            style = {{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                                        />
+                                    </label>
 
-        <button
-            type = "button"
-            onClick = {handleDeleteSession}
-            disabled = {deletingSession}
-            style = {{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid #d0d0d0",
-                background: "#fff",
-                cursor: deletingSession ? "not-allowed" : "pointer",
-                fontWeight: 700,
-                color: cardText,
-                }}
-            >
-                {deletingSession ? "Deleting..." : "Delete Session"}
-                </button>
-                </div>
+                                        <label style={{ display: "grid", gap: 6 }}>
+                                            <span>Date</span>
+                                            <input
+                                                type = "date"
+                                                value = {editDate}
+                                                onChange = {(e) => setEditDate(e.target.value)}
+                                                required
+                                                style = {{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                                            />
+                                        </label>
 
-            {session.notes && (
-                <p style = {{ margin: 0, lineHeight: 1.5}}>
-                    <strong>Notes:</strong> {session.notes}
-                </p>
-                )}
-            {deleteSessionError && (
-                <div style = {{ color: "crimson", whiteSpace: "pre-wrap", marginTop: 12 }}>
-                    {deleteSessionError}
-                </div>
-                )}
-            </section>
+                                        <label style={{ display: "grid", gap: 6 }}>
+                                            <span>Notes</span>
+                                            <textarea
+                                                value = {editNotes}
+                                                onChange = {(e) => setEditNotes(e.target.value)}
+                                                rows = {3}
+                                                style = {{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                                            />
+                                        </label>
+
+                                        {updateSessionError && (
+                                            <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
+                                                {updateSessionError}
+                                            </div>
+                                        )}
+
+                                        <div style = {{ display: "flex", gap: 10}}>
+                                            <button
+                                                type = "submit"
+                                                disabled = {updatingSession}
+                                                style = {{
+                                                    padding: "10px 14px",
+                                                    borderRadius: 10,
+                                                    border: "1px solid #d0d0d0",
+                                                    background: "#fff",
+                                                    cursor: updatingSession ? "not-allowed" : "pointer",
+                                                    fontWeight: 700,
+                                                    color: cardText,
+                                                }}
+                                            >
+                                                {updatingSession ? "Saving..." : "Save Changes"}
+                                            </button>
+
+                                            <button
+                                                type = "button"
+                                                onClick = {() => {
+                                                    setIsEditingSession(false);
+                                                    setEditSplit(session.split ?? "");
+                                                    setEditDate(session.date ?? "");
+                                                    setEditNotes(session.notes ?? "");
+                                                    setUpdateSessionError(null);
+                                                }}
+                                                style = {{
+                                                    padding: "10px 14px",
+                                                    borderRadius: 10,
+                                                    border: "1px solid #d0d0d0",
+                                                    background: "#fff",
+                                                    cursor: "pointer",
+                                                    fontWeight: 700,
+                                                    color: cardText,
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+
+                            {!isEditingSession && (
+                                <div style = {{ display: "flex", gap: 10 }}>
+                                    <button
+                                        type = "button"
+                                        onClick = {() => {
+                                            setIsEditingSession(true);
+                                            setUpdateSessionError(null);
+                                        }}
+                                        style = {{
+                                            padding: "10px 14px",
+                                            borderRadius: 10,
+                                            border: "1px solid #d0d0d0",
+                                            background: "#fff",
+                                            cursor: "pointer",
+                                            fontWeight: 700,
+                                            color: cardText,
+                                        }}
+                                    >
+                                        Edit Session
+                                    </button>
+
+                                    <button
+                                        type = "button"
+                                        onClick = {handleDeleteSession}
+                                        disabled = {deletingSession}
+                                        style = {{
+                                            padding: "10px 14px",
+                                            borderRadius: 10,
+                                            border: "1px solid #d0d0d0",
+                                            background: "#fff",
+                                            cursor: deletingSession ? "not-allowed" : "pointer",
+                                            fontWeight: 700,
+                                            color: cardText,
+                                        }}
+                                    >
+                                        {deletingSession ? "Deleting..." : "Delete Session"}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {deleteSessionError && (
+                            <div style = {{ color: "crimson" , whiteSpace: "pre-wrap", marginTop: 12 }}>
+                                {deleteSessionError}
+                            </div>
+                            )}
+                        </section>
 
       <section
         style={{
