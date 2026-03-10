@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { ExerciseEntry, SetEntry } from "@/types/workout";
 import SetRow from "./SetRow";
 
@@ -92,6 +95,8 @@ export default function ExerciseCard({
   startEditingExercise,
   handleUpdateExercise,
 }: ExerciseCardProps) {
+    const [showAddSetForm, setShowAddSetForm] = useState(false);
+
   return (
     <section
       style={{
@@ -167,8 +172,9 @@ export default function ExerciseCard({
     }}
   >
     <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-      {exercise.exercise}
-    </h3>
+            {exercise.order_index !== undefined ? `${exercise.order_index}. ` : ""}
+            {exercise.exercise}
+          </h3>
 
     <div style={{ display: "flex", gap: 8 }}>
       <button
@@ -204,76 +210,10 @@ export default function ExerciseCard({
     </div>
   </div>
 )}
-
-      {exercise.order_index !== undefined && (
-        <p style={{ margin: "0 0 14px 0", color: "#666" }}>
-          Order {exercise.order_index}
-        </p>
-      )}
-
-      <section
-        style={{
-          border: "1px solid #eee",
-          borderRadius: 12,
-          padding: 14,
-          marginBottom: 16,
-          background: "#fcfcfc",
-          color: cardText,
-        }}
-      >
-        <h4 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px 0" }}>
-          Add Set
-        </h4>
-
-        <form onSubmit={(e) => handleAddSet(e, exercise.id)} style={{ display: "grid", gap: 10 }}>
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Reps</span>
-            <input
-              type="number"
-              value={setFormByExercise[exercise.id]?.reps ?? ""}
-              onChange={(e) => updateSetForm(exercise.id, "reps", e.target.value)}
-              placeholder="10"
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
-            />
-          </label>
-
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Weight</span>
-            <input
-              type="number"
-              value={setFormByExercise[exercise.id]?.weight ?? ""}
-              onChange={(e) => updateSetForm(exercise.id, "weight", e.target.value)}
-              placeholder="135"
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={addingSetByExercise[exercise.id]}
-            style={{
-              padding: 10,
-              borderRadius: 8,
-              border: "none",
-              cursor: addingSetByExercise[exercise.id] ? "not-allowed" : "pointer",
-              fontWeight: 700,
-            }}
-          >
-            {addingSetByExercise[exercise.id] ? "Adding..." : "Add Set"}
-          </button>
-        </form>
-
-        {setErrorByExercise[exercise.id] && (
-          <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-            {setErrorByExercise[exercise.id]}
-          </div>
-        )}
-      </section>
-
-      {exercise.sets.length === 0 ? (
+{exercise.sets.length === 0 ? (
         <p style={{ color: "#666", marginTop: 8 }}>No sets yet.</p>
       ) : (
-        <div style={{ display: "grid", gap: 10 }}>
+        <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
           {exercise.sets.map((set) => (
             <SetRow
               key={set.id}
@@ -300,6 +240,104 @@ export default function ExerciseCard({
           ))}
         </div>
       )}
+
+      <div style={{ marginTop: 16 }}>
+        {!showAddSetForm ? (
+          <button
+            type="button"
+            onClick={() => setShowAddSetForm(true)}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 8,
+              border: "1px solid #d0d0d0",
+              background: "#fff",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Add Set
+          </button>
+        ) : (
+      <section
+        style={{
+          border: "1px solid #eee",
+          borderRadius: 12,
+          padding: 14,
+          marginBottom: 16,
+          background: "#fcfcfc",
+          color: cardText,
+        }}
+      >
+        <h4 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px 0" }}>
+          Add Set
+        </h4>
+
+        <form
+              onSubmit={(e) => handleAddSet(e, exercise.id)}
+              style={{ display: "grid", gap: 10 }}
+            >
+              <label style={{ display: "grid", gap: 4 }}>
+                <span>Reps</span>
+                <input
+                  type="number"
+                  value={setFormByExercise[exercise.id]?.reps ?? ""}
+                  onChange={(e) => updateSetForm(exercise.id, "reps", e.target.value)}
+                  placeholder="10"
+                  style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                />
+              </label>
+
+          <label style={{ display: "grid", gap: 4 }}>
+            <span>Weight</span>
+            <input
+              type="number"
+              value={setFormByExercise[exercise.id]?.weight ?? ""}
+              onChange={(e) => updateSetForm(exercise.id, "weight", e.target.value)}
+              placeholder="135"
+              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+            />
+          </label>
+
+          <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="submit"
+                  disabled={addingSetByExercise[exercise.id]}
+                  style={{
+                    padding: 10,
+                    borderRadius: 8,
+                    border: "none",
+                    cursor: addingSetByExercise[exercise.id] ? "not-allowed" : "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  {addingSetByExercise[exercise.id] ? "Adding..." : "Save Set"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddSetForm(false)}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    border: "1px solid #d0d0d0",
+                    background: "#fff",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+
+            {setErrorByExercise[exercise.id] && (
+              <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginTop: 10 }}>
+                {setErrorByExercise[exercise.id]}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
     </section>
   );
 }
