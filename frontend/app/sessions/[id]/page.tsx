@@ -44,6 +44,10 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [editSetIntensity, setEditSetIntensity] = useState("");
   const [updatingSet, setUpdatingSet] = useState(false);
   const [updateSetError, setUpdateSetError] = useState<string | null>(null);
+  const [editingExerciseId, setEditingExerciseId] = useState<number | null>(null);
+  const [editExerciseName, setEditExerciseName] = useState("");
+  const [updatingExercise, setUpdatingExercise] = useState(false);
+  const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
@@ -405,6 +409,45 @@ async function handleUpdateSession(e: React.FormEvent) {
   }
 }
 
+function startEditingExercise(exercise: { id: number; exercise: string }) {
+  setEditingExerciseId(exercise.id);
+  setEditExerciseName(exercise.exercise);
+  setUpdateExerciseError(null);
+}
+
+async function handleUpdateExercise(exerciseId: number) {
+  if (!sessionId) return;
+
+  setUpdateExerciseError(null);
+  setUpdatingExercise(true);
+
+  const payload = {
+    exercise: editExerciseName,
+  };
+
+  try {
+    const res = await fetch(`http://localhost:8000/exercises/${exerciseId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to update exercise: ${res.status}`);
+    }
+
+    await loadSession(sessionId);
+    setEditingExerciseId(null);
+  } catch (err: any) {
+    setUpdateExerciseError(err?.message ?? "Failed to update exercise");
+  } finally {
+    setUpdatingExercise(false);
+  }
+}
+
   if (loading) {
     return (
       <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
@@ -520,6 +563,15 @@ async function handleUpdateSession(e: React.FormEvent) {
                 deletingSetById={deletingSetById}
                 setEditingSetId={setEditingSetId}
                 setUpdateSetError={setUpdateSetError}
+                editingExerciseId={editingExerciseId}
+                editExerciseName={editExerciseName}
+                setEditExerciseName={setEditExerciseName}
+                updatingExercise={updatingExercise}
+                updateExerciseError={updateExerciseError}
+                setUpdateExerciseError={setUpdateExerciseError}
+                setEditingExerciseId={setEditingExerciseId}
+                startEditingExercise={startEditingExercise}
+                handleUpdateExercise={handleUpdateExercise}
             />
           ))}
         </div>

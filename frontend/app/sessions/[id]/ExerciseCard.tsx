@@ -43,6 +43,16 @@ type ExerciseCardProps = {
   deletingSetById: Record<number, boolean>;
   setEditingSetId: (id: number | null) => void;
   setUpdateSetError: (value: string | null) => void;
+  editingExerciseId: number | null;
+  editExerciseName: string;
+  setEditExerciseName: (value: string) => void;
+  updatingExercise: boolean;
+  updateExerciseError: string | null;
+  setUpdateExerciseError: (value: string | null) => void;
+  setEditingExerciseId: (id: number | null) => void;
+  startEditingExercise: (exercise: ExerciseEntry) => void;
+  handleUpdateExercise: (exerciseId: number) => Promise<void>;
+
 };
 
 export default function ExerciseCard({
@@ -72,6 +82,15 @@ export default function ExerciseCard({
   deletingSetById,
   setEditingSetId,
   setUpdateSetError,
+  editingExerciseId,
+  editExerciseName,
+  setEditExerciseName,
+  updatingExercise,
+  updateExerciseError,
+  setUpdateExerciseError,
+  setEditingExerciseId,
+  startEditingExercise,
+  handleUpdateExercise,
 }: ExerciseCardProps) {
   return (
     <section
@@ -84,35 +103,107 @@ export default function ExerciseCard({
         boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
       }}
     >
-      <div
+{editingExerciseId === exercise.id ? (
+  <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
+    <label style={{ display: "grid", gap: 6 }}>
+      <span>Exercise name</span>
+      <input
+        value={editExerciseName}
+        onChange={(e) => setEditExerciseName(e.target.value)}
+        style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+      />
+    </label>
+
+    {updateExerciseError && (
+      <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
+        {updateExerciseError}
+      </div>
+    )}
+
+    <div style={{ display: "flex", gap: 10 }}>
+      <button
+        type="button"
+        onClick={() => handleUpdateExercise(exercise.id)}
+        disabled={updatingExercise}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 10,
-          gap: 12,
+          padding: "8px 12px",
+          borderRadius: 8,
+          border: "1px solid #d0d0d0",
+          background: "#fff",
+          cursor: updatingExercise ? "not-allowed" : "pointer",
+          fontWeight: 600,
         }}
       >
-        <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-          {exercise.exercise}
-        </h3>
+        {updatingExercise ? "Saving..." : "Save"}
+      </button>
 
-        <button
-          type="button"
-          onClick={() => handleDeleteExercise(exercise.id)}
-          disabled={deletingExerciseById[exercise.id]}
-          style={{
-            padding: "8px 12px",
-            borderRadius: 8,
-            border: "1px solid #d0d0d0",
-            background: "#fff",
-            cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
-            fontWeight: 600,
-          }}
-        >
-          {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setEditingExerciseId(null);
+          setUpdateExerciseError(null);
+        }}
+        style={{
+          padding: "8px 12px",
+          borderRadius: 8,
+          border: "1px solid #d0d0d0",
+          background: "#fff",
+          cursor: "pointer",
+          fontWeight: 600,
+        }}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+) : (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+      gap: 12,
+    }}
+  >
+    <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+      {exercise.exercise}
+    </h3>
+
+    <div style={{ display: "flex", gap: 8 }}>
+      <button
+        type="button"
+        onClick={() => startEditingExercise(exercise)}
+        style={{
+          padding: "8px 12px",
+          borderRadius: 8,
+          border: "1px solid #d0d0d0",
+          background: "#fff",
+          cursor: "pointer",
+          fontWeight: 600,
+        }}
+      >
+        Edit Exercise
+      </button>
+
+      <button
+        type="button"
+        onClick={() => handleDeleteExercise(exercise.id)}
+        disabled={deletingExerciseById[exercise.id]}
+        style={{
+          padding: "8px 12px",
+          borderRadius: 8,
+          border: "1px solid #d0d0d0",
+          background: "#fff",
+          cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
+          fontWeight: 600,
+        }}
+      >
+        {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
+      </button>
+    </div>
+  </div>
+)}
 
       {exercise.order_index !== undefined && (
         <p style={{ margin: "0 0 14px 0", color: "#666" }}>
