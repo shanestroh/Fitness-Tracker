@@ -448,6 +448,79 @@ async function handleUpdateExercise(exerciseId: number) {
   }
 }
 
+async function handleMoveExercise(exerciseId: number, direction: "up" | "down") {
+  if (!sessionId || !session) return;
+
+  const sortedExercises = [...session.exercises].sort((a, b) => {
+    const aIndex = a.order_index ?? 0;
+    const bIndex = b.order_index ?? 0;
+    return aIndex - bIndex;
+  });
+
+  const currentIndex = sortedExercises.findIndex((e) => e.id === exerciseId);
+  if (currentIndex === -1) return;
+
+  const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+  if (targetIndex < 0 || targetIndex >= sortedExercises.length) return;
+
+  const currentExercise = sortedExercises[currentIndex];
+  const targetExercise = sortedExercises[targetIndex];
+
+  const currentOrder = currentExercise.order_index ?? currentIndex + 1;
+  const targetOrder = targetExercise.order_index ?? targetIndex + 1;
+
+  // Temporary value that won't conflict
+  const tempOrder = 9999999;
+
+  try {
+    // Step 1: move current exercise to temp
+    let res = await fetch(`http://localhost:8000/exercises/${currentExercise.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ order_index: tempOrder }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to move exercise: ${res.status}`);
+    }
+
+    // Step 2: move target exercise into current slot
+    res = await fetch(`http://localhost:8000/exercises/${targetExercise.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ order_index: currentOrder }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to move exercise: ${res.status}`);
+    }
+
+    // Step 3: move current exercise into target slot
+    res = await fetch(`http://localhost:8000/exercises/${currentExercise.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ order_index: targetOrder }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to move exercise: ${res.status}`);
+    }
+
+    await loadSession(sessionId);
+  } catch (err: any) {
+    setDeleteExerciseError(err?.message ?? "Failed to reorder exercise");
+  }
+}
+
   if (loading) {
     return (
       <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
@@ -572,6 +645,7 @@ async function handleUpdateExercise(exerciseId: number) {
                 setEditingExerciseId={setEditingExerciseId}
                 startEditingExercise={startEditingExercise}
                 handleUpdateExercise={handleUpdateExercise}
+                handleMoveExercise={handleMoveExercise}
             />
           ))}
         </div>

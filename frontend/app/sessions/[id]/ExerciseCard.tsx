@@ -55,6 +55,7 @@ type ExerciseCardProps = {
   setEditingExerciseId: (id: number | null) => void;
   startEditingExercise: (exercise: ExerciseEntry) => void;
   handleUpdateExercise: (exerciseId: number) => Promise<void>;
+  handleMoveExercise: (exerciseId: number, direction: "up" | "down") => Promise<void>;
 
 };
 
@@ -94,6 +95,7 @@ export default function ExerciseCard({
   setEditingExerciseId,
   startEditingExercise,
   handleUpdateExercise,
+  handleMoveExercise,
 }: ExerciseCardProps) {
     const [showAddSetForm, setShowAddSetForm] = useState(false);
 
@@ -177,6 +179,35 @@ export default function ExerciseCard({
           </h3>
 
     <div style={{ display: "flex", gap: 8 }}>
+      <button
+        type="button"
+        onClick={() => handleMoveExercise(exercise.id, "up")}
+        style={{
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "1px solid #d0d0d0",
+            background: "#fff",
+            cursor: "pointer",
+            fontWeight: 600,
+            }}
+        >
+        ↑
+        </button>
+
+      <button
+        type="button"
+        onClick={() => handleMoveExercise(exercise.id, "down")}
+        style={{
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "1px solid #d0d0d0",
+            background: "#fff",
+            cursor: "pointer",
+            fontWeight: 600,
+        }}
+    >
+        ↓
+        </button>
       <button
         type="button"
         onClick={() => startEditingExercise(exercise)}
