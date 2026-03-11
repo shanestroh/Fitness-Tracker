@@ -607,11 +607,13 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
         <p>No exercises yet.</p>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
-          {session.exercises.map((exercise) => (
+          {session.exercises.map((exercise, index) => (
             <ExerciseCard
                 key={exercise.id}
                 exercise={exercise}
                 cardText={cardText}
+                isFirst={index === 0}
+                isLast={index === session.exercises.length - 1}
                 handleDeleteExercise={handleDeleteExercise}
                 deletingExerciseById={deletingExerciseById}
                 setFormByExercise={setFormByExercise}

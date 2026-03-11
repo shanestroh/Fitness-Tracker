@@ -8,6 +8,9 @@ type ExerciseCardProps = {
   exercise: ExerciseEntry;
   cardText: string;
 
+  isFirst: boolean;
+  isLast: boolean;
+
   handleDeleteExercise: (exerciseId: number) => Promise<void>;
   deletingExerciseById: Record<number, boolean>;
 
@@ -62,6 +65,8 @@ type ExerciseCardProps = {
 export default function ExerciseCard({
   exercise,
   cardText,
+  isFirst,
+  isLast,
   handleDeleteExercise,
   deletingExerciseById,
   setFormByExercise,
@@ -98,7 +103,7 @@ export default function ExerciseCard({
   handleMoveExercise,
 }: ExerciseCardProps) {
     const [showAddSetForm, setShowAddSetForm] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <section
@@ -202,6 +207,7 @@ export default function ExerciseCard({
   </button>
 
     <div style={{ display: "flex", gap: 8 }}>
+    {!isFirst && (
       <button
         type="button"
         onClick={() => handleMoveExercise(exercise.id, "up")}
@@ -216,7 +222,8 @@ export default function ExerciseCard({
         >
         ↑
         </button>
-
+        )}
+    {!isLast && (
       <button
         type="button"
         onClick={() => handleMoveExercise(exercise.id, "down")}
@@ -231,6 +238,7 @@ export default function ExerciseCard({
     >
         ↓
         </button>
+    )}
       <button
         type="button"
         onClick={() => startEditingExercise(exercise)}
