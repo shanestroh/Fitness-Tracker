@@ -98,6 +98,7 @@ export default function ExerciseCard({
   handleMoveExercise,
 }: ExerciseCardProps) {
     const [showAddSetForm, setShowAddSetForm] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <section
@@ -173,10 +174,32 @@ export default function ExerciseCard({
       gap: 12,
     }}
   >
+
+  <button
+    type="button"
+    onClick={() => {
+        setIsExpanded((prev) => {
+            const next = !prev;
+            if (!next) setShowAddSetForm(false);
+            return next;
+        });
+    }}
+    style={{
+        background: "none",
+        border: "none",
+        padding: 0,
+        margin: 0,
+        cursor: "pointer",
+        font: "inherit",
+        color: "inherit",
+        textAlign: "left",
+    }}
+    >
     <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-            {exercise.order_index !== undefined ? `${exercise.order_index}. ` : ""}
-            {exercise.exercise}
-          </h3>
+        {exercise.order_index !== undefined ? `${exercise.order_index}. ` : ""}
+        {exercise.exercise} {isExpanded ? "▼" : "▶"}
+    </h3>
+  </button>
 
     <div style={{ display: "flex", gap: 8 }}>
       <button
@@ -241,7 +264,10 @@ export default function ExerciseCard({
     </div>
   </div>
 )}
-{exercise.sets.length === 0 ? (
+
+{isExpanded && (
+  <>
+    {exercise.sets.length === 0 ? (
         <p style={{ color: "#666", marginTop: 8 }}>No sets yet.</p>
       ) : (
         <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
@@ -369,6 +395,8 @@ export default function ExerciseCard({
           </section>
         )}
       </div>
+    </>
+    )}
     </section>
   );
 }
