@@ -150,7 +150,7 @@ export default function SetRow({
             <strong>Set {set.set_number ?? "?"}:</strong>
             <span style={{ marginLeft: 12 }}>
               {set.reps !== undefined ? `${set.reps} reps` : ""}
-              {set.weight !== undefined ? ` @ ${set.weight} lbs` : ""}
+              {set.weight !== undefined ? ` x ${set.weight} lbs` : ""}
               {set.time_seconds !== undefined ? ` · ${set.time_seconds}s` : ""}
               {set.intensity ? ` · ${set.intensity}` : ""}
             </span>
