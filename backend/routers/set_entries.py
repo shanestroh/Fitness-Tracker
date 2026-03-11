@@ -150,8 +150,6 @@ def update_set_entry(
         raise HTTPException(status_code=404, detail="Set Entry Not Found")
 
     data = payload.model_dump(exclude_unset=True)
-    #Optional: if you used Optional fields defaulting to None, also exclude None:
-    data = {k: v for k, v in data.items() if v is not None}
 
     if not data:
         raise HTTPException(status_code=400, detail="No fields provided to update")

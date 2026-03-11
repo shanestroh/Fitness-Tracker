@@ -363,6 +363,32 @@ export default function ExerciseCard({
             />
           </label>
 
+          <label style={{ display: "grid", gap: 4 }}>
+            <span>Time (seconds)</span>
+            <input
+                type="number"
+                value={setFormByExercise[exercise.id]?.time_seconds ?? ""}
+                onChange={(e) =>
+                    updateSetForm(exercise.id, "time_seconds", e.target.value)
+                }
+                placeholder="Cardio only"
+                style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+            />
+          </label>
+
+          <label style={{ display: "grid", gap: 4 }}>
+            <span>Intensity</span>
+            <input
+                type="text"
+                value={setFormByExercise[exercise.id]?.intensity ?? ""}
+                onChange={(e) =>
+                    updateSetForm(exercise.id, "intensity", e.target.value)
+                }
+                placeholder="Cardio only"
+                style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+            />
+          </label>
+
           <div style={{ display: "flex", gap: 10 }}>
                 <button
                   type="submit"

@@ -299,14 +299,23 @@ async function handleUpdateSet(e: React.FormEvent) {
   const payload: {
     reps?: number;
     weight?: number;
-    time_seconds?: number;
-    intensity?: string;
+    time_seconds?: number | null ;
+    intensity?: string | null;
   } = {};
 
   if (editSetReps.trim()) payload.reps = Number(editSetReps);
   if (editSetWeight.trim()) payload.weight = Number(editSetWeight);
-  if (editSetTimeSeconds.trim()) payload.time_seconds = Number(editSetTimeSeconds);
-  if (editSetIntensity.trim()) payload.intensity = editSetIntensity.trim();
+  if (editSetTimeSeconds.trim() === "" || Number(editSetTimeSeconds) === 0) {
+    payload.time_seconds = null;
+  } else {
+    payload.time_seconds = Number(editSetTimeSeconds);
+  }
+
+  if (editSetIntensity.trim() === "") {
+    payload.intensity = null;
+  } else {
+    payload.intensity = editSetIntensity.trim();
+  }
 
   try {
     const res = await apiFetch(`/sets/${editingSetId}`, {
