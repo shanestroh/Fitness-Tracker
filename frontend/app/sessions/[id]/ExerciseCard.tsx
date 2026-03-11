@@ -133,7 +133,7 @@ export default function ExerciseCard({
       </div>
     )}
 
-    <div style={{ display: "flex", gap: 10 }}>
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
       <button
         type="button"
         onClick={() => handleUpdateExercise(exercise.id)}
@@ -174,9 +174,10 @@ export default function ExerciseCard({
     style={{
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center",
+      alignItems: "flex-start",
       marginBottom: 10,
       gap: 12,
+      flexWrap:"wrap"
     }}
   >
 
@@ -198,6 +199,8 @@ export default function ExerciseCard({
         font: "inherit",
         color: "inherit",
         textAlign: "left",
+        flex: "1 1 220px",
+        minWidth: 0,
     }}
     >
     <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
@@ -206,13 +209,19 @@ export default function ExerciseCard({
     </h3>
   </button>
 
-    <div style={{ display: "flex", gap: 8 }}>
+    <div style={{
+        display: "flex",
+        gap: 8,
+        flexWrap: "wrap",
+        justifyContent: "flex-end",
+        }}
+    >
     {!isFirst && (
       <button
         type="button"
         onClick={() => handleMoveExercise(exercise.id, "up")}
         style={{
-            padding: "8px 12px",
+            padding: "10px 14px",
             borderRadius: 8,
             border: "1px solid #d0d0d0",
             background: "#fff",
@@ -228,7 +237,7 @@ export default function ExerciseCard({
         type="button"
         onClick={() => handleMoveExercise(exercise.id, "down")}
         style={{
-            padding: "8px 12px",
+            padding: "10px 14px",
             borderRadius: 8,
             border: "1px solid #d0d0d0",
             background: "#fff",
@@ -243,7 +252,7 @@ export default function ExerciseCard({
         type="button"
         onClick={() => startEditingExercise(exercise)}
         style={{
-          padding: "8px 12px",
+          padding: "10px 14px",
           borderRadius: 8,
           border: "1px solid #d0d0d0",
           background: "#fff",
@@ -259,7 +268,7 @@ export default function ExerciseCard({
         onClick={() => handleDeleteExercise(exercise.id)}
         disabled={deletingExerciseById[exercise.id]}
         style={{
-          padding: "8px 12px",
+          padding: "10px 14px",
           borderRadius: 8,
           border: "1px solid #d0d0d0",
           background: "#fff",
@@ -348,7 +357,7 @@ export default function ExerciseCard({
                   value={setFormByExercise[exercise.id]?.reps ?? ""}
                   onChange={(e) => updateSetForm(exercise.id, "reps", e.target.value)}
                   placeholder="10"
-                  style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                  style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
                 />
               </label>
 
@@ -359,7 +368,7 @@ export default function ExerciseCard({
               value={setFormByExercise[exercise.id]?.weight ?? ""}
               onChange={(e) => updateSetForm(exercise.id, "weight", e.target.value)}
               placeholder="135"
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+              style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
             />
           </label>
 
@@ -372,7 +381,7 @@ export default function ExerciseCard({
                     updateSetForm(exercise.id, "time_seconds", e.target.value)
                 }
                 placeholder="Cardio only"
-                style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
             />
           </label>
 
@@ -385,11 +394,11 @@ export default function ExerciseCard({
                     updateSetForm(exercise.id, "intensity", e.target.value)
                 }
                 placeholder="Cardio only"
-                style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+                style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
             />
           </label>
 
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button
                   type="submit"
                   disabled={addingSetByExercise[exercise.id]}

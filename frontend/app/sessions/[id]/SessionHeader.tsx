@@ -63,9 +63,10 @@ export default function SessionHeader({
           alignItems: "flex-start",
           gap: 16,
           marginBottom: 12,
+          flexWrap: "wrap"
         }}
       >
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: "1 1 260px", minWidth: 0 }}>
           {!isEditingSession ? (
             <>
               <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0" }}>
@@ -77,7 +78,12 @@ export default function SessionHeader({
               </p>
 
               {notes && (
-                <p style={{ margin: 0, lineHeight: 1.5 }}>
+                <p style={{
+                    margin: 0,
+                    lineHeight: 1.5,
+                    wordBreak: "break-word"
+                    }}
+                >
                   <strong>Notes:</strong> {notes}
                 </p>
               )}
@@ -121,7 +127,7 @@ export default function SessionHeader({
                 </div>
               )}
 
-              <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button
                   type="submit"
                   disabled={updatingSession}

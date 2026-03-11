@@ -109,12 +109,12 @@ export default function NewSessionPage() {
             {error}
           </div>
         )}
-
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <button
           type="submit"
           disabled={loading}
           style={{
-            padding: 12,
+            padding: "12px 16px",
             borderRadius: 10,
             border: "none",
             cursor: loading ? "not-allowed" : "pointer",
@@ -123,6 +123,23 @@ export default function NewSessionPage() {
         >
           {loading ? "Creating..." : "Create Session"}
         </button>
+
+        <button
+            type="button"
+            onClick={() => router.push("/sessions")}
+            style={{
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: "1px solid #d0d0d0",
+                background: "#fff",
+                cursor: "pointer",
+                fontWeight: 700,
+                color: "#444",
+                }}
+            >
+                Cancel
+                </button>
+            </div>
       </form>
     </main>
   );

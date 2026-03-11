@@ -504,7 +504,7 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
+      <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
         <p>Loading session...</p>
       </main>
     );
@@ -512,7 +512,7 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
 
   if (pageError || !session) {
     return (
-      <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
+      <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
         <h1>Session Detail</h1>
         <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
           {pageError ?? "Session not found"}
@@ -522,7 +522,7 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
   }
 
   return (
-    <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
+    <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
       <a
         href="/sessions"
         style={{
