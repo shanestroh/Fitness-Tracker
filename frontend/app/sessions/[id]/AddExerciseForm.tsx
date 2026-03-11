@@ -5,8 +5,6 @@ import {useState } from "react";
 type AddExerciseFormProps = {
   exerciseName: string;
   setExerciseName: (value: string) => void;
-  orderIndex: string;
-  setOrderIndex: (value: string) => void;
   handleAddExercise: (e: React.FormEvent) => Promise<void>;
   addingExercise: boolean;
   exerciseError: string | null;
@@ -16,8 +14,6 @@ type AddExerciseFormProps = {
 export default function AddExerciseForm({
   exerciseName,
   setExerciseName,
-  orderIndex,
-  setOrderIndex,
   handleAddExercise,
   addingExercise,
   exerciseError,
