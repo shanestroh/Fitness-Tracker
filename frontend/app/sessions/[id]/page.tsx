@@ -72,6 +72,9 @@ export default function SessionPage({ params }: SessionPageProps) {
     try {
       const res = await fetch(`http://localhost:8000/sessions/${id}/full`, {
         cache: "no-store",
+        headers: {
+            "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
+        },
       });
 
       if (!res.ok) {
@@ -136,6 +139,7 @@ function updateSetForm(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
         },
         body: JSON.stringify(payload),
       });
@@ -194,6 +198,7 @@ async function handleAddSet(e: React.FormEvent, exerciseId: number) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify(payload),
     });
@@ -240,6 +245,9 @@ async function handleDeleteExercise(exerciseId: number) {
   try {
     const res = await fetch(`http://localhost:8000/exercises/${exerciseId}`, {
       method: "DELETE",
+      headers: {
+          "Content-Type": "application/json",
+          },
     });
 
     if (!res.ok) {
@@ -271,6 +279,9 @@ async function handleDeleteSet(setId: number) {
   try {
     const res = await fetch(`http://localhost:8000/sets/${setId}`, {
       method: "DELETE",
+      headers: {
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
+        },
     });
 
     if (!res.ok) {
@@ -323,6 +334,7 @@ async function handleUpdateSet(e: React.FormEvent) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify(payload),
     });
@@ -353,6 +365,9 @@ async function handleDeleteSession() {
   try {
     const res = await fetch(`http://localhost:8000/sessions/${sessionId}`, {
       method: "DELETE",
+      headers: {
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
+      },
     });
 
     if (!res.ok) {
@@ -391,6 +406,7 @@ async function handleUpdateSession(e: React.FormEvent) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify(payload),
     });
@@ -430,6 +446,7 @@ async function handleUpdateExercise(exerciseId: number) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify(payload),
     });
@@ -478,6 +495,7 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify({ order_index: tempOrder }),
     });
@@ -492,6 +510,7 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify({ order_index: currentOrder }),
     });
@@ -506,6 +525,7 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
       },
       body: JSON.stringify({ order_index: targetOrder }),
     });

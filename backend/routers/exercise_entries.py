@@ -3,7 +3,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.db import session_local
-from backend.dependencies import get_current_user
 from backend.models.set_entry_table import SetEntry
 from backend.models.user_table import User
 from backend.models.workout_session_table import WorkoutSession
@@ -44,7 +43,6 @@ def create_exercise_entry(
         session_id: int,
         exercise_data: CreateExerciseEntry,
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user),
 ):
 
     #Ensures session exists and belongs to a user
@@ -97,7 +95,6 @@ def update_exercise_entry(
         exercise_entry_id: int,
         payload: UpdateExerciseEntry,
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user),
 ):
     exercise_row = (
         db.query(ExerciseEntry)
@@ -138,9 +135,7 @@ def update_exercise_entry(
 def delete_exercise_entry(
         exercise_entry_id: int,
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user), #commented out for testing with no authentication
 ):
-    #exercise_row = get_owned_exercise_entry(exercise_entry_id, db, current_user) #commented out for no authentication
     exercise_row = (
         db.query(ExerciseEntry)
         .join(WorkoutSession, WorkoutSession.id == ExerciseEntry.session_id)

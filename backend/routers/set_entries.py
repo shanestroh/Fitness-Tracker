@@ -4,7 +4,6 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from backend.db import session_local
-from backend.dependencies import get_current_user
 from backend.models.user_table import User
 from backend.models.workout_session_table import WorkoutSession
 from backend.models.exercise_entry_table import ExerciseEntry
@@ -64,7 +63,6 @@ def create_set_entry(
         exercise_entry_id: int,
         set_data: CreateSetEntry,
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user),
 ):
     exercise_row = (
         db.query(ExerciseEntry)
@@ -119,7 +117,6 @@ def create_set_entry(
 def delete_set_entry(
     set_id: int,
     db: Session = Depends(get_db),
-    #current_user: User = Depends(get_current_user),
 ):
     set_row = (
         db.query(SetEntry)
@@ -141,7 +138,6 @@ def update_set_entry(
     set_id: int,
     payload: UpdateSetEntry,
     db: Session = Depends(get_db),
-    #current_user: User = Depends(get_current_user),
 ):
     set_row = (
         db.query(SetEntry)

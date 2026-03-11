@@ -1,23 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from backend.db import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
+from backend.dependencies import verify_api_key
+from dotenv import load_dotenv
+import os
 
-from backend.routers.auth import router as auth_router
+load_dotenv()
+print("API_KEY =", os.getenv("API_KEY"))
+
 from backend.routers.sessions import router as sessions_router
 from backend.routers.exercise_entries import router as exercise_entries_router
 from backend.routers.set_entries import router as set_entries_router
 
-from backend.models.user_table import User
-from backend.models.workout_session_table import WorkoutSession
-from backend.models.exercise_entry_table import ExerciseEntry
-from backend.models.set_entry_table import SetEntry
-
 
 Base.metadata.create_all(bind = engine)
 
-app = FastAPI()
+app = FastAPI(dependencies=[Depends(verify_api_key)])
 
-app.include_router(auth_router)
 app.include_router(sessions_router)
 app.include_router(exercise_entries_router)
 app.include_router(set_entries_router)

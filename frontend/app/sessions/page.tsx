@@ -9,6 +9,9 @@ type SessionSummary = {
 async function getSessions(): Promise<SessionSummary[]> {
   const res = await fetch("http://localhost:8000/sessions", {
     cache: "no-store",
+    headers: {
+        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
+    },
   });
 
   if (!res.ok) {

@@ -3,8 +3,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.db import session_local
-from backend.dependencies import get_current_user
-from backend.models.user_table import User
 from backend.models.workout_session_table import WorkoutSession
 from backend.schemas.session import CreateSession, UpdateSession
 from backend.models.exercise_entry_table import ExerciseEntry
@@ -22,7 +20,6 @@ def get_db():
 def create_session(
         session_data: CreateSession,
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user), # blocked out for testing frontend
 ):
     session_row = WorkoutSession(
         user_id = 1,
@@ -49,7 +46,6 @@ def create_session(
 @router.get("/sessions")
 def get_sessions(
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user), #commenting out for testing
 ):
     session_rows = (
         db.query(WorkoutSession)
@@ -81,9 +77,7 @@ def get_sessions(
 def get_session_full(
         session_id: int,
         db: Session = Depends(get_db),
-        #current_user: User = Depends(get_current_user), #commenting out for testing with no auth
 ):
-    #Ownership Check: Session must exist and belong to a current user
     session_row = (
         db.query(WorkoutSession)
         .filter(WorkoutSession.id == session_id, WorkoutSession.user_id == 1)
@@ -157,7 +151,6 @@ def update_session(
     session_id: int,
     payload: UpdateSession,
     db: Session = Depends(get_db),
-    #current_user: User = Depends(get_current_user),
 ):
     session_row = (
         db.query(WorkoutSession)
@@ -190,7 +183,6 @@ def update_session(
 def delete_session(
     session_id: int,
     db: Session = Depends(get_db),
-    #current_user: User = Depends(get_current_user),
 ):
     session_row = (
         db.query(WorkoutSession)
