@@ -46,33 +46,36 @@ def create_session(
 
 @router.get("/sessions")
 def get_sessions(
-        db: Session = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    session_rows = (
-        db.query(WorkoutSession)
-        .filter(WorkoutSession.user_id == 1)
-        .order_by(WorkoutSession.date.desc(), WorkoutSession.id.desc())
-        .all()
-    )
-
-    results = []
-    for row in session_rows:
-        exercise_count = (
-            db.query(ExerciseEntry)
-            .filter(ExerciseEntry.session_id == row.id)
-            .count()
+    try:
+        session_rows = (
+            db.query(WorkoutSession)
+            .filter(WorkoutSession.user_id == 1)
+            .order_by(WorkoutSession.date.desc(), WorkoutSession.id.desc())
+            .all()
         )
 
-        record = {
-            "id": row.id,
-            "date": row.date,
-            "split": row.split,
-            "notes": row.notes,
-            "exercise_count": exercise_count,
+        results = []
+        for row in session_rows:
+            exercise_count = (
+                db.query(ExerciseEntry)
+                .filter(ExerciseEntry.session_id == row.id)
+                .count()
+            )
 
-        }
-        results.append({k:v for k, v in record.items() if v is not None})
-    return results
+            record = {
+                "id": row.id,
+                "date": row.date,
+                "split": row.split,
+                "notes": row.notes,
+                "exercise_count": exercise_count,
+            }
+            results.append({k: v for k, v in record.items() if v is not None})
+
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions/{session_id}/full")
 def get_session_full(
