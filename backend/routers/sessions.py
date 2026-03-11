@@ -60,11 +60,19 @@ def get_sessions(
 
     results = []
     for row in session_rows:
+        exercise_count = (
+            db.query(ExerciseEntry)
+            .filter(ExerciseEntry.session_id == row.id)
+            .count()
+        )
+
         record = {
             "id": row.id,
             "date": row.date,
             "split": row.split,
             "notes": row.notes,
+            "exercise_count": exercise_count,
+
         }
         results.append({k:v for k, v in record.items() if v is not None})
     return results
