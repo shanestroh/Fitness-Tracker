@@ -8,6 +8,7 @@ import ExerciseCard from "./ExerciseCard";
 import SessionHeader from "./SessionHeader";
 import AddExerciseForm from "./AddExerciseForm";
 import { apiFetch } from "@/lib/apiFetch";
+import type { SessionFull } from "@/types/workout";
 
 type SessionPageProps = {
   params: Promise<{
