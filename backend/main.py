@@ -21,8 +21,10 @@ app.include_router(set_entries_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["http://localhost:3000"],
-    allow_credentials = True,
+    allow_origins = ["http://localhost:3000",
+                     "https://personal-fitness-tracker-nu.vercel.app"
+                     ],
+    allow_credentials = False,
     allow_methods = ["*"],
     allow_headers = ["*"],
 )
