@@ -31,9 +31,9 @@ def create_session(
     db.add(session_row)
     try:
         db.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
-        raise HTTPException(status_code=409, detail = "Session Update Conflict")
+        raise HTTPException(status_code=409, detail = str(e))
     db.refresh(session_row)
 
     record = {

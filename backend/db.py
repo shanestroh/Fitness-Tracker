@@ -1,16 +1,24 @@
+import os
+import sqlite3
+from pathlib import Path
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
-import sqlite3
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-database_url = "sqlite:///./fitness.db"
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
+
+database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    raise RuntimeError("DATABASE_URL is not set")
 
 engine = create_engine(
     database_url,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False} if database_url.startswith("sqlite") else {}
 )
 
-session_local = sessionmaker(autocommit = False, autoflush = False, bind = engine)
+session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
