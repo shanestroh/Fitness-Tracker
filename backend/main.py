@@ -3,10 +3,8 @@ from backend.db import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 from backend.dependencies import verify_api_key
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
-print("API_KEY =", os.getenv("API_KEY"))
 
 from backend.routers.sessions import router as sessions_router
 from backend.routers.exercise_entries import router as exercise_entries_router

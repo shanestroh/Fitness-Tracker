@@ -1,3 +1,5 @@
+import { apiFetch } from "@/lib/apiFetch";
+
 type SessionSummary = {
   id: number;
   date: string;
@@ -7,12 +9,7 @@ type SessionSummary = {
 };
 
 async function getSessions(): Promise<SessionSummary[]> {
-  const res = await fetch("http://localhost:8000/sessions", {
-    cache: "no-store",
-    headers: {
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-    },
-  });
+  const res = await apiFetch("/sessions");
 
   if (!res.ok) {
     throw new Error(`Failed to fetch sessions: ${res.status}`);

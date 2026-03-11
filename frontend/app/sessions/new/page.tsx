@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/apiFetch";
 
 type CreateSessionPayload = {
   date: string;
@@ -38,11 +39,8 @@ export default function NewSessionPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/sessions", {
+      const res = await apiFetch("/sessions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(payload),
       });
 

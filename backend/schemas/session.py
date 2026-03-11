@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 
 class CreateSession(BaseModel):
-    date: date
+    date: str
     split: str
     notes: Optional[str] = None
 
@@ -27,7 +27,7 @@ class CreateSession(BaseModel):
         return v
 
 class UpdateSession(BaseModel):
-    date: Optional[date] = None
+    date: Optional[str] = None
     split: Optional[str] = None
     notes: Optional[str] = None
 

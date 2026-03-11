@@ -7,6 +7,7 @@ import { SetEntry } from "@/types/workout";
 import ExerciseCard from "./ExerciseCard";
 import SessionHeader from "./SessionHeader";
 import AddExerciseForm from "./AddExerciseForm";
+import { apiFetch } from "@/lib/apiFetch";
 
 type SessionPageProps = {
   params: Promise<{
@@ -22,7 +23,6 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [pageError, setPageError] = useState<string | null>(null);
 
   const [exerciseName, setExerciseName] = useState("");
-  const [orderIndex, setOrderIndex] = useState("");
   const [addingExercise, setAddingExercise] = useState(false);
   const [exerciseError, setExerciseError] = useState<string | null>(null);
   const [deletingExerciseById, setDeletingExerciseById] = useState<Record<number, boolean>>({});
@@ -70,12 +70,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     setPageError(null);
 
     try {
-      const res = await fetch(`http://localhost:8000/sessions/${id}/full`, {
-        cache: "no-store",
-        headers: {
-            "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-        },
-      });
+      const res = await apiFetch(`/sessions/${id}/full`);
 
       if (!res.ok) {
         const text = await res.text();
@@ -131,16 +126,11 @@ function updateSetForm(
 
     const payload = {
       exercise: exerciseName,
-      order_index: orderIndex.trim() ? Number(orderIndex) : null,
     };
 
     try {
-      const res = await fetch(`http://localhost:8000/sessions/${sessionId}/exercises`, {
+      const res = await apiFetch(`/sessions/${sessionId}/exercises`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-        },
         body: JSON.stringify(payload),
       });
 
@@ -150,7 +140,6 @@ function updateSetForm(
       }
 
       setExerciseName("");
-      setOrderIndex("");
 
       await loadSession(sessionId);
     } catch (err: any) {
@@ -194,12 +183,8 @@ async function handleAddSet(e: React.FormEvent, exerciseId: number) {
   if (form.intensity.trim()) payload.intensity = form.intensity.trim();
 
   try {
-    const res = await fetch(`http://localhost:8000/exercises/${exerciseId}/sets`, {
+    const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify(payload),
     });
 
@@ -243,11 +228,8 @@ async function handleDeleteExercise(exerciseId: number) {
   }));
 
   try {
-    const res = await fetch(`http://localhost:8000/exercises/${exerciseId}`, {
+    const res = await apiFetch(`/exercises/${exerciseId}`, {
       method: "DELETE",
-      headers: {
-          "Content-Type": "application/json",
-          },
     });
 
     if (!res.ok) {
@@ -277,11 +259,8 @@ async function handleDeleteSet(setId: number) {
   }));
 
   try {
-    const res = await fetch(`http://localhost:8000/sets/${setId}`, {
+    const res = await apiFetch(`/sets/${setId}`, {
       method: "DELETE",
-      headers: {
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-        },
     });
 
     if (!res.ok) {
@@ -330,12 +309,8 @@ async function handleUpdateSet(e: React.FormEvent) {
   if (editSetIntensity.trim()) payload.intensity = editSetIntensity.trim();
 
   try {
-    const res = await fetch(`http://localhost:8000/sets/${editingSetId}`, {
+    const res = await apiFetch(`/sets/${editingSetId}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify(payload),
     });
 
@@ -363,12 +338,9 @@ async function handleDeleteSession() {
   setDeletingSession(true);
 
   try {
-    const res = await fetch(`http://localhost:8000/sessions/${sessionId}`, {
-      method: "DELETE",
-      headers: {
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
-    });
+    const res = await apiFetch(`/sessions/${sessionId}`,{
+        method: "DELETE",
+        });
 
     if (!res.ok) {
       const text = await res.text();
@@ -402,12 +374,8 @@ async function handleUpdateSession(e: React.FormEvent) {
   };
 
   try {
-    const res = await fetch(`http://localhost:8000/sessions/${sessionId}`, {
+    const res = await apiFetch(`/sessions/${sessionId}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify(payload),
     });
 
@@ -442,12 +410,8 @@ async function handleUpdateExercise(exerciseId: number) {
   };
 
   try {
-    const res = await fetch(`http://localhost:8000/exercises/${exerciseId}`, {
+    const res = await apiFetch(`/exercises/${exerciseId}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify(payload),
     });
 
@@ -491,12 +455,8 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
 
   try {
     // Step 1: move current exercise to temp
-    let res = await fetch(`http://localhost:8000/exercises/${currentExercise.id}`, {
+    let res = await apiFetch(`/exercises/${currentExercise.id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify({ order_index: tempOrder }),
     });
 
@@ -506,12 +466,8 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
     }
 
     // Step 2: move target exercise into current slot
-    res = await fetch(`http://localhost:8000/exercises/${targetExercise.id}`, {
+    res = await apiFetch(`/exercises/${targetExercise.id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify({ order_index: currentOrder }),
     });
 
@@ -521,12 +477,8 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
     }
 
     // Step 3: move current exercise into target slot
-    res = await fetch(`http://localhost:8000/exercises/${currentExercise.id}`, {
+    res = await apiFetch(`/exercises/${currentExercise.id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_API_KEY!,
-      },
       body: JSON.stringify({ order_index: targetOrder }),
     });
 
@@ -598,8 +550,6 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
         <AddExerciseForm
             exerciseName={exerciseName}
             setExerciseName={setExerciseName}
-            orderIndex={orderIndex}
-            setOrderIndex={setOrderIndex}
             handleAddExercise={handleAddExercise}
             addingExercise={addingExercise}
             exerciseError={exerciseError}

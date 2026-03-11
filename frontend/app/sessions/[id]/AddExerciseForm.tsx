@@ -76,21 +76,6 @@ export default function AddExerciseForm({
               />
             </label>
 
-            <label style={{ display: "grid", gap: 6 }}>
-              <span>Order index (optional)</span>
-              <input
-                type="number"
-                value={orderIndex}
-                onChange={(e) => setOrderIndex(e.target.value)}
-                placeholder="Leave blank to auto-assign"
-                style={{
-                  padding: 10,
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                }}
-              />
-            </label>
-
             {exerciseError && (
               <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
                 {exerciseError}

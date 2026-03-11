@@ -7,6 +7,7 @@ from backend.models.workout_session_table import WorkoutSession
 from backend.schemas.session import CreateSession, UpdateSession
 from backend.models.exercise_entry_table import ExerciseEntry
 from backend.models.set_entry_table import SetEntry
+from datetime import date as DateType
 
 router = APIRouter(tags = ["Workout Sessions"])
 
@@ -23,7 +24,7 @@ def create_session(
 ):
     session_row = WorkoutSession(
         user_id = 1,
-        date = session_data.date,
+        date=DateType.fromisoformat(session_data.date),
         split = session_data.split,
         notes = session_data.notes,
     )
@@ -166,6 +167,8 @@ def update_session(
         raise HTTPException(status_code=400, detail="No Fields Provided To Update")
 
     for field, value in data.items():
+        if field == "date":
+            value = DateType.fromisoformat(value)
         setattr(session_row, field, value)
 
     db.commit()
