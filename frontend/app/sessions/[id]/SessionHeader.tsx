@@ -207,6 +207,25 @@ export default function SessionHeader({
             >
               {deletingSession ? "Deleting..." : "Delete Session"}
             </button>
+
+            <button
+                type="button"
+                onClick={async () => {
+                    await apiFetch("/api/logout", { method: "POST" });
+                    window.location.href = "/login";
+                }}
+                style={{
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    border: "1px solid #d0d0d0",
+                    background: "#fff",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    color: cardText,
+                }}
+            >
+                Log Out
+            </button>
           </div>
         )}
       </div>
