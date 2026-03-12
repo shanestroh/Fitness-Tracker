@@ -211,7 +211,7 @@ export default function SessionHeader({
             <button
                 type="button"
                 onClick={async () => {
-                    await fetch("/api/logout", { method: "POST" });
+                    await fetch("/api/logout", { method: "POST", credentials: "same-origin" });
                     window.location.href = "/login";
                 }}
                 style={{
