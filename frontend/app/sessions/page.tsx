@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import LogoutButton from "./LogoutButton";
+import LogoutButton from "../components/LogoutButton";
 import { apiFetch } from "@/lib/apiFetch";
 
 type SessionSummary = {
