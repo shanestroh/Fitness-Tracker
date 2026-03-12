@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/login", "/api/login", "/favicon.ico"];
+  const publicPaths = ["/login", "/api/login", "/api/logout", "/favicon.ico"];
 
   const isPublic =
     publicPaths.includes(pathname) ||
