@@ -1,15 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
-  const res = NextResponse.json({ success: true });
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-  res.cookies.set("app_auth", "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: true,
-    path: "/",
-    maxAge: 0,
-  });
+  const publicPaths = ["/login", "/api/login", "/favicon.ico"];
 
-  return res;
+  const isPublic =
+    publicPaths.includes(pathname) ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/images");
+
+  if (isPublic) {
+    return NextResponse.next();
+  }
+
+  const authCookie = req.cookies.get("app_auth")?.value;
+
+  if (authCookie === "ok") {
+    return NextResponse.next();
+  }
+
+  const loginUrl = new URL("/login", req.url);
+  return NextResponse.redirect(loginUrl);
 }
+
+export const config = {
+  matcher: ["/((?!api/logout).*)"],
+};
