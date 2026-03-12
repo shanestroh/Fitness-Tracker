@@ -1,14 +1,17 @@
+import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
-  const appPassword = process.env.APP_PASSWORD;
+  const appPasswordHash = process.env.APP_PASSWORD_HASH;
 
-  if (!appPassword) {
-    return new NextResponse("APP_PASSWORD is not configured", { status: 500 });
+  if (!appPasswordHash) {
+    return new NextResponse("APP_PASSWORD_HASH is not configured", { status: 500 });
   }
 
-  if (password !== appPassword) {
+  const valid = await bcrypt.compare(password, appPasswordHash);
+
+  if (!valid) {
     return new NextResponse("Incorrect password", { status: 401 });
   }
 
