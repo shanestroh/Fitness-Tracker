@@ -1,27 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
-
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const authCookie = req.cookies.get("app_auth")?.value;
 
-  const publicPaths = ["/login", "/api/login", "/api/logout", "/favicon.ico"];
-
-  const isPublic =
-    publicPaths.includes(pathname) ||
+  const isAsset =
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/images");
+    pathname.startsWith("/images") ||
+    pathname === "/favicon.ico";
 
-  if (isPublic) {
+  if (isAsset) {
     return NextResponse.next();
   }
 
-  const authCookie = req.cookies.get("app_auth")?.value;
+  if (pathname === "/login") {
+    if (authCookie === "ok") {
+      return NextResponse.redirect(new URL("/sessions", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (pathname === "/api/login" || pathname === "/api/logout") {
+    return NextResponse.next();
+  }
 
   if (authCookie === "ok") {
     return NextResponse.next();
   }
 
-  const loginUrl = new URL("/login", req.url);
-  return NextResponse.redirect(loginUrl);
+  return NextResponse.redirect(new URL("/login", req.url));
 }
 
 export const config = {
