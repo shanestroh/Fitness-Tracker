@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+
+import LogoutButton from "./LogoutButton";
 import { apiFetch } from "@/lib/apiFetch";
 
 type SessionSummary = {
@@ -69,24 +72,7 @@ export default async function SessionsPage() {
         >
           + New Session
         </a>
-        <button
-            type="button"
-            onClick={async () => {
-                await fetch("/api/logout", { method: "POST", credentials: "same-origin" });
-                window.location.href = "/login";
-            }}
-            style={{
-                padding: "10px 14px",
-                border: "1px solid #ccc",
-                borderRadius: 10,
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 600,
-                color: "#444",
-            }}
-        >
-            Log Out
-        </button>
+        <LogoutButton />
       </div>
 
       {sessions.length === 0 ? (
