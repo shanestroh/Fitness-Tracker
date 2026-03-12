@@ -9,13 +9,20 @@ type SessionSummary = {
 };
 
 async function getSessions(): Promise<SessionSummary[]> {
-  const res = await apiFetch("/sessions");
+  try {
+    const res = await apiFetch("/sessions");
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch sessions: ${res.status}`);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Failed to fetch sessions:", res.status, text);
+      return [];
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching sessions:", error);
+    return [];
   }
-
-  return res.json();
 }
 
 function formatDate(dateString: string) {
