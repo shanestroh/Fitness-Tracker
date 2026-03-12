@@ -1,3 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const authCookie = req.cookies.get("app_auth")?.value;
