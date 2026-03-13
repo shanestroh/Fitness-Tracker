@@ -49,7 +49,7 @@ export default function AppHeader() {
               style={{
                 border: "none",
                 background: "transparent",
-                color: "#111"
+                color: "#111",
                 cursor: "pointer",
                 fontSize: 15,
                 padding: 0,
@@ -79,7 +79,7 @@ export default function AppHeader() {
             style={{
               border: "1px solid #d1d5db",
               background: "#fff",
-              color: "#111"
+              color: "#111",
               borderRadius: 8,
               padding: "6px 10px",
               cursor: "pointer",
