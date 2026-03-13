@@ -26,8 +26,8 @@ export default function AppHeader() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "#fff",
-        borderBottom: "1px solid #e5e5e5",
+        background: "#ffffff",
+        borderBottom: "1px solid #d1d5db",
         boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
       }}
     >
@@ -49,9 +49,11 @@ export default function AppHeader() {
               style={{
                 border: "none",
                 background: "transparent",
+                color: "#111"
                 cursor: "pointer",
                 fontSize: 15,
                 padding: 0,
+                fontWeight: 600
               }}
             >
               ← Back
@@ -63,7 +65,7 @@ export default function AppHeader() {
           href="/"
           style={{
             textDecoration: "none",
-            color: "inherit",
+            color: "#111",
             fontWeight: 700,
             fontSize: 18,
           }}
@@ -75,8 +77,9 @@ export default function AppHeader() {
           <button
             onClick={handleLogout}
             style={{
-              border: "1px solid #ddd",
+              border: "1px solid #d1d5db",
               background: "#fff",
+              color: "#111"
               borderRadius: 8,
               padding: "6px 10px",
               cursor: "pointer",

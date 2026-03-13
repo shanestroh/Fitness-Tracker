@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ margin: 0, background: "#fafafa" }}
+        style={{ margin: 0, background: "#f7f7f7", color: "#111" }}
       >
         <AppHeader />
         {children}
