@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import LogoutButton from "../components/LogoutButton";
+import Link from "next/link";
 import { apiFetch } from "@/lib/apiFetch";
 
 type SessionSummary = {
@@ -61,18 +61,21 @@ export default async function SessionsPage() {
         }}
       >
         <h1 style={{ fontSize: 30, fontWeight: 700 }}>Workout Sessions</h1>
-        <a
+
+        <Link
           href="/sessions/new"
           style={{
             padding: "10px 14px",
             border: "1px solid #ccc",
             borderRadius: 10,
             textDecoration: "none",
+            background: "#fff",
+            color: "#111",
+            fontWeight: 600,
           }}
         >
           + New Session
-        </a>
-        <LogoutButton />
+        </Link>
       </div>
 
       {sessions.length === 0 ? (
@@ -80,7 +83,7 @@ export default async function SessionsPage() {
       ) : (
         <div style={{ display: "grid", gap: 12 }}>
           {sessions.map((session) => (
-            <a
+            <Link
               key={session.id}
               href={`/sessions/${session.id}`}
               style={{
@@ -90,35 +93,44 @@ export default async function SessionsPage() {
                 padding: 16,
                 textDecoration: "none",
                 color: "inherit",
+                background: "#fff",
               }}
             >
               <div
                 style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: session.notes ? 6 : 0,
-                    gap: 12,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: session.notes ? 6 : 0,
+                  gap: 12,
                 }}
-                >
+              >
                 <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
-                    {session.split}
-                    <span style ={{ fontSize: 14, fontWeight: 500, color: "#aaa", marginLeft: 8}}>
-                    {session.exercise_count} {session.exercise_count === 1 ? "Exercise" : "Exercises"}
-                    </span>
+                  {session.split}
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "#666",
+                      marginLeft: 8,
+                    }}
+                  >
+                    {session.exercise_count}{" "}
+                    {session.exercise_count === 1 ? "Exercise" : "Exercises"}
+                  </span>
                 </h2>
 
-                <span style={{ color: "#999", fontSize: 14, whiteSpace: "nowrap" }}>
-                    {formatDate(session.date)}
+                <span
+                  style={{ color: "#666", fontSize: 14, whiteSpace: "nowrap" }}
+                >
+                  {formatDate(session.date)}
                 </span>
-            </div>
+              </div>
 
-            {session.notes && (
-                <p style={{ margin: 0, color: "#bbb" }}>
-                    {session.notes}
-                </p>
-                )}
-            </a>
+              {session.notes && (
+                <p style={{ margin: 0, color: "#555" }}>{session.notes}</p>
+              )}
+            </Link>
           ))}
         </div>
       )}
