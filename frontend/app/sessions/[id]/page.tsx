@@ -37,7 +37,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [exerciseError, setExerciseError] = useState<string | null>(null);
   const [deletingExerciseById, setDeletingExerciseById] = useState<Record<number, boolean>>({});
   const [deleteExerciseError, setDeleteExerciseError] = useState<string | null>(null);
-  const [deletingSetById, setDeletingSetById] = useState<Record<number, boolean>>({});
+  const [deletingSetById, setDeletingSetById] = useState<Record<string, boolean>>({});
   const [deleteSetError, setDeleteSetError] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState(false);
   const [deleteSessionError, setDeleteSessionError] = useState<string | null>(null);
@@ -314,6 +314,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     setDeleteSetError(null);
 
+    const setKey = String(setId)
     setDeletingSetById((prev) => ({
       ...prev,
       [setId]: true,
@@ -335,7 +336,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     } finally {
       setDeletingSetById((prev) => ({
         ...prev,
-        [setId]: false,
+        [setKey]: false,
       }));
     }
   }

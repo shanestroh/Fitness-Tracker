@@ -46,7 +46,7 @@ type ExerciseCardProps = {
   handleUpdateSet: (e: React.FormEvent) => Promise<void>;
   startEditingSet: (set: SetEntry) => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
-  deletingSetById: Record<number, boolean>;
+  deletingSetById: Record<string, boolean>;
   setEditingSetId: (id: number | null) => void;
   setUpdateSetError: (value: string | null) => void;
   editingExerciseId: number | null;

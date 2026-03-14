@@ -17,7 +17,7 @@ type SetRowProps = {
   handleUpdateSet: (e: React.FormEvent) => Promise<void>;
   startEditingSet: (set: SetEntry) => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
-  deletingSetById: Record<number, boolean>;
+  deletingSetById: Record<string, boolean>;
   setEditingSetId: (id: number | null) => void;
   setUpdateSetError: (value: string | null) => void;
 };
@@ -203,7 +203,7 @@ export default function SetRow({
             <button
               type="button"
               onClick={() => handleDeleteSet(set.id)}
-              disabled={deletingSetById[set.id]}
+              disabled={deletingSetById[String(set.id)]}
               style={{
                 padding: "8px 12px",
                 borderRadius: 10,
