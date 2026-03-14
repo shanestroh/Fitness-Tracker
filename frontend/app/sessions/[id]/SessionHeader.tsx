@@ -1,3 +1,9 @@
+"use client";
+
+import SplitSelector from "@/app/components/SplitSelector";
+
+const PRESET_SPLITS = ["Push", "Pull", "Legs", "Shoulders", "Cardio"];
+
 type SessionHeaderProps = {
   split: string;
   date: string;
@@ -7,8 +13,11 @@ type SessionHeaderProps = {
   isEditingSession: boolean;
   setIsEditingSession: (value: boolean) => void;
 
-  editSplit: string;
-  setEditSplit: (value: string) => void;
+  editSplitOption: string;
+  setEditSplitOption: (value: string) => void;
+  editCustomSplit: string;
+  setEditCustomSplit: (value: string) => void;
+
   editDate: string;
   setEditDate: (value: string) => void;
   editNotes: string;
@@ -31,8 +40,10 @@ export default function SessionHeader({
   cardText,
   isEditingSession,
   setIsEditingSession,
-  editSplit,
-  setEditSplit,
+  editSplitOption,
+  setEditSplitOption,
+  editCustomSplit,
+  setEditCustomSplit,
   editDate,
   setEditDate,
   editNotes,
@@ -45,6 +56,17 @@ export default function SessionHeader({
   deleteSessionError,
   handleDeleteSession,
 }: SessionHeaderProps) {
+  function resetEditForm() {
+    const isPresetSplit = PRESET_SPLITS.includes(split);
+
+    setIsEditingSession(false);
+    setEditSplitOption(isPresetSplit ? split : "Other");
+    setEditCustomSplit(isPresetSplit ? "" : split);
+    setEditDate(date ?? "");
+    setEditNotes(notes ?? "");
+    setUpdateSessionError(null);
+  }
+
   return (
     <section
       style={{
@@ -63,7 +85,7 @@ export default function SessionHeader({
           alignItems: "flex-start",
           gap: 16,
           marginBottom: 12,
-          flexWrap: "wrap"
+          flexWrap: "wrap",
         }}
       >
         <div style={{ flex: "1 1 260px", minWidth: 0 }}>
@@ -73,16 +95,15 @@ export default function SessionHeader({
                 {split}
               </h1>
 
-              <p style={{ margin: "0 0 8px 0", color: "#555" }}>
-                {date}
-              </p>
+              <p style={{ margin: "0 0 8px 0", color: "#555" }}>{date}</p>
 
               {notes && (
-                <p style={{
+                <p
+                  style={{
                     margin: 0,
                     lineHeight: 1.5,
-                    wordBreak: "break-word"
-                    }}
+                    wordBreak: "break-word",
+                  }}
                 >
                   <strong>Notes:</strong> {notes}
                 </p>
@@ -90,15 +111,12 @@ export default function SessionHeader({
             </>
           ) : (
             <form onSubmit={handleUpdateSession} style={{ display: "grid", gap: 12 }}>
-              <label style={{ display: "grid", gap: 6 }}>
-                <span>Split</span>
-                <input
-                  value={editSplit}
-                  onChange={(e) => setEditSplit(e.target.value)}
-                  required
-                  style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
-                />
-              </label>
+              <SplitSelector
+                splitOption={editSplitOption}
+                setSplitOption={setEditSplitOption}
+                customSplit={editCustomSplit}
+                setCustomSplit={setEditCustomSplit}
+              />
 
               <label style={{ display: "grid", gap: 6 }}>
                 <span>Date</span>
@@ -107,7 +125,13 @@ export default function SessionHeader({
                   value={editDate}
                   onChange={(e) => setEditDate(e.target.value)}
                   required
-                  style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                  style={{
+                    padding: 10,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#fff",
+                    color: "#111",
+                  }}
                 />
               </label>
 
@@ -117,7 +141,13 @@ export default function SessionHeader({
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
                   rows={3}
-                  style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                  style={{
+                    padding: 10,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#fff",
+                    color: "#111",
+                  }}
                 />
               </label>
 
@@ -130,13 +160,20 @@ export default function SessionHeader({
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button
                   type="submit"
-                  disabled={updatingSession}
+                  disabled={
+                    updatingSession ||
+                    (editSplitOption === "Other" && !editCustomSplit.trim())
+                  }
                   style={{
                     padding: "10px 14px",
                     borderRadius: 10,
                     border: "1px solid #d0d0d0",
                     background: "#fff",
-                    cursor: updatingSession ? "not-allowed" : "pointer",
+                    cursor:
+                      updatingSession ||
+                      (editSplitOption === "Other" && !editCustomSplit.trim())
+                        ? "not-allowed"
+                        : "pointer",
                     fontWeight: 700,
                     color: cardText,
                   }}
@@ -146,13 +183,7 @@ export default function SessionHeader({
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsEditingSession(false);
-                    setEditSplit(split ?? "");
-                    setEditDate(date ?? "");
-                    setEditNotes(notes ?? "");
-                    setUpdateSessionError(null);
-                  }}
+                  onClick={resetEditForm}
                   style={{
                     padding: "10px 14px",
                     borderRadius: 10,

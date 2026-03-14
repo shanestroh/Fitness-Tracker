@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import SetRow from "./SetRow";
 import { SetEntry } from "@/types/workout";
 import ExerciseCard from "./ExerciseCard";
 import SessionHeader from "./SessionHeader";
@@ -15,6 +14,15 @@ type SessionPageProps = {
     id: string;
   }>;
 };
+
+const PRESET_SPLITS = ["Push", "Pull", "Legs", "Shoulders", "Cardio"];
+
+function normalizeCustomSplit(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
 
 export default function SessionPage({ params }: SessionPageProps) {
   const router = useRouter();
@@ -33,9 +41,12 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [deletingSession, setDeletingSession] = useState(false);
   const [deleteSessionError, setDeleteSessionError] = useState<string | null>(null);
   const [isEditingSession, setIsEditingSession] = useState(false);
-  const [editSplit, setEditSplit] = useState("");
+
+  const [editSplitOption, setEditSplitOption] = useState("Push");
+  const [editCustomSplit, setEditCustomSplit] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editNotes, setEditNotes] = useState("");
+
   const [updatingSession, setUpdatingSession] = useState(false);
   const [updateSessionError, setUpdateSessionError] = useState<string | null>(null);
   const [editingSetId, setEditingSetId] = useState<number | null>(null);
@@ -53,18 +64,18 @@ export default function SessionPage({ params }: SessionPageProps) {
 
   const [setFormByExercise, setSetFormByExercise] = useState<
     Record<
-        number,
-        {
-            reps: string;
-            weight: string;
-            time_seconds: string;
-            intensity: string;
-        }
+      number,
+      {
+        reps: string;
+        weight: string;
+        time_seconds: string;
+        intensity: string;
+      }
     >
-    >({});
+  >({});
 
-    const [setErrorByExercise, setSetErrorByExercise] = useState<Record<number, string | null>>({});
-    const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
+  const [setErrorByExercise, setSetErrorByExercise] = useState<Record<number, string | null>>({});
+  const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
 
   async function loadSession(id: string) {
     setLoading(true);
@@ -80,7 +91,12 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       const data = await res.json();
       setSession(data);
-      setEditSplit(data.split ?? "");
+
+      const loadedSplit = data.split ?? "";
+      const isPresetSplit = PRESET_SPLITS.includes(loadedSplit);
+
+      setEditSplitOption(isPresetSplit ? loadedSplit : "Other");
+      setEditCustomSplit(isPresetSplit ? "" : loadedSplit);
       setEditDate(data.date ?? "");
       setEditNotes(data.notes ?? "");
     } catch (err: any) {
@@ -90,22 +106,22 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
-function updateSetForm(
-  exerciseId: number,
-  field: "reps" | "weight" | "time_seconds" | "intensity",
-  value: string
-) {
-  setSetFormByExercise((prev) => ({
-    ...prev,
-    [exerciseId]: {
-      reps: prev[exerciseId]?.reps ?? "",
-      weight: prev[exerciseId]?.weight ?? "",
-      time_seconds: prev[exerciseId]?.time_seconds ?? "",
-      intensity: prev[exerciseId]?.intensity ?? "",
-      [field]: value,
-    },
-  }));
-}
+  function updateSetForm(
+    exerciseId: number,
+    field: "reps" | "weight" | "time_seconds" | "intensity",
+    value: string
+  ) {
+    setSetFormByExercise((prev) => ({
+      ...prev,
+      [exerciseId]: {
+        reps: prev[exerciseId]?.reps ?? "",
+        weight: prev[exerciseId]?.weight ?? "",
+        time_seconds: prev[exerciseId]?.time_seconds ?? "",
+        intensity: prev[exerciseId]?.intensity ?? "",
+        [field]: value,
+      },
+    }));
+  }
 
   useEffect(() => {
     async function unwrapParams() {
@@ -141,7 +157,6 @@ function updateSetForm(
       }
 
       setExerciseName("");
-
       await loadSession(sessionId);
     } catch (err: any) {
       setExerciseError(err?.message ?? "Failed to add exercise");
@@ -150,358 +165,364 @@ function updateSetForm(
     }
   }
 
+  async function handleAddSet(e: React.FormEvent, exerciseId: number) {
+    e.preventDefault();
 
-async function handleAddSet(e: React.FormEvent, exerciseId: number) {
-  e.preventDefault();
-
-  setSetErrorByExercise((prev) => ({
-    ...prev,
-    [exerciseId]: null,
-  }));
-
-  setAddingSetByExercise((prev) => ({
-    ...prev,
-    [exerciseId]: true,
-  }));
-
-  const form = setFormByExercise[exerciseId] ?? {
-    reps: "",
-    weight: "",
-    time_seconds: "",
-    intensity: "",
-  };
-
-  const payload: {
-    reps?: number;
-    weight?: number;
-    time_seconds?: number;
-    intensity?: string;
-  } = {};
-
-  if (form.reps.trim()) payload.reps = Number(form.reps);
-  if (form.weight.trim()) payload.weight = Number(form.weight);
-  if (form.time_seconds.trim()) payload.time_seconds = Number(form.time_seconds);
-  if (form.intensity.trim()) payload.intensity = form.intensity.trim();
-
-  try {
-    const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to add set: ${res.status}`);
-    }
-
-    setSetFormByExercise((prev) => ({
-      ...prev,
-      [exerciseId]: {
-        reps: "",
-        weight: "",
-        time_seconds: "",
-        intensity: "",
-      },
-    }));
-
-    await loadSession(sessionId);
-  } catch (err: any) {
     setSetErrorByExercise((prev) => ({
       ...prev,
-      [exerciseId]: err?.message ?? "Failed to add set",
+      [exerciseId]: null,
     }));
-  } finally {
+
     setAddingSetByExercise((prev) => ({
       ...prev,
-      [exerciseId]: false,
+      [exerciseId]: true,
     }));
-  }
-}
 
-async function handleDeleteExercise(exerciseId: number) {
-  if (!sessionId) return;
+    const form = setFormByExercise[exerciseId] ?? {
+      reps: "",
+      weight: "",
+      time_seconds: "",
+      intensity: "",
+    };
 
-  setDeleteExerciseError(null);
+    const payload: {
+      reps?: number;
+      weight?: number;
+      time_seconds?: number;
+      intensity?: string;
+    } = {};
 
-  setDeletingExerciseById((prev) => ({
-    ...prev,
-    [exerciseId]: true,
-  }));
+    if (form.reps.trim()) payload.reps = Number(form.reps);
+    if (form.weight.trim()) payload.weight = Number(form.weight);
+    if (form.time_seconds.trim()) payload.time_seconds = Number(form.time_seconds);
+    if (form.intensity.trim()) payload.intensity = form.intensity.trim();
 
-  try {
-    const res = await apiFetch(`/exercises/${exerciseId}`, {
-      method: "DELETE",
-    });
+    try {
+      const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to delete exercise: ${res.status}`);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to add set: ${res.status}`);
+      }
+
+      setSetFormByExercise((prev) => ({
+        ...prev,
+        [exerciseId]: {
+          reps: "",
+          weight: "",
+          time_seconds: "",
+          intensity: "",
+        },
+      }));
+
+      await loadSession(sessionId);
+    } catch (err: any) {
+      setSetErrorByExercise((prev) => ({
+        ...prev,
+        [exerciseId]: err?.message ?? "Failed to add set",
+      }));
+    } finally {
+      setAddingSetByExercise((prev) => ({
+        ...prev,
+        [exerciseId]: false,
+      }));
     }
+  }
 
-    await loadSession(sessionId);
-  } catch (err: any) {
-    setDeleteExerciseError(err?.message ?? "Failed to delete exercise");
-  } finally {
+  async function handleDeleteExercise(exerciseId: number) {
+    if (!sessionId) return;
+
+    setDeleteExerciseError(null);
+
     setDeletingExerciseById((prev) => ({
       ...prev,
-      [exerciseId]: false,
+      [exerciseId]: true,
     }));
-  }
-}
 
-async function handleDeleteSet(setId: number) {
-  if (!sessionId) return;
+    try {
+      const res = await apiFetch(`/exercises/${exerciseId}`, {
+        method: "DELETE",
+      });
 
-  setDeleteSetError(null);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to delete exercise: ${res.status}`);
+      }
 
-  setDeletingSetById((prev) => ({
-    ...prev,
-    [setId]: true,
-  }));
-
-  try {
-    const res = await apiFetch(`/sets/${setId}`, {
-      method: "DELETE",
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to delete set: ${res.status}`);
+      await loadSession(sessionId);
+    } catch (err: any) {
+      setDeleteExerciseError(err?.message ?? "Failed to delete exercise");
+    } finally {
+      setDeletingExerciseById((prev) => ({
+        ...prev,
+        [exerciseId]: false,
+      }));
     }
+  }
 
-    await loadSession(sessionId);
-  } catch (err: any) {
-    setDeleteSetError(err?.message ?? "Failed to delete set");
-  } finally {
+  async function handleDeleteSet(setId: number) {
+    if (!sessionId) return;
+
+    setDeleteSetError(null);
+
     setDeletingSetById((prev) => ({
       ...prev,
-      [setId]: false,
+      [setId]: true,
     }));
-  }
-}
 
-function startEditingSet(set: SetEntry) {
-  setEditingSetId(set.id);
-  setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
-  setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
-  setEditSetTimeSeconds(set.time_seconds !== undefined ? String(set.time_seconds) : "");
-  setEditSetIntensity(set.intensity ?? "");
-  setUpdateSetError(null);
-}
-
-async function handleUpdateSet(e: React.FormEvent) {
-  e.preventDefault();
-
-  if (editingSetId === null) return;
-
-  setUpdateSetError(null);
-  setUpdatingSet(true);
-
-  const payload: {
-    reps?: number;
-    weight?: number;
-    time_seconds?: number | null ;
-    intensity?: string | null;
-  } = {};
-
-  if (editSetReps.trim()) payload.reps = Number(editSetReps);
-  if (editSetWeight.trim()) payload.weight = Number(editSetWeight);
-  if (editSetTimeSeconds.trim() === "" || Number(editSetTimeSeconds) === 0) {
-    payload.time_seconds = null;
-  } else {
-    payload.time_seconds = Number(editSetTimeSeconds);
-  }
-
-  if (editSetIntensity.trim() === "") {
-    payload.intensity = null;
-  } else {
-    payload.intensity = editSetIntensity.trim();
-  }
-
-  try {
-    const res = await apiFetch(`/sets/${editingSetId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to update set: ${res.status}`);
-    }
-
-    await loadSession(sessionId);
-    setEditingSetId(null);
-  } catch (err: any) {
-    setUpdateSetError(err?.message ?? "Failed to update set");
-  } finally {
-    setUpdatingSet(false);
-  }
-}
-
-async function handleDeleteSession() {
-  if (!sessionId) return;
-
-  const confirmed = window.confirm("Are you sure you want to delete this session?");
-  if (!confirmed) return;
-
-  setDeleteSessionError(null);
-  setDeletingSession(true);
-
-  try {
-    const res = await apiFetch(`/sessions/${sessionId}`,{
+    try {
+      const res = await apiFetch(`/sets/${setId}`, {
         method: "DELETE",
-        });
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to delete session: ${res.status}`);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to delete set: ${res.status}`);
+      }
+
+      await loadSession(sessionId);
+    } catch (err: any) {
+      setDeleteSetError(err?.message ?? "Failed to delete set");
+    } finally {
+      setDeletingSetById((prev) => ({
+        ...prev,
+        [setId]: false,
+      }));
     }
-
-    router.push("/sessions");
-  } catch (err: any) {
-    setDeleteSessionError(err?.message ?? "Failed to delete session");
-  } finally {
-    setDeletingSession(false);
   }
-}
 
-async function handleUpdateSession(e: React.FormEvent) {
-  e.preventDefault();
-
-  if (!sessionId) return;
-
-  setUpdateSessionError(null);
-  setUpdatingSession(true);
-
-  const payload: {
-    split?: string;
-    date?: string;
-    notes?: string;
-  } = {
-    split: editSplit,
-    date: editDate,
-    notes: editNotes.trim(),
-  };
-
-  try {
-    const res = await apiFetch(`/sessions/${sessionId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to update session: ${res.status}`);
-    }
-
-    await loadSession(sessionId);
-    setIsEditingSession(false);
-  } catch (err: any) {
-    setUpdateSessionError(err?.message ?? "Failed to update session");
-  } finally {
-    setUpdatingSession(false);
+  function startEditingSet(set: SetEntry) {
+    setEditingSetId(set.id);
+    setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
+    setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
+    setEditSetTimeSeconds(set.time_seconds !== undefined ? String(set.time_seconds) : "");
+    setEditSetIntensity(set.intensity ?? "");
+    setUpdateSetError(null);
   }
-}
 
-function startEditingExercise(exercise: { id: number; exercise: string }) {
-  setEditingExerciseId(exercise.id);
-  setEditExerciseName(exercise.exercise);
-  setUpdateExerciseError(null);
-}
+  async function handleUpdateSet(e: React.FormEvent) {
+    e.preventDefault();
 
-async function handleUpdateExercise(exerciseId: number) {
-  if (!sessionId) return;
+    if (editingSetId === null) return;
 
-  setUpdateExerciseError(null);
-  setUpdatingExercise(true);
+    setUpdateSetError(null);
+    setUpdatingSet(true);
 
-  const payload = {
-    exercise: editExerciseName,
-  };
+    const payload: {
+      reps?: number;
+      weight?: number;
+      time_seconds?: number | null;
+      intensity?: string | null;
+    } = {};
 
-  try {
-    const res = await apiFetch(`/exercises/${exerciseId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
+    if (editSetReps.trim()) payload.reps = Number(editSetReps);
+    if (editSetWeight.trim()) payload.weight = Number(editSetWeight);
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to update exercise: ${res.status}`);
+    if (editSetTimeSeconds.trim() === "" || Number(editSetTimeSeconds) === 0) {
+      payload.time_seconds = null;
+    } else {
+      payload.time_seconds = Number(editSetTimeSeconds);
     }
 
-    await loadSession(sessionId);
-    setEditingExerciseId(null);
-  } catch (err: any) {
-    setUpdateExerciseError(err?.message ?? "Failed to update exercise");
-  } finally {
-    setUpdatingExercise(false);
+    if (editSetIntensity.trim() === "") {
+      payload.intensity = null;
+    } else {
+      payload.intensity = editSetIntensity.trim();
+    }
+
+    try {
+      const res = await apiFetch(`/sets/${editingSetId}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to update set: ${res.status}`);
+      }
+
+      await loadSession(sessionId);
+      setEditingSetId(null);
+    } catch (err: any) {
+      setUpdateSetError(err?.message ?? "Failed to update set");
+    } finally {
+      setUpdatingSet(false);
+    }
   }
-}
 
-async function handleMoveExercise(exerciseId: number, direction: "up" | "down") {
-  if (!sessionId || !session) return;
+  async function handleDeleteSession() {
+    if (!sessionId) return;
 
-  const sortedExercises = [...session.exercises].sort((a, b) => {
-    const aIndex = a.order_index ?? 0;
-    const bIndex = b.order_index ?? 0;
-    return aIndex - bIndex;
-  });
+    const confirmed = window.confirm("Are you sure you want to delete this session?");
+    if (!confirmed) return;
 
-  const currentIndex = sortedExercises.findIndex((e) => e.id === exerciseId);
-  if (currentIndex === -1) return;
+    setDeleteSessionError(null);
+    setDeletingSession(true);
 
-  const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-  if (targetIndex < 0 || targetIndex >= sortedExercises.length) return;
+    try {
+      const res = await apiFetch(`/sessions/${sessionId}`, {
+        method: "DELETE",
+      });
 
-  const currentExercise = sortedExercises[currentIndex];
-  const targetExercise = sortedExercises[targetIndex];
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to delete session: ${res.status}`);
+      }
 
-  const currentOrder = currentExercise.order_index ?? currentIndex + 1;
-  const targetOrder = targetExercise.order_index ?? targetIndex + 1;
-
-  // Temporary value that won't conflict
-  const tempOrder = 9999999;
-
-  try {
-    // Step 1: move current exercise to temp
-    let res = await apiFetch(`/exercises/${currentExercise.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ order_index: tempOrder }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to move exercise: ${res.status}`);
+      router.push("/sessions");
+    } catch (err: any) {
+      setDeleteSessionError(err?.message ?? "Failed to delete session");
+    } finally {
+      setDeletingSession(false);
     }
-
-    // Step 2: move target exercise into current slot
-    res = await apiFetch(`/exercises/${targetExercise.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ order_index: currentOrder }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to move exercise: ${res.status}`);
-    }
-
-    // Step 3: move current exercise into target slot
-    res = await apiFetch(`/exercises/${currentExercise.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ order_index: targetOrder }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to move exercise: ${res.status}`);
-    }
-
-    await loadSession(sessionId);
-  } catch (err: any) {
-    setDeleteExerciseError(err?.message ?? "Failed to reorder exercise");
   }
-}
+
+  async function handleUpdateSession(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!sessionId) return;
+
+    const finalEditSplit =
+      editSplitOption === "Other"
+        ? normalizeCustomSplit(editCustomSplit)
+        : editSplitOption;
+
+    if (!finalEditSplit) {
+      setUpdateSessionError("Please enter a custom split name.");
+      return;
+    }
+
+    setUpdateSessionError(null);
+    setUpdatingSession(true);
+
+    const payload: {
+      split?: string;
+      date?: string;
+      notes?: string;
+    } = {
+      split: finalEditSplit,
+      date: editDate,
+      notes: editNotes.trim(),
+    };
+
+    try {
+      const res = await apiFetch(`/sessions/${sessionId}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to update session: ${res.status}`);
+      }
+
+      await loadSession(sessionId);
+      setIsEditingSession(false);
+    } catch (err: any) {
+      setUpdateSessionError(err?.message ?? "Failed to update session");
+    } finally {
+      setUpdatingSession(false);
+    }
+  }
+
+  function startEditingExercise(exercise: { id: number; exercise: string }) {
+    setEditingExerciseId(exercise.id);
+    setEditExerciseName(exercise.exercise);
+    setUpdateExerciseError(null);
+  }
+
+  async function handleUpdateExercise(exerciseId: number) {
+    if (!sessionId) return;
+
+    setUpdateExerciseError(null);
+    setUpdatingExercise(true);
+
+    const payload = {
+      exercise: editExerciseName,
+    };
+
+    try {
+      const res = await apiFetch(`/exercises/${exerciseId}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to update exercise: ${res.status}`);
+      }
+
+      await loadSession(sessionId);
+      setEditingExerciseId(null);
+    } catch (err: any) {
+      setUpdateExerciseError(err?.message ?? "Failed to update exercise");
+    } finally {
+      setUpdatingExercise(false);
+    }
+  }
+
+  async function handleMoveExercise(exerciseId: number, direction: "up" | "down") {
+    if (!sessionId || !session) return;
+
+    const sortedExercises = [...session.exercises].sort((a, b) => {
+      const aIndex = a.order_index ?? 0;
+      const bIndex = b.order_index ?? 0;
+      return aIndex - bIndex;
+    });
+
+    const currentIndex = sortedExercises.findIndex((e) => e.id === exerciseId);
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= sortedExercises.length) return;
+
+    const currentExercise = sortedExercises[currentIndex];
+    const targetExercise = sortedExercises[targetIndex];
+
+    const currentOrder = currentExercise.order_index ?? currentIndex + 1;
+    const targetOrder = targetExercise.order_index ?? targetIndex + 1;
+
+    const tempOrder = 9999999;
+
+    try {
+      let res = await apiFetch(`/exercises/${currentExercise.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ order_index: tempOrder }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to move exercise: ${res.status}`);
+      }
+
+      res = await apiFetch(`/exercises/${targetExercise.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ order_index: currentOrder }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to move exercise: ${res.status}`);
+      }
+
+      res = await apiFetch(`/exercises/${currentExercise.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ order_index: targetOrder }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to move exercise: ${res.status}`);
+      }
+
+      await loadSession(sessionId);
+    } catch (err: any) {
+      setDeleteExerciseError(err?.message ?? "Failed to reorder exercise");
+    }
+  }
 
   if (loading) {
     return (
@@ -542,8 +563,10 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
         cardText={cardText}
         isEditingSession={isEditingSession}
         setIsEditingSession={setIsEditingSession}
-        editSplit={editSplit}
-        setEditSplit={setEditSplit}
+        editSplitOption={editSplitOption}
+        setEditSplitOption={setEditSplitOption}
+        editCustomSplit={editCustomSplit}
+        setEditCustomSplit={setEditCustomSplit}
         editDate={editDate}
         setEditDate={setEditDate}
         editNotes={editNotes}
@@ -555,33 +578,32 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
         deletingSession={deletingSession}
         deleteSessionError={deleteSessionError}
         handleDeleteSession={handleDeleteSession}
-/>
+      />
 
-        <AddExerciseForm
-            exerciseName={exerciseName}
-            setExerciseName={setExerciseName}
-            handleAddExercise={handleAddExercise}
-            addingExercise={addingExercise}
-            exerciseError={exerciseError}
-            cardText={cardText}
-        />
+      <AddExerciseForm
+        exerciseName={exerciseName}
+        setExerciseName={setExerciseName}
+        handleAddExercise={handleAddExercise}
+        addingExercise={addingExercise}
+        exerciseError={exerciseError}
+        cardText={cardText}
+      />
 
       <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>
         Exercises
       </h2>
 
-       {deleteExerciseError && (
+      {deleteExerciseError && (
         <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginBottom: 12 }}>
-            {deleteExerciseError}
+          {deleteExerciseError}
         </div>
-        )}
+      )}
 
-        {deleteSetError && (
-            <div style = {{ color : "crimson", whiteSpace: "pre-wrap", marginBottom: 12}}>
-            {deleteSetError}
-            </div>
-            )}
-
+      {deleteSetError && (
+        <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+          {deleteSetError}
+        </div>
+      )}
 
       {session.exercises.length === 0 ? (
         <p>No exercises yet.</p>
@@ -589,45 +611,45 @@ async function handleMoveExercise(exerciseId: number, direction: "up" | "down") 
         <div style={{ display: "grid", gap: 16 }}>
           {session.exercises.map((exercise, index) => (
             <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                cardText={cardText}
-                isFirst={index === 0}
-                isLast={index === session.exercises.length - 1}
-                handleDeleteExercise={handleDeleteExercise}
-                deletingExerciseById={deletingExerciseById}
-                setFormByExercise={setFormByExercise}
-                updateSetForm={updateSetForm}
-                handleAddSet={handleAddSet}
-                addingSetByExercise={addingSetByExercise}
-                setErrorByExercise={setErrorByExercise}
-                editingSetId={editingSetId}
-                editSetReps={editSetReps}
-                setEditSetReps={setEditSetReps}
-                editSetWeight={editSetWeight}
-                setEditSetWeight={setEditSetWeight}
-                editSetTimeSeconds={editSetTimeSeconds}
-                setEditSetTimeSeconds={setEditSetTimeSeconds}
-                editSetIntensity={editSetIntensity}
-                setEditSetIntensity={setEditSetIntensity}
-                updateSetError={updateSetError}
-                updatingSet={updatingSet}
-                handleUpdateSet={handleUpdateSet}
-                startEditingSet={startEditingSet}
-                handleDeleteSet={handleDeleteSet}
-                deletingSetById={deletingSetById}
-                setEditingSetId={setEditingSetId}
-                setUpdateSetError={setUpdateSetError}
-                editingExerciseId={editingExerciseId}
-                editExerciseName={editExerciseName}
-                setEditExerciseName={setEditExerciseName}
-                updatingExercise={updatingExercise}
-                updateExerciseError={updateExerciseError}
-                setUpdateExerciseError={setUpdateExerciseError}
-                setEditingExerciseId={setEditingExerciseId}
-                startEditingExercise={startEditingExercise}
-                handleUpdateExercise={handleUpdateExercise}
-                handleMoveExercise={handleMoveExercise}
+              key={exercise.id}
+              exercise={exercise}
+              cardText={cardText}
+              isFirst={index === 0}
+              isLast={index === session.exercises.length - 1}
+              handleDeleteExercise={handleDeleteExercise}
+              deletingExerciseById={deletingExerciseById}
+              setFormByExercise={setFormByExercise}
+              updateSetForm={updateSetForm}
+              handleAddSet={handleAddSet}
+              addingSetByExercise={addingSetByExercise}
+              setErrorByExercise={setErrorByExercise}
+              editingSetId={editingSetId}
+              editSetReps={editSetReps}
+              setEditSetReps={setEditSetReps}
+              editSetWeight={editSetWeight}
+              setEditSetWeight={setEditSetWeight}
+              editSetTimeSeconds={editSetTimeSeconds}
+              setEditSetTimeSeconds={setEditSetTimeSeconds}
+              editSetIntensity={editSetIntensity}
+              setEditSetIntensity={setEditSetIntensity}
+              updateSetError={updateSetError}
+              updatingSet={updatingSet}
+              handleUpdateSet={handleUpdateSet}
+              startEditingSet={startEditingSet}
+              handleDeleteSet={handleDeleteSet}
+              deletingSetById={deletingSetById}
+              setEditingSetId={setEditingSetId}
+              setUpdateSetError={setUpdateSetError}
+              editingExerciseId={editingExerciseId}
+              editExerciseName={editExerciseName}
+              setEditExerciseName={setEditExerciseName}
+              updatingExercise={updatingExercise}
+              updateExerciseError={updateExerciseError}
+              setUpdateExerciseError={setUpdateExerciseError}
+              setEditingExerciseId={setEditingExerciseId}
+              startEditingExercise={startEditingExercise}
+              handleUpdateExercise={handleUpdateExercise}
+              handleMoveExercise={handleMoveExercise}
             />
           ))}
         </div>
