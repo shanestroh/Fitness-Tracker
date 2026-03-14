@@ -12,7 +12,7 @@ import ConfirmModal from "@/app/components/ConfirmModal";
 
 type SessionPageProps = {
   params: Promise<{
-    id: string;
+    id: string | number;
   }>;
 };
 
@@ -196,38 +196,70 @@ export default function SessionPage({ params }: SessionPageProps) {
     if (form.time_seconds.trim()) payload.time_seconds = Number(form.time_seconds);
     if (form.intensity.trim()) payload.intensity = form.intensity.trim();
 
-    try {
-      const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+    const previousSession = session;
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Failed to add set: ${res.status}`);
-      }
+    const targetExercise = session?.exercises.find((ex) => ex.id === exerciseId);
+    const nextSetNumber = (targetExercise?.sets?.length ?? 0) + 1;
 
-      setSetFormByExercise((prev) => ({
+    const optimisticSet = {
+        id: `temp-${Date.now()}`,
+        set_number: nextSetNumber,
+        reps: payload.reps,
+        weight: payload.weight,
+        time_seconds: payload.time_seconds,
+        intensity: payload.intensity,
+    };
+
+    setSession((prev) => {
+        if (!prev) return prev;
+
+        return {
+            ...prev,
+            exercises: prev.exercises.map((exercise) =>
+                exercise.id === exerciseId
+                    ? {
+                        ...exercise,
+                        sets: [...exercise.sets, optimisticSet],
+                    }
+                : exercise
+            ),
+        };
+    });
+
+    setSetFormByExercise((prev) => ({
         ...prev,
         [exerciseId]: {
-          reps: "",
-          weight: "",
-          time_seconds: "",
-          intensity: "",
+        reps: "",
+        weight: "",
+        time_seconds: "",
+        intensity: "",
         },
-      }));
+    }));
 
-      await loadSession(sessionId);
-    } catch (err: any) {
-      setSetErrorByExercise((prev) => ({
-        ...prev,
-        [exerciseId]: err?.message ?? "Failed to add set",
-      }));
+    try {
+        const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || `Failed to add set: ${res.status}`);
+        }
+
+        await loadSession(sessionId);
+      } catch (err: any) {
+        setSession(previousSession);
+
+        setSetErrorByExercise((prev) => ({
+            ...prev,
+            [exerciseId]: err?.message ?? "Failed to add set",
+        }));
     } finally {
-      setAddingSetByExercise((prev) => ({
-        ...prev,
-        [exerciseId]: false,
-      }));
+        setAddingSetByExercise((prev) => ({
+            ...prev,
+            [exerciseId]: false,
+        }));
     }
   }
 
