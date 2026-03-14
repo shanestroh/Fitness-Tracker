@@ -15,51 +15,15 @@ export default function HomePage() {
       </h1>
 
       <div style={{ display: "grid", gap: 12 }}>
-        <Link
-          href="/sessions/new"
-          style={{
-            padding: 16,
-            border: "1px solid #d1d5db",
-            borderRadius: 12,
-            textDecoration: "none",
-            display: "block",
-            background: "#fff",
-            color: "#111",
-            fontWeight: 600,
-          }}
-        >
+        <Link href="/sessions/new" className="home-card">
           Start New Workout
         </Link>
 
-        <Link
-          href="/sessions"
-          style={{
-            padding: 16,
-            border: "1px solid #d1d5db",
-            borderRadius: 12,
-            textDecoration: "none",
-            display: "block",
-            background: "#fff",
-            color: "#111",
-            fontWeight: 600,
-          }}
-        >
+        <Link href="/sessions" className="home-card">
           View All Workouts
         </Link>
 
-        <Link
-          href="/splits"
-          style={{
-            padding: 16,
-            border: "1px solid #d1d5db",
-            borderRadius: 12,
-            textDecoration: "none",
-            display: "block",
-            background: "#fff",
-            color: "#111",
-            fontWeight: 600,
-          }}
-        >
+        <Link href="/splits" className="home-card">
           Browse by Split
         </Link>
       </div>
