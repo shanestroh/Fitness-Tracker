@@ -51,7 +51,7 @@ export default async function SessionsPage() {
   const sessions = await getSessions();
 
   return (
-    <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
+    <main style={{ maxWidth: 700, margin: "32px auto", padding: "0 16px" }}>
       <div
         style={{
           display: "flex",
@@ -60,18 +60,20 @@ export default async function SessionsPage() {
           marginBottom: 20,
         }}
       >
-        <h1 style={{ fontSize: 30, fontWeight: 700 }}>Workout Sessions</h1>
+        <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0 }}>
+            Workout Sessions
+        </h1>
 
         <Link
           href="/sessions/new"
           style={{
-            padding: "10px 14px",
-            border: "1px solid #ccc",
+            padding: "12px 16px",
+            border: "1px solid #111",
             borderRadius: 10,
             textDecoration: "none",
-            background: "#fff",
-            color: "#111",
-            fontWeight: 600,
+            background: "#111",
+            color: "#fff",
+            fontWeight: 700,
           }}
         >
           + New Session
@@ -88,24 +90,26 @@ export default async function SessionsPage() {
               href={`/sessions/${session.id}`}
               style={{
                 display: "block",
-                border: "1px solid #ddd",
-                borderRadius: 12,
-                padding: 16,
+                border: "1px solid #e5e5e5",
+                borderRadius: 16,
+                padding: 18,
                 textDecoration: "none",
                 color: "inherit",
                 background: "#fff",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "center",
+                  alignItems: "flex-start",
                   marginBottom: session.notes ? 6 : 0,
                   gap: 12,
+                  flexWrap: "wrap",
                 }}
               >
-                <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+                <h2 style={{ fontSize: 21, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
                   {session.split}
                   <span
                     style={{

@@ -2,11 +2,11 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
+    <main style={{ maxWidth: 720, margin: "32px auto", padding: "0 16px" }}>
       <h1
         style={{
           fontSize: 32,
-          fontWeight: 700,
+          fontWeight: 800,
           marginBottom: 24,
           color: "#111",
         }}
@@ -14,7 +14,11 @@ export default function HomePage() {
         Personal Fitness Tracker
       </h1>
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <p style={{ color: "#555", marginBottom: 28 }}>
+        Track workouts, log exercises, and review your training history.
+      </p>
+
+      <div style={{ display: "grid", gap: 14 }}>
         <Link href="/sessions/new" className="home-card">
           Start New Workout
         </Link>

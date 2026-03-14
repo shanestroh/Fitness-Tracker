@@ -72,11 +72,12 @@ export default function SessionHeader({
   return (
     <section
       style={{
+        background: "#fff",
         border: "1px solid #ddd",
         borderRadius: 16,
         padding: 20,
         marginBottom: 24,
-        background: "#fafafa",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         color: cardText,
       }}
     >

@@ -46,10 +46,10 @@ export default function SetRow({
   return (
     <div
       style={{
-        padding: "12px 14px",
-        border: "1px solid #eee",
-        borderRadius: 10,
-        background: "#fafafa",
+        padding: "14px 16px",
+        border: "1px solid #e5e5e5",
+        borderRadius: 12,
+        background: "#fff",
         color: cardText,
       }}
     >
@@ -63,7 +63,13 @@ export default function SetRow({
               type="number"
               value={editSetReps}
               onChange={(e) => setEditSetReps(e.target.value)}
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+              style={{
+                padding: 10,
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                background: "#fff",
+                color: "#111",
+              }}
             />
           </label>
 
@@ -73,7 +79,13 @@ export default function SetRow({
               type="number"
               value={editSetWeight}
               onChange={(e) => setEditSetWeight(e.target.value)}
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+              style={{
+                padding: 10,
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                background: "#fff",
+                color: "#111",
+              }}
             />
           </label>
 
@@ -83,7 +95,13 @@ export default function SetRow({
               type="number"
               value={editSetTimeSeconds}
               onChange={(e) => setEditSetTimeSeconds(e.target.value)}
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+              style={{
+                padding: 10,
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                background: "#fff",
+                color: "#111",
+              }}
             />
           </label>
 
@@ -92,7 +110,13 @@ export default function SetRow({
             <input
               value={editSetIntensity}
               onChange={(e) => setEditSetIntensity(e.target.value)}
-              style={{ padding: 8, border: "1px solid #ccc", borderRadius: 8 }}
+              style={{
+                padding: 10,
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                background: "#fff",
+                color: "#111",
+              }}
             />
           </label>
 
@@ -102,17 +126,18 @@ export default function SetRow({
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
               type="submit"
               disabled={updatingSet}
               style={{
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: "1px solid #ccc",
-                background: "#fff",
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid #111",
+                background: "#111",
+                color: "#fff",
                 cursor: updatingSet ? "not-allowed" : "pointer",
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
               {updatingSet ? "Saving..." : "Save"}
@@ -125,12 +150,13 @@ export default function SetRow({
                 setUpdateSetError(null);
               }}
               style={{
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: "1px solid #ccc",
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid #d0d0d0",
                 background: "#fff",
+                color: "#111",
                 cursor: "pointer",
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
               Cancel
@@ -144,6 +170,7 @@ export default function SetRow({
             justifyContent: "space-between",
             alignItems: "center",
             gap: 12,
+            flexWrap: "wrap",
           }}
         >
           <div>
@@ -156,17 +183,18 @@ export default function SetRow({
             </span>
           </div>
 
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={() => startEditingSet(set)}
               style={{
-                padding: "6px 10px",
-                borderRadius: 8,
-                border: "1px solid #ccc",
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid #d0d0d0",
                 background: "#fff",
+                color: "#111",
                 cursor: "pointer",
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
               Edit Set
@@ -177,12 +205,13 @@ export default function SetRow({
               onClick={() => handleDeleteSet(set.id)}
               disabled={deletingSetById[set.id]}
               style={{
-                padding: "6px 10px",
-                borderRadius: 8,
-                border: "1px solid #ccc",
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid #f0b8c1",
                 background: "#fff",
+                color: "#b00020",
                 cursor: deletingSetById[set.id] ? "not-allowed" : "pointer",
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
               {deletingSetById[set.id] ? "Deleting..." : "Delete Set"}

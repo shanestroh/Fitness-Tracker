@@ -28,13 +28,13 @@ export default function AddExerciseForm({
           type="button"
           onClick={() => setShowForm(true)}
           style={{
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid #d0d0d0",
-            background: "#fff",
-            color: cardText,
+            padding: "12px 16px",
+            borderRadius: 10,
+            border: "1px solid #111",
+            background: "#111",
+            color: "#fff",
             cursor: "pointer",
-            fontWeight: 600,
+            fontWeight: 700,
           }}
         >
           Add Exercise
@@ -42,10 +42,11 @@ export default function AddExerciseForm({
       ) : (
         <section
           style={{
-            border: "1px solid #ddd",
-            borderRadius: 16,
-            padding: 18,
             background: "#fff",
+            border: "1px solid #e5e5e5",
+            borderRadius: 16,
+            padding: 20,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             color: cardText,
           }}
         >
@@ -68,6 +69,8 @@ export default function AddExerciseForm({
                   padding: 10,
                   border: "1px solid #ccc",
                   borderRadius: 8,
+                  background: "#fff",
+                  color: "#111",
                 }}
               />
             </label>
@@ -83,9 +86,11 @@ export default function AddExerciseForm({
                 type="submit"
                 disabled={addingExercise}
                 style={{
-                  padding: 12,
+                  padding: "12px 16px",
                   borderRadius: 10,
-                  border: "none",
+                  border: "1px solid #111",
+                  background: "#111",
+                  color: "#fff",
                   cursor: addingExercise ? "not-allowed" : "pointer",
                   fontWeight: 700,
                 }}
@@ -97,13 +102,13 @@ export default function AddExerciseForm({
                 type="button"
                 onClick={() => setShowForm(false)}
                 style={{
-                  padding: "10px 14px",
-                  borderRadius: 8,
+                  padding: "12px 16px",
+                  borderRadius: 10,
                   border: "1px solid #d0d0d0",
                   background: "#fff",
-                  color: cardText,
+                  color: "#111",
                   cursor: "pointer",
-                  fontWeight: 600,
+                  fontWeight: 700,
                 }}
               >
                 Cancel

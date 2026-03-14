@@ -108,12 +108,12 @@ export default function ExerciseCard({
   return (
     <section
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid #e5e5e5",
         borderRadius: 16,
-        padding: 18,
+        padding: 20,
         background: "#fff",
         color: cardText,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
       }}
     >
 {editingExerciseId === exercise.id ? (
@@ -123,7 +123,13 @@ export default function ExerciseCard({
       <input
         value={editExerciseName}
         onChange={(e) => setEditExerciseName(e.target.value)}
-        style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+        style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            background: "#fff",
+            color: "#111",
+        }}
       />
     </label>
 
@@ -139,12 +145,13 @@ export default function ExerciseCard({
         onClick={() => handleUpdateExercise(exercise.id)}
         disabled={updatingExercise}
         style={{
-          padding: "8px 12px",
-          borderRadius: 8,
-          border: "1px solid #d0d0d0",
-          background: "#fff",
+          padding: "10px 14px",
+          borderRadius: 10,
+          border: "1px solid #111",
+          background: "#111",
+          color: "#fff",
           cursor: updatingExercise ? "not-allowed" : "pointer",
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         {updatingExercise ? "Saving..." : "Save"}
@@ -157,12 +164,13 @@ export default function ExerciseCard({
           setUpdateExerciseError(null);
         }}
         style={{
-          padding: "8px 12px",
-          borderRadius: 8,
+          padding: "10px 14px",
+          borderRadius: 10,
           border: "1px solid #d0d0d0",
           background: "#fff",
+          color: "#111",
           cursor: "pointer",
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         Cancel
@@ -203,7 +211,7 @@ export default function ExerciseCard({
         minWidth: 0,
     }}
     >
-    <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+    <h3 style={{ fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
         {exercise.order_index !== undefined ? `${exercise.order_index}. ` : ""}
         {exercise.exercise} {isExpanded ? "▼" : "▶"}
     </h3>
@@ -222,11 +230,12 @@ export default function ExerciseCard({
         onClick={() => handleMoveExercise(exercise.id, "up")}
         style={{
             padding: "10px 14px",
-            borderRadius: 8,
+            borderRadius: 10,
             border: "1px solid #d0d0d0",
             background: "#fff",
             cursor: "pointer",
-            fontWeight: 600,
+            color: "#111",
+            fontWeight: 700,
             }}
         >
         ↑
@@ -238,11 +247,12 @@ export default function ExerciseCard({
         onClick={() => handleMoveExercise(exercise.id, "down")}
         style={{
             padding: "10px 14px",
-            borderRadius: 8,
+            borderRadius: 10,
             border: "1px solid #d0d0d0",
             background: "#fff",
+            color: "#111",
             cursor: "pointer",
-            fontWeight: 600,
+            fontWeight: 700,
         }}
     >
         ↓
@@ -253,11 +263,12 @@ export default function ExerciseCard({
         onClick={() => startEditingExercise(exercise)}
         style={{
           padding: "10px 14px",
-          borderRadius: 8,
+          borderRadius: 10,
           border: "1px solid #d0d0d0",
           background: "#fff",
+          color: "#111",
           cursor: "pointer",
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         Edit Exercise
@@ -269,11 +280,12 @@ export default function ExerciseCard({
         disabled={deletingExerciseById[exercise.id]}
         style={{
           padding: "10px 14px",
-          borderRadius: 8,
-          border: "1px solid #d0d0d0",
+          borderRadius: 10,
+          border: "1px solid #f0b8c1",
           background: "#fff",
+          color: "#b00020",
           cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
@@ -321,12 +333,13 @@ export default function ExerciseCard({
             type="button"
             onClick={() => setShowAddSetForm(true)}
             style={{
-              padding: "10px 14px",
-              borderRadius: 8,
-              border: "1px solid #d0d0d0",
-              background: "#fff",
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "1px solid #111",
+              background: "#111",
+              color: "#fff",
               cursor: "pointer",
-              fontWeight: 600,
+              fontWeight: 700,
             }}
           >
             Add Set
@@ -334,12 +347,13 @@ export default function ExerciseCard({
         ) : (
       <section
         style={{
-          border: "1px solid #eee",
-          borderRadius: 12,
-          padding: 14,
+          border: "1px solid #e5e5e5",
+          borderRadius: 14,
+          padding: 16,
           marginBottom: 16,
-          background: "#fcfcfc",
+          background: "#fff",
           color: cardText,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
         }}
       >
         <h4 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px 0" }}>
@@ -357,7 +371,13 @@ export default function ExerciseCard({
                   value={setFormByExercise[exercise.id]?.reps ?? ""}
                   onChange={(e) => updateSetForm(exercise.id, "reps", e.target.value)}
                   placeholder="10"
-                  style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                  style={{
+                    padding: 10,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#fff",
+                    color: "#111",
+                  }}
                 />
               </label>
 
@@ -368,7 +388,13 @@ export default function ExerciseCard({
               value={setFormByExercise[exercise.id]?.weight ?? ""}
               onChange={(e) => updateSetForm(exercise.id, "weight", e.target.value)}
               placeholder="135"
-              style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+              style={{
+                padding: 10,
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                background: "#fff",
+                color: "#111",
+              }}
             />
           </label>
 
@@ -381,7 +407,13 @@ export default function ExerciseCard({
                     updateSetForm(exercise.id, "time_seconds", e.target.value)
                 }
                 placeholder="Cardio only"
-                style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                style={{
+                    padding: 10,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#fff",
+                    color: "#111",
+                }}
             />
           </label>
 
@@ -394,7 +426,13 @@ export default function ExerciseCard({
                     updateSetForm(exercise.id, "intensity", e.target.value)
                 }
                 placeholder="Cardio only"
-                style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+                style={{
+                    padding: 10,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#fff",
+                    color: "#111",
+                }}
             />
           </label>
 
@@ -403,9 +441,11 @@ export default function ExerciseCard({
                   type="submit"
                   disabled={addingSetByExercise[exercise.id]}
                   style={{
-                    padding: 10,
-                    borderRadius: 8,
-                    border: "none",
+                    padding: "12px 16px",
+                    borderRadius: 10,
+                    border: "1px solid #111",
+                    background: "#111",
+                    color: "#fff",
                     cursor: addingSetByExercise[exercise.id] ? "not-allowed" : "pointer",
                     fontWeight: 700,
                   }}
@@ -417,12 +457,13 @@ export default function ExerciseCard({
                   type="button"
                   onClick={() => setShowAddSetForm(false)}
                   style={{
-                    padding: "10px 14px",
-                    borderRadius: 8,
+                    padding: "12px 16px",
+                    borderRadius: 10,
                     border: "1px solid #d0d0d0",
                     background: "#fff",
+                    color: "#111",
                     cursor: "pointer",
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
                   Cancel
