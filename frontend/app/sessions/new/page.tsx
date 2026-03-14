@@ -10,6 +10,22 @@ type CreateSessionPayload = {
   notes?: string;
 };
 
+const PRESET_SPLITS = [
+  "Push",
+  "Pull",
+  "Legs",
+  "Shoulders",
+  "Cardio",
+  "Other",
+];
+
+function normalizeCustomSplit(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
+
 export default function NewSessionPage() {
   const router = useRouter();
 
@@ -21,20 +37,32 @@ export default function NewSessionPage() {
     return `${yyyy}-${mm}-${dd}`;
   });
 
-  const [split, setSplit] = useState("");
+  const [splitOption, setSplitOption] = useState("Push");
+  const [customSplit, setCustomSplit] = useState("");
   const [notes, setNotes] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const finalSplit =
+    splitOption === "Other"
+      ? normalizeCustomSplit(customSplit)
+      : splitOption;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!finalSplit) {
+      setError("Please enter a custom split name.");
+      return;
+    }
+
     setLoading(true);
 
     const payload: CreateSessionPayload = {
       date,
-      split,
+      split: finalSplit,
       notes: notes.trim() ? notes.trim() : undefined,
     };
 
@@ -78,20 +106,55 @@ export default function NewSessionPage() {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              background: "#fff",
+              color: "#111",
+            }}
           />
         </label>
 
         <label style={{ display: "grid", gap: 6 }}>
           <span>Split</span>
-          <input
-            value={split}
-            onChange={(e) => setSplit(e.target.value)}
-            placeholder="Push Day"
-            required
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
-          />
+          <select
+            value={splitOption}
+            onChange={(e) => setSplitOption(e.target.value)}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              background: "#fff",
+              color: "#111",
+            }}
+          >
+            {PRESET_SPLITS.map((split) => (
+              <option key={split} value={split}>
+                {split}
+              </option>
+            ))}
+          </select>
         </label>
+
+        {splitOption === "Other" && (
+          <label style={{ display: "grid", gap: 6 }}>
+            <span>Custom Split Name</span>
+            <input
+              value={customSplit}
+              onChange={(e) => setCustomSplit(e.target.value)}
+              placeholder="Enter custom split"
+              required
+              style={{
+                padding: 10,
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                background: "#fff",
+                color: "#111",
+              }}
+            />
+          </label>
+        )}
 
         <label style={{ display: "grid", gap: 6 }}>
           <span>Notes (optional)</span>
@@ -100,7 +163,13 @@ export default function NewSessionPage() {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="How did it feel?"
             rows={4}
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              background: "#fff",
+              color: "#111",
+            }}
           />
         </label>
 
@@ -109,37 +178,40 @@ export default function NewSessionPage() {
             {error}
           </div>
         )}
-    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "12px 16px",
-            borderRadius: 10,
-            border: "none",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontWeight: 700,
-          }}
-        >
-          {loading ? "Creating..." : "Create Session"}
-        </button>
 
-        <button
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button
+            type="submit"
+            disabled={loading || !finalSplit}
+            style={{
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "1px solid #d0d0d0",
+              background: "#fff",
+              cursor: loading || !finalSplit ? "not-allowed" : "pointer",
+              fontWeight: 700,
+              color: "#111",
+            }}
+          >
+            {loading ? "Creating..." : "Create Session"}
+          </button>
+
+          <button
             type="button"
             onClick={() => router.push("/sessions")}
             style={{
-                padding: "12px 16px",
-                borderRadius: 10,
-                border: "1px solid #d0d0d0",
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 700,
-                color: "#444",
-                }}
-            >
-                Cancel
-                </button>
-            </div>
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "1px solid #d0d0d0",
+              background: "#fff",
+              cursor: "pointer",
+              fontWeight: 700,
+              color: "#444",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </main>
   );
