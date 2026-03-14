@@ -8,6 +8,7 @@ import SessionHeader from "./SessionHeader";
 import AddExerciseForm from "./AddExerciseForm";
 import { apiFetch } from "@/lib/apiFetch";
 import type { SessionFull } from "@/types/workout";
+import ConfirmModal from "@/app/components/ConfirmModal";
 
 type SessionPageProps = {
   params: Promise<{
@@ -30,7 +31,6 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [session, setSession] = useState<SessionFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
-
   const [exerciseName, setExerciseName] = useState("");
   const [addingExercise, setAddingExercise] = useState(false);
   const [exerciseError, setExerciseError] = useState<string | null>(null);
@@ -41,12 +41,10 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [deletingSession, setDeletingSession] = useState(false);
   const [deleteSessionError, setDeleteSessionError] = useState<string | null>(null);
   const [isEditingSession, setIsEditingSession] = useState(false);
-
   const [editSplitOption, setEditSplitOption] = useState("Push");
   const [editCustomSplit, setEditCustomSplit] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editNotes, setEditNotes] = useState("");
-
   const [updatingSession, setUpdatingSession] = useState(false);
   const [updateSessionError, setUpdateSessionError] = useState<string | null>(null);
   const [editingSetId, setEditingSetId] = useState<number | null>(null);
@@ -60,6 +58,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [editExerciseName, setEditExerciseName] = useState("");
   const [updatingExercise, setUpdatingExercise] = useState(false);
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
+  const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
@@ -356,29 +355,27 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function handleDeleteSession() {
     if (!sessionId) return;
 
-    const confirmed = window.confirm("Are you sure you want to delete this session?");
-    if (!confirmed) return;
-
     setDeleteSessionError(null);
     setDeletingSession(true);
 
     try {
-      const res = await apiFetch(`/sessions/${sessionId}`, {
-        method: "DELETE",
-      });
+        const res = await apiFetch(`/sessions/${sessionId}`, {
+            method: "DELETE",
+        });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Failed to delete session: ${res.status}`);
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || `Failed to delete session: ${res.status}`);
+        }
+
+        router.push("/sessions");
+      } catch (err: any) {
+        setDeleteSessionError(err?.message ?? "Failed to delete session");
+      } finally {
+        setDeletingSession(false);
+        setShowDeleteSessionModal(false);
       }
-
-      router.push("/sessions");
-    } catch (err: any) {
-      setDeleteSessionError(err?.message ?? "Failed to delete session");
-    } finally {
-      setDeletingSession(false);
     }
-  }
 
   async function handleUpdateSession(e: React.FormEvent) {
     e.preventDefault();
@@ -578,6 +575,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         deletingSession={deletingSession}
         deleteSessionError={deleteSessionError}
         handleDeleteSession={handleDeleteSession}
+        setShowDeleteSessionModal={setShowDeleteSessionModal}
       />
 
       <AddExerciseForm
@@ -654,6 +652,19 @@ export default function SessionPage({ params }: SessionPageProps) {
           ))}
         </div>
       )}
+      <ConfirmModal
+        open={showDeleteSessionModal}
+        title="Delete Session?"
+        message="This will permanently delete the session and all exercises and sets."
+        confirmText="Delete Session"
+        confirmLoading={deletingSession}
+        onConfirm={handleDeleteSession}
+        onCancel={() => {
+            if (!deletingSession) {
+                setShowDeleteSessionModal(false);
+            }
+        }}
+        />
     </main>
   );
 }

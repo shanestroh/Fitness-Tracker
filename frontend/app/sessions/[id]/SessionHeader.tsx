@@ -31,6 +31,7 @@ type SessionHeaderProps = {
   deletingSession: boolean;
   deleteSessionError: string | null;
   handleDeleteSession: () => Promise<void>;
+  setShowDeleteSessionModal: (value: boolean) => void;
 };
 
 export default function SessionHeader({
@@ -224,7 +225,7 @@ export default function SessionHeader({
 
             <button
               type="button"
-              onClick={handleDeleteSession}
+              onClick={() => setShowDeleteSessionModal(true)}
               disabled={deletingSession}
               style={{
                 padding: "10px 14px",
