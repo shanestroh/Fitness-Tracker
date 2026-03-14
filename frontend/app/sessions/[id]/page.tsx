@@ -13,7 +13,7 @@ import Link from "next/link";
 
 type SessionPageProps = {
     params: Promise<{
-        id: string | number;
+        id: string;
     }>;
 };
 
