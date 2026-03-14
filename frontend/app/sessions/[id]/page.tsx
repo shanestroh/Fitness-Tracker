@@ -16,18 +16,6 @@ type SessionPageProps = {
         id: string | number;
     }>;
 };
-  useEffect(() => {
-  async function unwrapParams() {
-    const resolvedParams = await params;
-    const id = String(resolvedParams.id);
-
-    setSessionId(id);
-    await loadSession(id);
-  }
-
-  unwrapParams();
-}, [params]);
-};
 
 const PRESET_SPLITS = ["Push", "Pull", "Legs", "Shoulders", "Cardio"];
 
@@ -74,6 +62,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const cardText = "#111";
 
+
+
   const [setFormByExercise, setSetFormByExercise] = useState<
     Record<
       number,
@@ -117,6 +107,18 @@ export default function SessionPage({ params }: SessionPageProps) {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    async function unwrapParams() {
+        const resolvedParams = await params;
+        const id = String(resolvedParams.id);
+
+        setSessionId(id);
+        await loadSession(id);
+    }
+
+    unwrapParams();
+  }, [params]);
 
   function updateSetForm(
     exerciseId: number,
