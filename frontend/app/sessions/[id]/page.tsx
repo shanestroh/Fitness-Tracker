@@ -12,6 +12,10 @@ import ConfirmModal from "@/app/components/ConfirmModal";
 import Link from "next/link";
 
 type SessionPageProps = {
+    params: Promise<{
+        id: string | number;
+    }>;
+};
   useEffect(() => {
   async function unwrapParams() {
     const resolvedParams = await params;
