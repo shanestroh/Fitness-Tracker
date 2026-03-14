@@ -1,5 +1,5 @@
 export type SetEntry = {
-  id: number;
+  id: number | string;
   set_number?: number;
   reps?: number;
   weight?: number;

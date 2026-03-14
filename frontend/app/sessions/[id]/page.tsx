@@ -9,11 +9,20 @@ import AddExerciseForm from "./AddExerciseForm";
 import { apiFetch } from "@/lib/apiFetch";
 import type { SessionFull } from "@/types/workout";
 import ConfirmModal from "@/app/components/ConfirmModal";
+import Link from "next/link";
 
 type SessionPageProps = {
-  params: Promise<{
-    id: string | number;
-  }>;
+  useEffect(() => {
+  async function unwrapParams() {
+    const resolvedParams = await params;
+    const id = String(resolvedParams.id);
+
+    setSessionId(id);
+    await loadSession(id);
+  }
+
+  unwrapParams();
+}, [params]);
 };
 
 const PRESET_SPLITS = ["Push", "Pull", "Legs", "Shoulders", "Cardio"];
@@ -47,7 +56,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [editNotes, setEditNotes] = useState("");
   const [updatingSession, setUpdatingSession] = useState(false);
   const [updateSessionError, setUpdateSessionError] = useState<string | null>(null);
-  const [editingSetId, setEditingSetId] = useState<number | null>(null);
+  const [editingSetId, setEditingSetId] = useState<number | string | null>(null);
   const [editSetReps, setEditSetReps] = useState("");
   const [editSetWeight, setEditSetWeight] = useState("");
   const [editSetTimeSeconds, setEditSetTimeSeconds] = useState("");
@@ -574,7 +583,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
   return (
     <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
-      <a
+      <Link
         href="/sessions"
         style={{
           display: "inline-block",
@@ -583,7 +592,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         }}
       >
         ← Back to Sessions
-      </a>
+      </Link>
 
       <SessionHeader
         split={session.split}
