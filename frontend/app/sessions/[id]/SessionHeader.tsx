@@ -56,6 +56,7 @@ export default function SessionHeader({
   deletingSession,
   deleteSessionError,
   handleDeleteSession,
+  setShowDeleteSessionModal,
 }: SessionHeaderProps) {
   function resetEditForm() {
     const isPresetSplit = PRESET_SPLITS.includes(split);
