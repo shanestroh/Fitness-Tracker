@@ -232,11 +232,11 @@ export default function SessionHeader({
               style={{
                 padding: "10px 14px",
                 borderRadius: 10,
-                border: "1px solid #d0d0d0",
+                border: "1px solid #f0b8c1",
                 background: "#fff",
+                color: "#b00020",
                 cursor: deletingSession ? "not-allowed" : "pointer",
                 fontWeight: 700,
-                color: cardText,
               }}
             >
               {deletingSession ? "Deleting..." : "Delete Session"}
