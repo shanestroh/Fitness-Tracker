@@ -3,7 +3,7 @@ import { SetEntry } from "@/types/workout";
 type SetRowProps = {
   set: SetEntry;
   cardText: string;
-  editingSetId: number | null;
+  editingSetId: number | string | null;
   editSetReps: string;
   setEditSetReps: (value: string) => void;
   editSetWeight: string;
@@ -18,7 +18,7 @@ type SetRowProps = {
   startEditingSet: (set: SetEntry) => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
   deletingSetById: Record<string, boolean>;
-  setEditingSetId: (id: number | null) => void;
+  setEditingSetId: (id: number | string | null) => void;
   setUpdateSetError: (value: string | null) => void;
 };
 

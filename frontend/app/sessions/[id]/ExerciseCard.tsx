@@ -32,7 +32,7 @@ type ExerciseCardProps = {
   addingSetByExercise: Record<number, boolean>;
   setErrorByExercise: Record<number, string | null>;
 
-  editingSetId: number | null;
+  editingSetId: number | string | null;
   editSetReps: string;
   setEditSetReps: (value: string) => void;
   editSetWeight: string;
@@ -47,7 +47,7 @@ type ExerciseCardProps = {
   startEditingSet: (set: SetEntry) => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
   deletingSetById: Record<string, boolean>;
-  setEditingSetId: (id: number | null) => void;
+  setEditingSetId: (id: number | string | null) => void;
   setUpdateSetError: (value: string | null) => void;
   editingExerciseId: number | null;
   editExerciseName: string;
