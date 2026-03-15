@@ -11,6 +11,13 @@ import type { SessionFull } from "@/types/workout";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import Link from "next/link";
 
+import {
+  getOfflineQueue,
+  enqueueAddSetAction,
+  removeQueuedAction,
+  removeQueuedAddSetByTempId,
+} from "@/lib/offlineQueue";
+
 type SessionPageProps = {
     params: Promise<{
         id: number | string;
@@ -234,8 +241,10 @@ export default function SessionPage({ params }: SessionPageProps) {
     const targetExercise = session?.exercises.find((ex) => ex.id === exerciseId);
     const nextSetNumber = (targetExercise?.sets?.length ?? 0) + 1;
 
+    const tempSetId = `temp-${Date.now()}`;
+
     const optimisticSet = {
-        id: `temp-${Date.now()}`,
+        id: tempSetId,
         set_number: nextSetNumber,
         reps: payload.reps,
         weight: payload.weight,
@@ -277,24 +286,39 @@ export default function SessionPage({ params }: SessionPageProps) {
 
         if (!res.ok) {
             const text = await res.text();
-            throw new Error(text || `Failed to add set: ${res.status}`);
+
+            //Real server rejection: rollback and show actual error
+            setSession(previousSession)
+            setSetErrorByExercise((prev) => ({
+                ...prev,
+                [exerciseId]: text || `Failed to add set: ${res.status}`,
+            }));
+            return;
         }
 
         await loadSession(sessionId);
       } catch (err: any) {
-        setSession(previousSession);
+            enqueueAddSetAction({
+                id: `queue-${Date.now()}-${exerciseId}`,
+                type: "add-set",
+                sessionId,
+                exerciseId,
+                tempSetId,
+                payload,
+                createdAt: Date.now(),
+            });
 
-        setSetErrorByExercise((prev) => ({
-            ...prev,
-            [exerciseId]: err?.message ?? "Failed to add set",
-        }));
-    } finally {
-        setAddingSetByExercise((prev) => ({
-            ...prev,
-            [exerciseId]: false,
-        }));
+            setSetErrorByExercise((prev) => ({
+                ...prev,
+                [exerciseId]: "Connection issue. Saved offline and will retry.",
+            }));
+          } finally {
+            setAddingSetByExercise((prev) => ({
+                ...prev,
+                [exerciseId]: false,
+            }));
+        }
     }
-  }
 
   async function handleDeleteExercise(exerciseId: number) {
     if (!sessionId || !session) return;
@@ -367,6 +391,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     });
 
     if (typeof setId === "string") {
+        removeQueuedAddSetByTempId(setId);
         return;
     }
 
@@ -624,6 +649,56 @@ export default function SessionPage({ params }: SessionPageProps) {
       setDeleteExerciseError(err?.message ?? "Failed to reorder exercise");
     }
   }
+
+  async function syncQueuedAddSets() {
+    if (!sessionId) return;
+
+    const queue = getOfflineQueue().filter(
+        (item) => item.type === "add-set" && item.sessionId === sessionId
+    );
+
+    if (queue.length === 0) return;
+
+    let syncedAny = false;
+
+    for (const item of queue) {
+        try {
+            const res = await apiFetch(`/exercises/${item.exerciseId}/sets`, {
+                method: "POST",
+                body: JSON.stringify(item.payload),
+            });
+
+            if (!res.ok) {
+                continue;
+            }
+
+            removeQueuedAction(item.id);
+            syncedAny = true;
+          } catch {
+            // still offline or failed again, keep it in queue
+          }
+        }
+
+        if (syncedAny) {
+            await loadSession(sessionId);
+        }
+    }
+
+    useEffect(() => {
+        if (!sessionId) return;
+
+        syncQueuedAddSets();
+
+        function handleOnline() {
+            syncQueuedAddSets();
+        }
+
+        window.addEventListener("online", handleOnline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+        };
+    }, [sessionId]);
 
   if (loading) {
     return (
