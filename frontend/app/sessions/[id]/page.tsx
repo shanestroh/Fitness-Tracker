@@ -140,7 +140,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function handleAddExercise(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!sessionId) return;
+    if (!sessionId || !session) return;
 
     const trimmedExerciseName = exerciseName.trim();
     if (!trimmedExerciseName) return;
@@ -155,7 +155,9 @@ export default function SessionPage({ params }: SessionPageProps) {
     const previousSession = session;
 
     const nextOrderIndex =
-        session?.exercises.length ? session.exercises.length + 1 : 1;
+        session.exercises.length > 0
+            ? Math.max(...session.exercises.map((ex) => ex.order_index ?? 0)) + 1
+            : 1;
 
     const optimisticExercise = {
         id: -Date.now(),
