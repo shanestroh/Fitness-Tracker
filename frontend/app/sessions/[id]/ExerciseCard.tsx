@@ -302,7 +302,6 @@ export default function ExerciseCard({
         {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
       </button>
     </div>
-  </div>
 )}
 
 {isExpanded && (
