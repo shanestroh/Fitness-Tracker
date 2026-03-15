@@ -137,16 +137,6 @@ export default function SessionPage({ params }: SessionPageProps) {
     }));
   }
 
-  useEffect(() => {
-    async function unwrapParams() {
-      const resolvedParams = await params;
-      setSessionId(resolvedParams.id);
-      await loadSession(resolvedParams.id);
-    }
-
-    unwrapParams();
-  }, [params]);
-
   async function handleAddExercise(e: React.FormEvent) {
     e.preventDefault();
 
@@ -309,34 +299,51 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
-  async function handleDeleteSet(setId: number) {
+  async function handleDeleteSet(setId: number | string) {
     if (!sessionId) return;
+
+    if (typeof setId === "string") {
+        setSession((prev) => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                exercises: prev.exercises.map((exercise) => ({
+                    ...exercise,
+                    sets: exercise.sets.filter((set) => set.id !== setId),
+                })),
+            };
+        });
+
+        return;
+    }
 
     setDeleteSetError(null);
 
-    const setKey = String(setId)
+    const setKey = String(setId);
+
     setDeletingSetById((prev) => ({
-      ...prev,
-      [setId]: true,
+        ...prev,
+        [setKey]: true,
     }));
 
     try {
-      const res = await apiFetch(`/sets/${setId}`, {
-        method: "DELETE",
-      });
+        const res = await apiFetch(`/sets/${setId}`, {
+            method: "DELETE",
+        });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Failed to delete set: ${res.status}`);
-      }
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || `Failed to delete set: ${res.status}`);
+        }
 
-      await loadSession(sessionId);
-    } catch (err: any) {
-      setDeleteSetError(err?.message ?? "Failed to delete set");
-    } finally {
-      setDeletingSetById((prev) => ({
-        ...prev,
-        [setKey]: false,
+        await loadSession(sessionId);
+      } catch (err: any) {
+        setDeleteSetError(err?.message ?? "Failed to delete set");
+      } finally {
+        setDeletingSetById((prev) => ({
+            ...prev,
+            [setKey]: false,
       }));
     }
   }
@@ -353,7 +360,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function handleUpdateSet(e: React.FormEvent) {
     e.preventDefault();
 
-    if (editingSetId === null) return;
+    if (editingSetId === null || typeof editingSetId === "string") return;
 
     setUpdateSetError(null);
     setUpdatingSet(true);
