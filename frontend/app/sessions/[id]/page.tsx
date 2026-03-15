@@ -326,27 +326,29 @@ export default function SessionPage({ params }: SessionPageProps) {
   }
 
   async function handleDeleteSet(setId: number | string) {
-    if (!sessionId) return;
-
-    if (typeof setId === "string") {
-        setSession((prev) => {
-            if (!prev) return prev;
-
-            return {
-                ...prev,
-                exercises: prev.exercises.map((exercise) => ({
-                    ...exercise,
-                    sets: exercise.sets.filter((set) => set.id !== setId),
-                })),
-            };
-        });
-
-        return;
-    }
+    if (!sessionId || !session) return;
 
     setDeleteSetError(null);
 
+    const previousSession = session;
     const setKey = String(setId);
+
+    // Optimistically remove the set from the UI immediately
+    setSession((prev) => {
+        if (!prev) return prev;
+
+        return {
+            ...prev,
+            exercises: prev.exercises.map((exercise) => ({
+                ...exercise,
+                sets: exercise.sets.filter((set) => set.id !== setId),
+            })),
+        };
+    });
+
+    if (typeof setId === "string") {
+        return;
+    }
 
     setDeletingSetById((prev) => ({
         ...prev,
@@ -365,6 +367,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
         await loadSession(sessionId);
       } catch (err: any) {
+        setSession(previousSession);
         setDeleteSetError(err?.message ?? "Failed to delete set");
       } finally {
         setDeletingSetById((prev) => ({
