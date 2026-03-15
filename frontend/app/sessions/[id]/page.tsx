@@ -734,7 +734,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         return;
       }
 
-      setPendingExerciseEditsById(prev) => {
+      setPendingExerciseEditsById((prev) => {
           const next = { ...prev };
           delete next[exerciseId];
           return next;
