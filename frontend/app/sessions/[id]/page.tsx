@@ -1223,6 +1223,7 @@ export default function SessionPage({ params }: SessionPageProps) {
               startEditingExercise={startEditingExercise}
               handleUpdateExercise={handleUpdateExercise}
               handleMoveExercise={handleMoveExercise}
+              pendingExerciseEditsById={pendingExerciseEditsById}
             />
           ))}
         </div>
