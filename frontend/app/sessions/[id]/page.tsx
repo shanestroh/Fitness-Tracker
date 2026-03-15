@@ -10,6 +10,7 @@ import { apiFetch } from "@/lib/apiFetch";
 import type { SessionFull } from "@/types/workout";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import Link from "next/link";
+import { syncQueuedSessionActions } from "@/lib/offline/syncQueuedSessionActions";
 
 import {
   getOfflineQueue,
@@ -23,6 +24,20 @@ import {
   removeQueuedAddSetByTempId,
   removeQueuedAddExerciseByTempId,
 } from "@/lib/offlineQueue";
+
+import {
+  applyQueuedChangesToSession,
+  getPendingQueueCount,
+} from "@/lib/offline/sessionQueueHelpers";
+
+import {
+  addOptimisticExercise,
+  removeExerciseFromSession,
+  addOptimisticSet,
+  removeSetFromSession,
+  updateSetInSession,
+  updateExerciseNameInSession,
+} from "@/lib/session/sessionMutations";
 
 type SessionPageProps = {
     params: Promise<{
@@ -96,98 +111,6 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [setErrorByExercise, setSetErrorByExercise] = useState<Record<number, string | null>>({});
   const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
 
-  function refreshPendingQueueCount(currentSessionId: string) {
-    const count = getOfflineQueue().filter(
-        (item) => item.sessionId === currentSessionId
-    ).length;
-
-    setPendingQueueCount(count);
-  }
-
-  function applyQueuedChangesToSession(
-    baseSession: SessionFull,
-    currentSessionId: string
-  ): SessionFull {
-    const queue = getOfflineQueue().filter(
-        (item) => item.sessionId === currentSessionId
-    );
-
-    let nextSession: SessionFull = {
-        ...baseSession,
-        exercises: baseSession.exercises.map((exercise) => ({
-            ...exercise,
-            sets: [...exercise.sets],
-        })),
-    };
-
-    // 1) Remove deleted exercises first
-    for (const item of queue) {
-        if (item.type === "delete-exercise") {
-            nextSession = {
-                ...nextSession,
-                exercises: nextSession.exercises.filter(
-                    (exercise) => exercise.id !== item.exerciseId
-                ),
-            };
-        }
-    }
-
-    // 2) Apply queued exercise edits
-    for (const item of queue) {
-        if (item.type === "edit-exercise") {
-            nextSession = {
-                ...nextSession,
-                exercises: nextSession.exercises.map((exercise) =>
-                    exercise.id === item.exerciseId
-                      ? {
-                        ...exercise,
-                        exercise: item.payload.exercise,
-                        }
-                      : exercise
-                ),
-            };
-        }
-    }
-
-    // 3) Remove deleted sets
-    for (const item of queue) {
-        if (item.type === "delete-set") {
-            nextSession = {
-                ...nextSession,
-                exercises: nextSession.exercises.map((exercise) => ({
-                    ...exercise,
-                    sets: exercise.sets.filter((set) => set.id !== item.setId),
-                })),
-            };
-        }
-    }
-
-    // 4) Apply queued set edits
-    for (const item of queue) {
-        if (item.type === "edit-set") {
-            nextSession = {
-                ...nextSession,
-                exercises: nextSession.exercises.map((exercise) => ({
-                    ...exercise,
-                    sets: exercise.sets.map((set) =>
-                        set.id === item.setId
-                          ? {
-                            ...set,
-                            reps: item.payload.reps,
-                            weight: item.payload.weight,
-                            time_seconds: item.payload.time_seconds ?? undefined,
-                            intensity: item.payload.intensity ?? undefined,
-                            }
-                          : set
-                    ),
-                })),
-            };
-        }
-    }
-
-    return nextSession;
-  }
-
   async function loadSession(id: string) {
     setLoading(true);
     setPageError(null);
@@ -203,7 +126,7 @@ export default function SessionPage({ params }: SessionPageProps) {
       const data = await res.json();
       const hydratedSession = applyQueuedChangesToSession(data, id);
       setSession(hydratedSession);
-      refreshPendingQueueCount(id);
+      setPendingQueueCount(getPendingQueueCount(id));
 
       const loadedSplit = data.split ?? "";
       const isPresetSplit = PRESET_SPLITS.includes(loadedSplit);
@@ -241,7 +164,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         setIsOnline(window.navigator.onLine);
 
         if (sessionId) {
-            refreshPendingQueueCount(sessionId);
+            setPendingQueueCount(getPendingQueueCount(sessionId));
         }
     }
 
@@ -302,14 +225,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         sets: [],
     };
 
-    setSession((prev) => {
-        if (!prev) return prev;
-
-        return {
-            ...prev,
-            exercises: [...prev.exercises, optimisticExercise],
-        };
-    });
+    setSession((prev) => (prev ? addOptimisticExercise(prev, optimisticExercise) : prev));
 
     setExerciseName("");
 
@@ -337,7 +253,7 @@ export default function SessionPage({ params }: SessionPageProps) {
           createdAt: Date.now(),
       });
 
-      refreshPendingQueueCount(sessionId);
+      setPendingQueueCount(getPendingQueueCount(sessionId));
       setExerciseError("Connection issue. Saved offline and will retry.");
     } finally {
       setAddingExercise(false);
@@ -392,21 +308,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         intensity: payload.intensity,
     };
 
-    setSession((prev) => {
-        if (!prev) return prev;
-
-        return {
-            ...prev,
-            exercises: prev.exercises.map((exercise) =>
-                exercise.id === exerciseId
-                    ? {
-                        ...exercise,
-                        sets: [...exercise.sets, optimisticSet],
-                    }
-                : exercise
-            ),
-        };
-    });
+    setSession((prev) => (prev ? addOptimisticSet(prev, exerciseId, optimisticSet) : prev));
 
     setSetFormByExercise((prev) => ({
         ...prev,
@@ -448,7 +350,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 createdAt: Date.now(),
             });
 
-            refreshPendingQueueCount(sessionId);
+            setPendingQueueCount(getPendingQueueCount(sessionId));
 
             setSetErrorByExercise((prev) => ({
                 ...prev,
@@ -469,20 +371,12 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const previousSession = session;
 
-    // Remove from UI immediately
-    setSession((prev) => {
-        if (!prev) return prev;
-
-        return {
-            ...prev,
-            exercises: prev.exercises.filter((exercise) => exercise.id !== exerciseId),
-        };
-    });
+    setSession((prev) => (prev ? removeExerciseFromSession(prev, exerciseId) : prev));
 
     // Temporary optimistic exercise: no server delete needed
     if (exerciseId < 0) {
         removeQueuedAddExerciseByTempId(exerciseId);
-        refreshPendingQueueCount(sessionId);
+        setPendingQueueCount(getPendingQueueCount(sessionId));
         return;
         }
 
@@ -507,7 +401,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         return next;
       });
 
-      refreshPendingQueueCount(sessionId);
+      setPendingQueueCount(getPendingQueueCount(sessionId));
 
       await loadSession(sessionId);
     } catch (err: any) {
@@ -519,7 +413,7 @@ export default function SessionPage({ params }: SessionPageProps) {
            createdAt: Date.now(),
       });
 
-      refreshPendingQueueCount(sessionId);
+      setPendingQueueCount(getPendingQueueCount(sessionId));
 
       setPendingExerciseEditsById((prev) => {
         const next = { ...prev };
@@ -543,21 +437,11 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const setKey = String(setId);
 
-    setSession((prev) => {
-        if (!prev) return prev;
-
-        return {
-            ...prev,
-            exercises: prev.exercises.map((exercise) => ({
-                ...exercise,
-                sets: exercise.sets.filter((set) => set.id !== setId),
-            })),
-        };
-    });
+    setSession((prev) => (prev ? removeSetFromSession(prev, setId) : prev));
 
     if (typeof setId === "string") {
         removeQueuedAddSetByTempId(setId);
-        refreshPendingQueueCount(sessionId);
+        setPendingQueueCount(getPendingQueueCount(sessionId));
         return;
     }
 
@@ -592,7 +476,7 @@ export default function SessionPage({ params }: SessionPageProps) {
             createdAt: Date.now(),
         });
 
-        refreshPendingQueueCount(sessionId);
+        setPendingQueueCount(getPendingQueueCount(sessionId));
 
         setPendingSetEditsById((prev) => {
             const next = { ...prev };
@@ -652,27 +536,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const previousSession = session;
 
-    setSession((prev) => {
-        if (!prev) return prev;
-
-        return {
-            ...prev,
-            exercises: prev.exercises.map((exercise) => ({
-                ...exercise,
-                sets: exercise.sets.map((set) =>
-                    set.id === setId
-                        ? {
-                            ...set,
-                            reps: payload.reps,
-                            weight: payload.weight,
-                            time_seconds: payload.time_seconds ?? undefined,
-                            intensity: payload.intensity ?? undefined,
-                        }
-                    : set
-                ),
-            })),
-        };
-    });
+    setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
 
     try {
         const res = await apiFetch(`/sets/${setId}`, {
@@ -706,7 +570,7 @@ export default function SessionPage({ params }: SessionPageProps) {
             createdAt: Date.now(),
         });
 
-        refreshPendingQueueCount(sessionId);
+        setPendingQueueCount(getPendingQueueCount(sessionId));
 
         setPendingSetEditsById((prev) => ({
             ...prev,
@@ -817,21 +681,9 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const previousSession = session;
 
-    setSession((prev) => {
-        if (!prev) return prev;
-
-        return {
-            ...prev,
-            exercises: prev.exercises.map((exercise) =>
-                exercise.id === exerciseId
-                    ? {
-                        ...exercise,
-                        exercise: payload.exercise,
-                      }
-                    : exercise
-            ),
-        };
-    });
+    setSession((prev) =>
+        prev ? updateExerciseNameInSession(prev, exerciseId, payload.exercise) : prev
+    );
 
     try {
       const res = await apiFetch(`/exercises/${exerciseId}`, {
@@ -852,7 +704,7 @@ export default function SessionPage({ params }: SessionPageProps) {
           return next;
       });
 
-      refreshPendingQueueCount(sessionId);
+      setPendingQueueCount(getPendingQueueCount(sessionId));
 
       await loadSession(sessionId);
       setEditingExerciseId(null);
@@ -866,7 +718,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         createdAt: Date.now(),
       });
 
-      refreshPendingQueueCount(sessionId);
+      setPendingQueueCount(getPendingQueueCount(sessionId));
 
       setPendingExerciseEditsById((prev) => ({
         ...prev,
@@ -943,122 +795,29 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function syncQueuedActions() {
     if (!sessionId) return;
 
-    const queue = getOfflineQueue().filter((item) => item.sessionId === sessionId);
+    const syncedAny = await syncQueuedSessionActions({
+        sessionId,
 
-    if (queue.length === 0) return;
+        onQueueChange: () => {
+            setPendingQueueCount(getPendingQueueCount(sessionId));
+        },
 
-    let syncedAny = false;
+        onSetEditSynced: (setId) => {
+            setPendingSetEditsById((prev) => {
+                const next = { ...prev };
+                delete next[String(setId)];
+                return next;
+            });
+        },
 
-    for (const item of queue) {
-        try {
-            if (item.type === "add-set") {
-                const res = await apiFetch(`/exercises/${item.exerciseId}/sets`, {
-                    method: "POST",
-                    body: JSON.stringify(item.payload),
-                });
-
-                if (!res.ok) continue;
-
-                removeQueuedAction(item.id);
-                refreshPendingQueueCount(sessionId);
-                syncedAny = true;
-            }
-
-            if (item.type === "add-exercise") {
-                const res = await apiFetch(`/sessions/${item.sessionId}/exercises`, {
-                    method: "POST",
-                    body: JSON.stringify(item.payload),
-                });
-
-                if (!res.ok) continue;
-
-                removeQueuedAction(item.id);
-                refreshPendingQueueCount(sessionId);
-                syncedAny = true;
-            }
-
-            if (item.type === "edit-set") {
-                const res = await apiFetch(`/sets/${item.setId}`, {
-                    method: "PATCH",
-                    body: JSON.stringify(item.payload),
-                });
-
-                if (!res.ok) continue;
-
-                removeQueuedAction(item.id);
-                refreshPendingQueueCount(sessionId);
-
-                setPendingSetEditsById((prev) => {
-                    const next = { ...prev };
-                    delete next[String(item.setId)];
-                    return next;
-                });
-
-                syncedAny = true;
-            }
-
-            if (item.type === "delete-set") {
-                const res = await apiFetch(`/sets/${item.setId}`, {
-                    method: "DELETE",
-                });
-
-                if (!res.ok) continue;
-
-                removeQueuedAction(item.id);
-                refreshPendingQueueCount(sessionId);
-
-                setPendingSetEditsById((prev) => {
-                    const next = { ...prev };
-                    delete next[String(item.setId)];
-                    return next;
-                });
-
-                syncedAny = true;
-            }
-
-            if (item.type === "edit-exercise") {
-                const res = await apiFetch(`/exercises/${item.exerciseId}`, {
-                    method: "PATCH",
-                    body: JSON.stringify(item.payload),
-                });
-
-                if (!res.ok) continue;
-
-                removeQueuedAction(item.id);
-                refreshPendingQueueCount(sessionId);
-
-                setPendingExerciseEditsById((prev) => {
-                    const next = { ...prev };
-                    delete next[item.exerciseId];
-                    return next;
-                });
-
-                syncedAny = true;
-            }
-
-            if (item.type === "delete-exercise") {
-                const res = await apiFetch(`/exercises/${item.exerciseId}`, {
-                    method: "DELETE",
-                });
-
-                if (!res.ok) continue;
-
-                removeQueuedAction(item.id);
-                refreshPendingQueueCount(sessionId);
-
-                setPendingExerciseEditsById((prev) => {
-                    const next = { ...prev };
-                    delete next[item.exerciseId];
-                    return next;
-                });
-
-                syncedAny = true;
-            }
-
-        } catch {
-            // still offline or failed again, keep it in queue
-        }
-    }
+        onExerciseEditSynced: (exerciseId) => {
+            setPendingExerciseEditsById((prev) => {
+                const next = { ...prev };
+                delete next[exerciseId];
+                return next;
+            });
+        },
+    });
 
     if (syncedAny) {
         await loadSession(sessionId);
