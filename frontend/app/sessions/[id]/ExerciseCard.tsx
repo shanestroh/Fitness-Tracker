@@ -47,6 +47,7 @@ type ExerciseCardProps = {
   startEditingSet: (set: SetEntry) => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
   deletingSetById: Record<string, boolean>;
+  pendingSetEditsById: Record<string, boolean>;
   setEditingSetId: (id: number | string | null) => void;
   setUpdateSetError: (value: string | null) => void;
   editingExerciseId: number | null;
@@ -89,6 +90,7 @@ export default function ExerciseCard({
   startEditingSet,
   handleDeleteSet,
   deletingSetById,
+  pendingSetEditsById,
   setEditingSetId,
   setUpdateSetError,
   editingExerciseId,
@@ -320,6 +322,7 @@ export default function ExerciseCard({
               startEditingSet={startEditingSet}
               handleDeleteSet={handleDeleteSet}
               deletingSetById={deletingSetById}
+              pendingSetEditsById={pendingSetEditsById}
               setEditingSetId={setEditingSetId}
               setUpdateSetError={setUpdateSetError}
             />
