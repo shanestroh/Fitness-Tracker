@@ -18,6 +18,7 @@ import {
   enqueueOrReplaceEditSetAction,
   enqueueOrReplaceDeleteSetAction,
   enqueueOrReplaceEditExerciseAction,
+  enqueueOrReplaceDeleteExerciseAction,
   removeQueuedAction,
   removeQueuedAddSetByTempId,
   removeQueuedAddExerciseByTempId,
@@ -394,6 +395,8 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     // Temporary optimistic exercise: no server delete needed
     if (exerciseId < 0) {
+        removeQueuedAddExerciseByTempId(exerciseId);
+        refreshPendingQueueCount(sessionId);
         return;
         }
 
@@ -412,10 +415,33 @@ export default function SessionPage({ params }: SessionPageProps) {
         throw new Error(text || `Failed to delete exercise: ${res.status}`);
       }
 
+      setPendingExerciseEditsById((prev) => {
+        const next = { ...prev };
+        delete next[exerciseKey];
+        return next;
+      });
+
+      refreshPendingQueueCount(sessionId);
+
       await loadSession(sessionId);
     } catch (err: any) {
-      setSession(previousSession);
-      setDeleteExerciseError(err?.message ?? "Failed to delete exercise");
+      enqueueOrReplaceDeleteExerciseAction({
+          id: `queue-delete-exercise-${sessionId}-${exerciseId}`,
+           type: "delete-exercise",
+           sessionId,
+           exerciseId,
+           createdAt: Date.now(),
+      });
+
+      refreshPendingQueueCount(sessionId);
+
+      setPendingExerciseEditsById((prev) => {
+        const next = { ...prev };
+        delete next[exerciseKey];
+        return next;
+      });
+
+      setDeleteExerciseError("Connection issue. Delete saved offline and will retry.");
     } finally {
       setDeletingExerciseById((prev) => ({
         ...prev,
@@ -908,6 +934,25 @@ export default function SessionPage({ params }: SessionPageProps) {
                 const res = await apiFetch(`/exercises/${item.exerciseId}`, {
                     method: "PATCH",
                     body: JSON.stringify(item.payload),
+                });
+
+                if (!res.ok) continue;
+
+                removeQueuedAction(item.id);
+                refreshPendingQueueCount(sessionId);
+
+                setPendingExerciseEditsById((prev) => {
+                    const next = { ...prev };
+                    delete next[item.exerciseId];
+                    return next;
+                });
+
+                syncedAny = true;
+            }
+
+            if (item.type === "delete-exercise") {
+                const res = await apiFetch(`/exercises/${item.exerciseId}`, {
+                    method: "DELETE",
                 });
 
                 if (!res.ok) continue;
