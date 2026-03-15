@@ -692,7 +692,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 const res = await apiFetch(`/sessions/${item.sessionId}/exercises`, {
                     method: "POST",
                     body: JSON.stringify(item.payload),
-                }):
+                });
 
                 if (!res.ok) continue;
 
