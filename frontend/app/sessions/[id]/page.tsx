@@ -16,6 +16,7 @@ import {
   enqueueAddSetAction,
   enqueueAddExerciseAction,
   enqueueOrReplaceEditSetAction,
+  enqueueOrReplaceDeleteSetAction,
   removeQueuedAction,
   removeQueuedAddSetByTempId,
   removeQueuedAddExerciseByTempId,
@@ -393,7 +394,6 @@ export default function SessionPage({ params }: SessionPageProps) {
     const previousSession = session;
     const setKey = String(setId);
 
-    // Optimistically remove the set from the UI immediately
     setSession((prev) => {
         if (!prev) return prev;
 
@@ -426,10 +426,29 @@ export default function SessionPage({ params }: SessionPageProps) {
             throw new Error(text || `Failed to delete set: ${res.status}`);
         }
 
+        setPendingSetEditsById((prev) => {
+            const next = { ...prev };
+            delete next[setKey];
+            return next;
+        });
+
         await loadSession(sessionId);
       } catch (err: any) {
-        setSession(previousSession);
-        setDeleteSetError(err?.message ?? "Failed to delete set");
+        enqueueOrReplaceDeleteSetAction({
+            id: `queue-delete-set-${sessionId}-${setId}`,
+            type: "delete-set",
+            sessionId,
+            setId,
+            createdAt: Date.now(),
+        });
+
+        setPendingSetEditsById((prev) => {
+            const next = { ...prev };
+            delete next[setKey];
+            return next;
+        });
+
+        setDeleteSetError("Connection issue. Delete saved offline and will retry.");
       } finally {
         setDeletingSetById((prev) => ({
             ...prev,
@@ -755,6 +774,24 @@ export default function SessionPage({ params }: SessionPageProps) {
                 const res = await apiFetch(`/sets/${item.setId}`, {
                     method: "PATCH",
                     body: JSON.stringify(item.payload),
+                });
+
+                if (!res.ok) continue;
+
+                removeQueuedAction(item.id);
+
+                setPendingSetEditsById((prev) => {
+                    const next = { ...prev };
+                    delete next[String(item.setId)];
+                    return next;
+                });
+
+                syncedAny = true;
+            }
+
+            if (item.type === "delete-set") {
+                const res = await apiFetch(`/sets/${item.setId}`, {
+                    method: "DELETE",
                 });
 
                 if (!res.ok) continue;
