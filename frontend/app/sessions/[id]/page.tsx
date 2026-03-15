@@ -10,25 +10,20 @@ import { apiFetch } from "@/lib/apiFetch";
 import type { SessionFull } from "@/types/workout";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import Link from "next/link";
-import { syncQueuedSessionActions } from "@/lib/offline/syncQueuedSessionActions";
+import { useOfflineSessionSync } from "@/hooks/useOfflineSessionSync";
 
 import {
-  getOfflineQueue,
   enqueueAddSetAction,
   enqueueAddExerciseAction,
   enqueueOrReplaceEditSetAction,
   enqueueOrReplaceDeleteSetAction,
   enqueueOrReplaceEditExerciseAction,
   enqueueOrReplaceDeleteExerciseAction,
-  removeQueuedAction,
   removeQueuedAddSetByTempId,
   removeQueuedAddExerciseByTempId,
 } from "@/lib/offline/offlineQueue";
 
-import {
-  applyQueuedChangesToSession,
-  getPendingQueueCount,
-} from "@/lib/offline/sessionQueueHelpers";
+import { applyQueuedChangesToSession } from "@/lib/offline/sessionQueueHelpers";
 
 import {
   addOptimisticExercise,
@@ -88,10 +83,6 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [updatingExercise, setUpdatingExercise] = useState(false);
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
-  const [pendingSetEditsById, setPendingSetEditsById] = useState<Record<string, boolean>>({});
-  const [isOnline, setIsOnline] = useState(true);
-  const [pendingQueueCount, setPendingQueueCount] = useState(0);
-  const [pendingExerciseEditsById, setPendingExerciseEditsById] = useState<Record<number, boolean>>({});
   const cardText = "#111";
 
 
@@ -126,15 +117,15 @@ export default function SessionPage({ params }: SessionPageProps) {
       const data = await res.json();
       const hydratedSession = applyQueuedChangesToSession(data, id);
       setSession(hydratedSession);
-      setPendingQueueCount(getPendingQueueCount(id));
+      refreshPendingQueueCount(id);
 
-      const loadedSplit = data.split ?? "";
+      const loadedSplit = hydratedSession.split ?? "";
       const isPresetSplit = PRESET_SPLITS.includes(loadedSplit);
 
       setEditSplitOption(isPresetSplit ? loadedSplit : "Other");
       setEditCustomSplit(isPresetSplit ? "" : loadedSplit);
-      setEditDate(data.date ?? "");
-      setEditNotes(data.notes ?? "");
+      setEditDate(hydratedSession.date ?? "");
+      setEditNotes(hydratedSession.notes ?? "");
 
     } catch (err: any) {
       setPageError(err?.message ?? "Failed to load session");
@@ -142,6 +133,21 @@ export default function SessionPage({ params }: SessionPageProps) {
       setLoading(false);
     }
   }
+
+  const {
+    isOnline,
+    pendingQueueCount,
+    pendingSetEditsById,
+    pendingExerciseEditsById,
+    refreshPendingQueueCount,
+    markSetPending,
+    clearPendingSet,
+    markExercisePending,
+    clearPendingExercise,
+  } = useOfflineSessionSync({
+    sessionId,
+    loadSession,
+  });
 
   useEffect(() => {
     async function unwrapParams() {
@@ -154,28 +160,6 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     unwrapParams();
   }, [params]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    setIsOnline(window.navigator.onLine);
-
-    function handleOnlineStatusChange() {
-        setIsOnline(window.navigator.onLine);
-
-        if (sessionId) {
-            setPendingQueueCount(getPendingQueueCount(sessionId));
-        }
-    }
-
-    window.addEventListener("online", handleOnlineStatusChange);
-    window.addEventListener("offline", handleOnlineStatusChange);
-
-    return () => {
-        window.removeEventListener("online", handleOnlineStatusChange);
-        window.removeEventListener("offline", handleOnlineStatusChange);
-    };
-  }, [sessionId]);
 
   function updateSetForm(
     exerciseId: number,
@@ -253,7 +237,7 @@ export default function SessionPage({ params }: SessionPageProps) {
           createdAt: Date.now(),
       });
 
-      setPendingQueueCount(getPendingQueueCount(sessionId));
+      refreshPendingQueueCount(sessionId);
       setExerciseError("Connection issue. Saved offline and will retry.");
     } finally {
       setAddingExercise(false);
@@ -350,7 +334,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 createdAt: Date.now(),
             });
 
-            setPendingQueueCount(getPendingQueueCount(sessionId));
+            refreshPendingQueueCount(sessionId);
 
             setSetErrorByExercise((prev) => ({
                 ...prev,
@@ -376,7 +360,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     // Temporary optimistic exercise: no server delete needed
     if (exerciseId < 0) {
         removeQueuedAddExerciseByTempId(exerciseId);
-        setPendingQueueCount(getPendingQueueCount(sessionId));
+        refreshPendingQueueCount(sessionId);
         return;
         }
 
@@ -395,13 +379,9 @@ export default function SessionPage({ params }: SessionPageProps) {
         throw new Error(text || `Failed to delete exercise: ${res.status}`);
       }
 
-      setPendingExerciseEditsById((prev) => {
-        const next = { ...prev };
-        delete next[exerciseId];
-        return next;
-      });
+      clearPendingExercise(exerciseId);
 
-      setPendingQueueCount(getPendingQueueCount(sessionId));
+      refreshPendingQueueCount(sessionId);
 
       await loadSession(sessionId);
     } catch (err: any) {
@@ -413,7 +393,7 @@ export default function SessionPage({ params }: SessionPageProps) {
            createdAt: Date.now(),
       });
 
-      setPendingQueueCount(getPendingQueueCount(sessionId));
+      refreshPendingQueueCount(sessionId);
 
       setPendingExerciseEditsById((prev) => {
         const next = { ...prev };
@@ -441,7 +421,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     if (typeof setId === "string") {
         removeQueuedAddSetByTempId(setId);
-        setPendingQueueCount(getPendingQueueCount(sessionId));
+        refreshPendingQueueCount(sessionId);
         return;
     }
 
@@ -460,11 +440,7 @@ export default function SessionPage({ params }: SessionPageProps) {
             throw new Error(text || `Failed to delete set: ${res.status}`);
         }
 
-        setPendingSetEditsById((prev) => {
-            const next = { ...prev };
-            delete next[setKey];
-            return next;
-        });
+        clearPendingSet(setId);
 
         await loadSession(sessionId);
       } catch (err: any) {
@@ -476,7 +452,7 @@ export default function SessionPage({ params }: SessionPageProps) {
             createdAt: Date.now(),
         });
 
-        setPendingQueueCount(getPendingQueueCount(sessionId));
+        refreshPendingQueueCount(sessionId);
 
         setPendingSetEditsById((prev) => {
             const next = { ...prev };
@@ -552,11 +528,7 @@ export default function SessionPage({ params }: SessionPageProps) {
             return;
         }
 
-        setPendingSetEditsById((prev) => {
-            const next = { ...prev };
-            delete next[String(setId)];
-            return next;
-        });
+        clearPendingSet(setId);
 
         await loadSession(sessionId);
         setEditingSetId(null);
@@ -570,12 +542,9 @@ export default function SessionPage({ params }: SessionPageProps) {
             createdAt: Date.now(),
         });
 
-        setPendingQueueCount(getPendingQueueCount(sessionId));
+        refreshPendingQueueCount(sessionId);
 
-        setPendingSetEditsById((prev) => ({
-            ...prev,
-            [String(setId)]: true,
-        }));
+        markSetPending(setId);
 
         setUpdateSetError("Connection issue. Saved offline and will retry.");
         setEditingSetId(null);
@@ -698,13 +667,9 @@ export default function SessionPage({ params }: SessionPageProps) {
         return;
       }
 
-      setPendingExerciseEditsById((prev) => {
-          const next = { ...prev };
-          delete next[exerciseId];
-          return next;
-      });
+      clearPendingExercise(exerciseId);
 
-      setPendingQueueCount(getPendingQueueCount(sessionId));
+      refreshPendingQueueCount(sessionId);
 
       await loadSession(sessionId);
       setEditingExerciseId(null);
@@ -718,12 +683,9 @@ export default function SessionPage({ params }: SessionPageProps) {
         createdAt: Date.now(),
       });
 
-      setPendingQueueCount(getPendingQueueCount(sessionId));
+      refreshPendingQueueCount(sessionId);
 
-      setPendingExerciseEditsById((prev) => ({
-        ...prev,
-        [exerciseId]: true,
-      }));
+      markExercisePending(exerciseId);
 
       setUpdateExerciseError("Connection issue. Saved offline and will retry.");
       setEditingExerciseId(null);
@@ -791,54 +753,6 @@ export default function SessionPage({ params }: SessionPageProps) {
       setDeleteExerciseError(err?.message ?? "Failed to reorder exercise");
     }
   }
-
-  async function syncQueuedActions() {
-    if (!sessionId) return;
-
-    const syncedAny = await syncQueuedSessionActions({
-        sessionId,
-
-        onQueueChange: () => {
-            setPendingQueueCount(getPendingQueueCount(sessionId));
-        },
-
-        onSetEditSynced: (setId) => {
-            setPendingSetEditsById((prev) => {
-                const next = { ...prev };
-                delete next[String(setId)];
-                return next;
-            });
-        },
-
-        onExerciseEditSynced: (exerciseId) => {
-            setPendingExerciseEditsById((prev) => {
-                const next = { ...prev };
-                delete next[exerciseId];
-                return next;
-            });
-        },
-    });
-
-    if (syncedAny) {
-        await loadSession(sessionId);
-    }
-  }
-
-    useEffect(() => {
-        if (!sessionId) return;
-
-        syncQueuedActions();
-
-        function handleOnline() {
-            syncQueuedActions();
-        }
-
-        window.addEventListener("online", handleOnline);
-
-        return () => {
-            window.removeEventListener("online", handleOnline);
-        };
-    }, [sessionId]);
 
   if (loading) {
     return (
