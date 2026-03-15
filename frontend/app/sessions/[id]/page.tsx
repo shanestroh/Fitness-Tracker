@@ -14,8 +14,10 @@ import Link from "next/link";
 import {
   getOfflineQueue,
   enqueueAddSetAction,
+  enqueueAddExerciseAction,
   removeQueuedAction,
   removeQueuedAddSetByTempId,
+  removeQueuedAddExerciseByTempId,
 } from "@/lib/offlineQueue";
 
 type SessionPageProps = {
@@ -166,8 +168,10 @@ export default function SessionPage({ params }: SessionPageProps) {
             ? Math.max(...session.exercises.map((ex) => ex.order_index ?? 0)) + 1
             : 1;
 
+    const tempExerciseId = -Date.now();
+
     const optimisticExercise = {
-        id: -Date.now(),
+        id: tempExerciseId,
         exercise: trimmedExerciseName,
         order_index: nextOrderIndex,
         sets: [],
@@ -192,13 +196,23 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || `Failed to add exercise: ${res.status}`);
+        setSession(previousSession)
+        setExerciseError(text || `Failed to add exercise: ${res.status}`);
+        return;
       }
 
       await loadSession(sessionId);
     } catch (err: any) {
-      setSession(previousSession)
-      setExerciseError(err?.message ?? "Failed to add exercise");
+      enqueueAddExerciseAction({
+          id: `queue-${Date.now()}-exercise`,
+          type: "add-exercise",
+          sessionId,
+          tempExerciseId,
+          payload,
+          createdAt: Date.now(),
+      });
+
+      setExerciseError("Connection issue. Saved offline and will retry.");
     } finally {
       setAddingExercise(false);
     }
@@ -654,8 +668,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     if (!sessionId) return;
 
     const queue = getOfflineQueue().filter(
-        (item) => item.type === "add-set" && item.sessionId === sessionId
-    );
+        (item) => item.sessionId === sessionId);
 
     if (queue.length === 0) return;
 
@@ -663,17 +676,29 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     for (const item of queue) {
         try {
-            const res = await apiFetch(`/exercises/${item.exerciseId}/sets`, {
-                method: "POST",
-                body: JSON.stringify(item.payload),
-            });
+            if(item.type === "add-set"){
+                const res = await apiFetch(`/exercises/${item.exerciseId}/sets`, {
+                    method: "POST",
+                    body: JSON.stringify(item.payload),
+                });
 
-            if (!res.ok) {
-                continue;
+                if (!res.ok) continue;
+
+                removeQueuedAction(item.id);
+                syncedAny = true;
             }
 
-            removeQueuedAction(item.id);
-            syncedAny = true;
+            if (item.type === "add-exercise") {
+                const res = await apiFetch(`/sessions/${item.sessionId}/exercises`, {
+                    method: "POST",
+                    body: JSON.stringify(item.payload),
+                }):
+
+                if (!res.ok) continue;
+
+                removeQueuedAction(item.id);
+                syncedAny = true;
+            }
           } catch {
             // still offline or failed again, keep it in queue
           }
@@ -687,10 +712,10 @@ export default function SessionPage({ params }: SessionPageProps) {
     useEffect(() => {
         if (!sessionId) return;
 
-        syncQueuedAddSets();
+        syncQueuedActions();
 
         function handleOnline() {
-            syncQueuedAddSets();
+            syncQueuedActions();
         }
 
         window.addEventListener("online", handleOnline);
