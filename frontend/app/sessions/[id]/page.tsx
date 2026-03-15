@@ -142,12 +142,38 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     if (!sessionId) return;
 
+    const trimmedExerciseName = exerciseName.trim();
+    if (!trimmedExerciseName) return;
+
     setExerciseError(null);
     setAddingExercise(true);
 
     const payload = {
-      exercise: exerciseName,
+      exercise: trimmedExerciseName,
     };
+
+    const previousSession = session;
+
+    const nextOrderIndex =
+        session?.exercises.length ? session.exercises.length + 1 : 1;
+
+    const optimisticExercise = {
+        id: -Date.now(),
+        exercise: trimmedExerciseName,
+        order_index: nextOrderIndex,
+        sets: [],
+    };
+
+    setSession((prev) => {
+        if (!prev) return prev;
+
+        return {
+            ...prev,
+            exercises: [...prev.exercises, optimisticExercise],
+        };
+    });
+
+    setExerciseName("");
 
     try {
       const res = await apiFetch(`/sessions/${sessionId}/exercises`, {
@@ -160,9 +186,9 @@ export default function SessionPage({ params }: SessionPageProps) {
         throw new Error(text || `Failed to add exercise: ${res.status}`);
       }
 
-      setExerciseName("");
       await loadSession(sessionId);
     } catch (err: any) {
+      setSession(previousSession)
       setExerciseError(err?.message ?? "Failed to add exercise");
     } finally {
       setAddingExercise(false);
