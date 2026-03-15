@@ -13,6 +13,7 @@ type ExerciseCardProps = {
 
   handleDeleteExercise: (exerciseId: number) => Promise<void>;
   deletingExerciseById: Record<number, boolean>;
+  pendingExerciseEditsById: Record<number, boolean>;
 
   setFormByExercise: Record<
     number,
@@ -103,6 +104,7 @@ export default function ExerciseCard({
   startEditingExercise,
   handleUpdateExercise,
   handleMoveExercise,
+  pendingExerciseEditsById,
 }: ExerciseCardProps) {
     const [showAddSetForm, setShowAddSetForm] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -213,19 +215,26 @@ export default function ExerciseCard({
         minWidth: 0,
     }}
     >
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
     <h3 style={{ fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
         {exercise.order_index !== undefined ? `${exercise.order_index}. ` : ""}
         {exercise.exercise} {isExpanded ? "▼" : "▶"}
     </h3>
-  </button>
 
-    <div style={{
-        display: "flex",
-        gap: 8,
-        flexWrap: "wrap",
-        justifyContent: "flex-end",
-        }}
-    >
+    {pendingExerciseEditsById[exercise.id] && (
+        <span
+            style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+            }}
+        >
+            Syncing...
+        </span>
+      )}
+    </div>
+  </button>
     {!isFirst && (
       <button
         type="button"
