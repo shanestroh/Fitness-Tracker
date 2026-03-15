@@ -179,6 +179,90 @@ export default function SessionPage({ params }: SessionPageProps) {
     return nextSession;
   }
 
+  function applyQueuedChangesToSession(
+    baseSession: SessionFull,
+    currentSessionId: string
+  ): SessionFull {
+    const queue = getOfflineQueue().filter(
+        (item) => item.sessionId === currentSessionId
+    );
+
+    let nextSession: SessionFull = {
+        ...baseSession,
+        exercises: baseSession.exercises.map((exercise) => ({
+            ...exercise,
+            sets: [...exercise.sets],
+        })),
+    };
+
+    // 1) Remove deleted exercises first
+    for (const item of queue) {
+        if (item.type === "delete-exercise") {
+            nextSession = {
+                ...nextSession,
+                exercises: nextSession.exercises.filter(
+                    (exercise) => exercise.id !== item.exerciseId
+                ),
+            };
+        }
+    }
+
+    // 2) Apply queued exercise edits
+    for (const item of queue) {
+        if (item.type === "edit-exercise") {
+            nextSession = {
+                ...nextSession,
+                exercises: nextSession.exercises.map((exercise) =>
+                    exercise.id === item.exerciseId
+                      ? {
+                        ...exercise,
+                        exercise: item.payload.exercise,
+                        }
+                      : exercise
+                ),
+            };
+        }
+    }
+
+    // 3) Remove deleted sets
+    for (const item of queue) {
+        if (item.type === "delete-set") {
+            nextSession = {
+                ...nextSession,
+                exercises: nextSession.exercises.map((exercise) => ({
+                    ...exercise,
+                    sets: exercise.sets.filter((set) => set.id !== item.setId),
+                })),
+            };
+        }
+    }
+
+    // 4) Apply queued set edits
+    for (const item of queue) {
+        if (item.type === "edit-set") {
+            nextSession = {
+                ...nextSession,
+                exercises: nextSession.exercises.map((exercise) => ({
+                    ...exercise,
+                    sets: exercise.sets.map((set) =>
+                        set.id === item.setId
+                          ? {
+                            ...set,
+                            reps: item.payload.reps,
+                            weight: item.payload.weight,
+                            time_seconds: item.payload.time_seconds ?? undefined,
+                            intensity: item.payload.intensity ?? undefined,
+                            }
+                          : set
+                    ),
+                })),
+            };
+        }
+    }
+
+    return nextSession;
+  }
+
   async function loadSession(id: string) {
     setLoading(true);
     setPageError(null);
@@ -203,6 +287,7 @@ export default function SessionPage({ params }: SessionPageProps) {
       setEditCustomSplit(isPresetSplit ? "" : loadedSplit);
       setEditDate(data.date ?? "");
       setEditNotes(data.notes ?? "");
+
     } catch (err: any) {
       setPageError(err?.message ?? "Failed to load session");
     } finally {
