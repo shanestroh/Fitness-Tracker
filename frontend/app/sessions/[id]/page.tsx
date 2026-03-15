@@ -297,9 +297,26 @@ export default function SessionPage({ params }: SessionPageProps) {
   }
 
   async function handleDeleteExercise(exerciseId: number) {
-    if (!sessionId) return;
+    if (!sessionId || !session) return;
 
     setDeleteExerciseError(null);
+
+    const previousSession = session;
+
+    // Remove from UI immediately
+    setSession((prev) => {
+        if (!prev) return prev;
+
+        return {
+            ...prev,
+            exercises: prev.exercises.filter((exercise) => exercise.id !== exerciseId),
+        };
+    });
+
+    // Temporary optimistic exercise: no server delete needed
+    if (exerciseId < 0) {
+        return;
+        }
 
     setDeletingExerciseById((prev) => ({
       ...prev,
@@ -318,6 +335,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       await loadSession(sessionId);
     } catch (err: any) {
+      setSession(previousSession);
       setDeleteExerciseError(err?.message ?? "Failed to delete exercise");
     } finally {
       setDeletingExerciseById((prev) => ({
