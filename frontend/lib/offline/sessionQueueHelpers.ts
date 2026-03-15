@@ -1,5 +1,5 @@
 import type { SessionFull } from "@/types/workout";
-import { getOfflineQueue } from "@/lib/offlineQueue";
+import { getOfflineQueue } from "@/lib/offline/offlineQueue";
 
 export function getPendingQueueCount(sessionId: string): number {
   return getOfflineQueue().filter((item) => item.sessionId === sessionId).length;

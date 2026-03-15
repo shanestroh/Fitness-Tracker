@@ -1,4 +1,4 @@
-import { getOfflineQueue, removeQueuedAction } from "@/lib/offlineQueue";
+import { getOfflineQueue, removeQueuedAction } from "@/lib/offline/offlineQueue";
 import { apiFetch } from "@/lib/apiFetch";
 
 type SyncArgs = {
