@@ -353,8 +353,6 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     setDeleteExerciseError(null);
 
-    const previousSession = session;
-
     setSession((prev) => (prev ? removeExerciseFromSession(prev, exerciseId) : prev));
 
     // Temporary optimistic exercise: no server delete needed
@@ -380,7 +378,6 @@ export default function SessionPage({ params }: SessionPageProps) {
       }
 
       clearPendingExercise(exerciseId);
-
       refreshPendingQueueCount(sessionId);
 
       await loadSession(sessionId);
@@ -394,12 +391,7 @@ export default function SessionPage({ params }: SessionPageProps) {
       });
 
       refreshPendingQueueCount(sessionId);
-
-      setPendingExerciseEditsById((prev) => {
-        const next = { ...prev };
-        delete next[exerciseId];
-        return next;
-      });
+      clearPendingExercise(exerciseId);
 
       setDeleteExerciseError("Connection issue. Delete saved offline and will retry.");
     } finally {
@@ -453,12 +445,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         });
 
         refreshPendingQueueCount(sessionId);
-
-        setPendingSetEditsById((prev) => {
-            const next = { ...prev };
-            delete next[setKey];
-            return next;
-        });
+        clearPendingSet(setId);
 
         setDeleteSetError("Connection issue. Delete saved offline and will retry.");
       } finally {
@@ -639,7 +626,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     setUpdatingExercise(true);
 
     const payload = {
-      exercise: editExerciseName,
+      exercise: editExerciseName.trim(),
     };
 
     if (!payload.exercise) {
