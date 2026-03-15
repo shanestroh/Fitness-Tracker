@@ -46,11 +46,23 @@ export type PendingDeleteSetAction = {
   createdAt: number;
 };
 
+export type PendingEditExerciseAction = {
+  id: string;
+  type: "edit-exercise";
+  sessionId: string;
+  exerciseId: number;
+  payload: {
+    exercise: string;
+  };
+  createdAt: number;
+};
+
 export type OfflineQueueItem =
   | PendingAddSetAction
   | PendingAddExerciseAction
   | PendingEditSetAction
-  | PendingDeleteSetAction;
+  | PendingDeleteSetAction
+  | PendingEditExerciseAction;
 
 const STORAGE_KEY = "fitness_tracker_offline_queue";
 
@@ -132,6 +144,29 @@ export function enqueueOrReplaceDeleteSetAction(action: PendingDeleteSetAction) 
       ...queue[existingIndex],
       createdAt: action.createdAt,
     } as PendingDeleteSetAction;
+  } else {
+    queue.push(action);
+  }
+
+  writeQueue(queue);
+}
+
+export function enqueueOrReplaceEditExerciseAction(action: PendingEditExerciseAction) {
+  const queue = readQueue();
+
+  const existingIndex = queue.findIndex(
+    (item) =>
+      item.type === "edit-exercise" &&
+      item.sessionId === action.sessionId &&
+      item.exerciseId === action.exerciseId
+  );
+
+  if (existingIndex >= 0) {
+    queue[existingIndex] = {
+      ...queue[existingIndex],
+      payload: action.payload,
+      createdAt: action.createdAt,
+    } as PendingEditExerciseAction;
   } else {
     queue.push(action);
   }

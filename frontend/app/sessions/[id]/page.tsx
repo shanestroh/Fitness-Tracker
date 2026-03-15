@@ -17,6 +17,7 @@ import {
   enqueueAddExerciseAction,
   enqueueOrReplaceEditSetAction,
   enqueueOrReplaceDeleteSetAction,
+  enqueueOrReplaceEditExerciseAction,
   removeQueuedAction,
   removeQueuedAddSetByTempId,
   removeQueuedAddExerciseByTempId,
@@ -74,6 +75,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [pendingSetEditsById, setPendingSetEditsById] = useState<Record<string, boolean>>({});
   const [isOnline, setIsOnline] = useState(true);
   const [pendingQueueCount, setPendingQueueCount] = useState(0);
+  const [pendingExerciseEditsById, setPendingExerciseEditsById] = useState<Record<number, boolean>>({});
   const cardText = "#111";
 
 
@@ -695,6 +697,30 @@ export default function SessionPage({ params }: SessionPageProps) {
       exercise: editExerciseName,
     };
 
+    if (!payload.exercise) {
+        setUpdateExerciseError("Exercise name cannot be empty.");
+        setUpdatingExercise(false);
+        return;
+    }
+
+    const previousSession = session;
+
+    setSession((prev) => {
+        if (!prev) return prev;
+
+        return {
+            ...prev,
+            exercises: prev.exercises.map((exercise) =>
+                exercise.id === exerciseId
+                    ? {
+                        ...exercise,
+                        exercise: payload.exercise,
+                      }
+                    : exercise
+            ),
+        };
+    });
+
     try {
       const res = await apiFetch(`/exercises/${exerciseId}`, {
         method: "PATCH",
@@ -703,13 +729,40 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || `Failed to update exercise: ${res.status}`);
+        setSession(previousSession);
+        setUpdateExerciseError(text || `Failed to update exercise: ${res.status}`);
+        return;
       }
+
+      setPendingExerciseEditsById(prev) => {
+          const next = { ...prev };
+          delete next[exerciseId];
+          return next;
+      });
+
+      refreshPendingQueueCount(sessionId);
 
       await loadSession(sessionId);
       setEditingExerciseId(null);
     } catch (err: any) {
-      setUpdateExerciseError(err?.message ?? "Failed to update exercise");
+      enqueueOrReplaceEditExerciseAction({
+        id: `queue-edit-exercise-${sessionId}-${exerciseId}`,
+        type: "edit-exercise",
+        sessionId,
+        exerciseId,
+        payload,
+        createdAt: Date.now(),
+      });
+
+      refreshPendingQueueCount(sessionId);
+
+      setPendingExerciseEditsById((prev) => ({
+        ...prev,
+        [exerciseId]: true,
+      }));
+
+      setUpdateExerciseError("Connection issue. Saved offline and will retry.");
+      setEditingExerciseId(null);
     } finally {
       setUpdatingExercise(false);
     }
@@ -850,6 +903,27 @@ export default function SessionPage({ params }: SessionPageProps) {
 
                 syncedAny = true;
             }
+
+            if (item.type === "edit-exercise") {
+                const res = await apiFetch(`/exercises/${item.exerciseId}`, {
+                    method: "PATCH",
+                    body: JSON.stringify(item.payload),
+                });
+
+                if (!res.ok) continue;
+
+                removeQueuedAction(item.id);
+                refreshPendingQueueCount(sessionId);
+
+                setPendingExerciseEditsById((prev) => {
+                    const next = { ...prev };
+                    delete next[item.exerciseId];
+                    return next;
+                });
+
+                syncedAny = true;
+            }
+
         } catch {
             // still offline or failed again, keep it in queue
         }
