@@ -72,6 +72,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [pendingSetEditsById, setPendingSetEditsById] = useState<Record<string, boolean>>({});
+  const [isOnline, setIsOnline] = useState(true);
+  const [pendingQueueCount, setPendingQueueCount] = useState(0);
   const cardText = "#111";
 
 
@@ -91,6 +93,14 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [setErrorByExercise, setSetErrorByExercise] = useState<Record<number, string | null>>({});
   const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
 
+  function refreshPendingQueueCount(currentSessionId: string) {
+    const count = getOfflineQueue().filter(
+        (item) => item.sessionId === currentSessionId
+    ).length;
+
+    setPendingQueueCount(count);
+  }
+
   async function loadSession(id: string) {
     setLoading(true);
     setPageError(null);
@@ -105,6 +115,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       const data = await res.json();
       setSession(data);
+      refreshPendingQueueCount(id);
 
       const loadedSplit = data.split ?? "";
       const isPresetSplit = PRESET_SPLITS.includes(loadedSplit);
@@ -131,6 +142,28 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     unwrapParams();
   }, [params]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    setIsOnline(window.navigator.onLine);
+
+    function handleOnlineStatusChange() {
+        setIsOnline(window.navigator.onLine);
+
+        if (sessionId) {
+            refreshPendingQueueCount(sessionId);
+        }
+    }
+
+    window.addEventListener("online", handleOnlineStatusChange);
+    window.addEventListener("offline", handleOnlineStatusChange);
+
+    return () => {
+        window.removeEventListener("online", handleOnlineStatusChange);
+        window.removeEventListener("offline", handleOnlineStatusChange);
+    };
+  }, [sessionId]);
 
   function updateSetForm(
     exerciseId: number,
@@ -215,6 +248,7 @@ export default function SessionPage({ params }: SessionPageProps) {
           createdAt: Date.now(),
       });
 
+      refreshPendingQueueCount(sessionId);
       setExerciseError("Connection issue. Saved offline and will retry.");
     } finally {
       setAddingExercise(false);
@@ -325,6 +359,8 @@ export default function SessionPage({ params }: SessionPageProps) {
                 createdAt: Date.now(),
             });
 
+            refreshPendingQueueCount(sessionId);
+
             setSetErrorByExercise((prev) => ({
                 ...prev,
                 [exerciseId]: "Connection issue. Saved offline and will retry.",
@@ -391,7 +427,6 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     setDeleteSetError(null);
 
-    const previousSession = session;
     const setKey = String(setId);
 
     setSession((prev) => {
@@ -408,6 +443,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     if (typeof setId === "string") {
         removeQueuedAddSetByTempId(setId);
+        refreshPendingQueueCount(sessionId);
         return;
     }
 
@@ -441,6 +477,8 @@ export default function SessionPage({ params }: SessionPageProps) {
             setId,
             createdAt: Date.now(),
         });
+
+        refreshPendingQueueCount(sessionId);
 
         setPendingSetEditsById((prev) => {
             const next = { ...prev };
@@ -553,6 +591,8 @@ export default function SessionPage({ params }: SessionPageProps) {
             payload,
             createdAt: Date.now(),
         });
+
+        refreshPendingQueueCount(sessionId);
 
         setPendingSetEditsById((prev) => ({
             ...prev,
@@ -755,6 +795,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 if (!res.ok) continue;
 
                 removeQueuedAction(item.id);
+                refreshPendingQueueCount(sessionId);
                 syncedAny = true;
             }
 
@@ -767,6 +808,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 if (!res.ok) continue;
 
                 removeQueuedAction(item.id);
+                refreshPendingQueueCount(sessionId);
                 syncedAny = true;
             }
 
@@ -779,6 +821,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 if (!res.ok) continue;
 
                 removeQueuedAction(item.id);
+                refreshPendingQueueCount(sessionId);
 
                 setPendingSetEditsById((prev) => {
                     const next = { ...prev };
@@ -797,6 +840,7 @@ export default function SessionPage({ params }: SessionPageProps) {
                 if (!res.ok) continue;
 
                 removeQueuedAction(item.id);
+                refreshPendingQueueCount(sessionId);
 
                 setPendingSetEditsById((prev) => {
                     const next = { ...prev };
@@ -888,6 +932,30 @@ export default function SessionPage({ params }: SessionPageProps) {
         handleDeleteSession={handleDeleteSession}
         setShowDeleteSessionModal={setShowDeleteSessionModal}
       />
+
+      <div
+        style={{
+            marginBottom: 16,
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid #d9d9d9",
+            background: !isOnline
+                ? "#fff7e6"
+                : pendingQueueCount > 0
+                ? "#fffbe6"
+                : "#f6ffed",
+            color: "#111",
+            fontWeight: 600,
+        }}
+      >
+        {!isOnline
+            ? pendingQueueCount > 0
+                ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending — offline, will sync later`
+                : "Offline"
+            : pendingQueueCount > 0
+            ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending`
+            : "All changes synced"}
+      </div>
 
       <AddExerciseForm
         exerciseName={exerciseName}
