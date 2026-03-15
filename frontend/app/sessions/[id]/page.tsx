@@ -664,7 +664,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
-  async function syncQueuedAddSets() {
+  async function syncQueuedActions() {
     if (!sessionId) return;
 
     const queue = getOfflineQueue().filter(
