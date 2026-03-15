@@ -18,6 +18,7 @@ type SetRowProps = {
   startEditingSet: (set: SetEntry) => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
   deletingSetById: Record<string, boolean>;
+  pendingSetEditsById: Record<string, boolean>;
   setEditingSetId: (id: number | string | null) => void;
   setUpdateSetError: (value: string | null) => void;
 };
@@ -42,6 +43,7 @@ export default function SetRow({
   deletingSetById,
   setEditingSetId,
   setUpdateSetError,
+  pendingSetEditsById,
 }: SetRowProps) {
   return (
     <div
@@ -181,6 +183,11 @@ export default function SetRow({
               {set.time_seconds !== undefined ? ` · ${set.time_seconds}s` : ""}
               {set.intensity ? ` · ${set.intensity}` : ""}
             </span>
+            {pendingSetEditsById[String(set.id)] && (
+                <span style={{ marginLeft: 10, fontSize: 12, color: "#a15c00", fontWeight: 700 }}>
+                    Syncing...
+                </span>
+            )}
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

@@ -15,6 +15,7 @@ import {
   getOfflineQueue,
   enqueueAddSetAction,
   enqueueAddExerciseAction,
+  enqueueOrReplaceEditSetAction,
   removeQueuedAction,
   removeQueuedAddSetByTempId,
   removeQueuedAddExerciseByTempId,
@@ -69,6 +70,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [updatingExercise, setUpdatingExercise] = useState(false);
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
+  const [pendingSetEditsById, setPendingSetEditsById] = useState<Record<string, boolean>>({});
   const cardText = "#111";
 
 
@@ -448,52 +450,102 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function handleUpdateSet(e: React.FormEvent) {
     e.preventDefault();
 
-    if (editingSetId === null || typeof editingSetId === "string") return;
+    if (editingSetId === null || typeof editingSetId === "string" || !session) return;
 
     setUpdateSetError(null);
     setUpdatingSet(true);
 
+    const setId = editingSetId;
+
     const payload: {
-      reps?: number;
-      weight?: number;
-      time_seconds?: number | null;
-      intensity?: string | null;
+        reps?: number;
+        weight?: number;
+        time_seconds?: number | null;
+        intensity?: string | null;
     } = {};
 
     if (editSetReps.trim()) payload.reps = Number(editSetReps);
     if (editSetWeight.trim()) payload.weight = Number(editSetWeight);
 
     if (editSetTimeSeconds.trim() === "" || Number(editSetTimeSeconds) === 0) {
-      payload.time_seconds = null;
+        payload.time_seconds = null;
     } else {
-      payload.time_seconds = Number(editSetTimeSeconds);
+        payload.time_seconds = Number(editSetTimeSeconds);
     }
 
     if (editSetIntensity.trim() === "") {
-      payload.intensity = null;
+        payload.intensity = null;
     } else {
-      payload.intensity = editSetIntensity.trim();
+        payload.intensity = editSetIntensity.trim();
     }
+
+    const previousSession = session;
+
+    setSession((prev) => {
+        if (!prev) return prev;
+
+        return {
+            ...prev,
+            exercises: prev.exercises.map((exercise) => ({
+                ...exercise,
+                sets: exercise.sets.map((set) =>
+                    set.id === setId
+                        ? {
+                            ...set,
+                            reps: payload.reps,
+                            weight: payload.weight,
+                            time_seconds: payload.time_seconds ?? undefined,
+                            intensity: payload.intensity ?? undefined,
+                        }
+                    : set
+                ),
+            })),
+        };
+    });
 
     try {
-      const res = await apiFetch(`/sets/${editingSetId}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
+        const res = await apiFetch(`/sets/${setId}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Failed to update set: ${res.status}`);
+        if (!res.ok) {
+            const text = await res.text();
+
+            setSession(previousSession);
+            setUpdateSetError(text || `Failed to update set: ${res.status}`);
+            return;
+        }
+
+        setPendingSetEditsById((prev) => {
+            const next = { ...prev };
+            delete next[String(setId)];
+            return next;
+        });
+
+        await loadSession(sessionId);
+        setEditingSetId(null);
+      } catch (err: any) {
+        enqueueOrReplaceEditSetAction({
+            id: `queue-edit-set-${sessionId}-${setId}`,
+            type: "edit-set",
+            sessionId,
+            setId,
+            payload,
+            createdAt: Date.now(),
+        });
+
+        setPendingSetEditsById((prev) => ({
+            ...prev,
+            [String(setId)]: true,
+        }));
+
+        setUpdateSetError("Connection issue. Saved offline and will retry.");
+        setEditingSetId(null);
+      } finally {
+        setUpdatingSet(false);
       }
-
-      await loadSession(sessionId);
-      setEditingSetId(null);
-    } catch (err: any) {
-      setUpdateSetError(err?.message ?? "Failed to update set");
-    } finally {
-      setUpdatingSet(false);
     }
-  }
 
   async function handleDeleteSession() {
     if (!sessionId) return;
@@ -667,8 +719,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function syncQueuedActions() {
     if (!sessionId) return;
 
-    const queue = getOfflineQueue().filter(
-        (item) => item.sessionId === sessionId);
+    const queue = getOfflineQueue().filter((item) => item.sessionId === sessionId);
 
     if (queue.length === 0) return;
 
@@ -676,7 +727,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     for (const item of queue) {
         try {
-            if(item.type === "add-set"){
+            if (item.type === "add-set") {
                 const res = await apiFetch(`/exercises/${item.exerciseId}/sets`, {
                     method: "POST",
                     body: JSON.stringify(item.payload),
@@ -699,15 +750,34 @@ export default function SessionPage({ params }: SessionPageProps) {
                 removeQueuedAction(item.id);
                 syncedAny = true;
             }
-          } catch {
-            // still offline or failed again, keep it in queue
-          }
-        }
 
-        if (syncedAny) {
-            await loadSession(sessionId);
+            if (item.type === "edit-set") {
+                const res = await apiFetch(`/sets/${item.setId}`, {
+                    method: "PATCH",
+                    body: JSON.stringify(item.payload),
+                });
+
+                if (!res.ok) continue;
+
+                removeQueuedAction(item.id);
+
+                setPendingSetEditsById((prev) => {
+                    const next = { ...prev };
+                    delete next[String(item.setId)];
+                    return next;
+                });
+
+                syncedAny = true;
+            }
+        } catch {
+            // still offline or failed again, keep it in queue
         }
     }
+
+    if (syncedAny) {
+        await loadSession(sessionId);
+    }
+  }
 
     useEffect(() => {
         if (!sessionId) return;
@@ -840,6 +910,7 @@ export default function SessionPage({ params }: SessionPageProps) {
               startEditingSet={startEditingSet}
               handleDeleteSet={handleDeleteSet}
               deletingSetById={deletingSetById}
+              pendingSetEditsById={pendingSetEditsById}
               setEditingSetId={setEditingSetId}
               setUpdateSetError={setUpdateSetError}
               editingExerciseId={editingExerciseId}
