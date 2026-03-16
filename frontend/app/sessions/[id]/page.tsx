@@ -468,12 +468,23 @@ export default function SessionPage({ params }: SessionPageProps) {
 
   function startEditingSet(set: SetEntry) {
     setEditingSetId(set.id);
-    setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
-    setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
-    setEditSetTimeSeconds(set.time_seconds !== undefined ? String(set.time_seconds) : "");
-    setEditSetIntensity(set.intensity ?? "");
     setUpdateSetError(null);
+
+    if (exerciseType === "lift") {
+        setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
+        setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
+        setEditSetTimeSeconds("");
+        setEditSetIntensity("");
+    } else {
+        setEditSetReps("");
+        setEditSetWeight("");
+        setEditSetTimeSeconds(
+            set.time_seconds !== undefined ? String(set.time_seconds) : ""
+        );
+        setEditSetIntensity(set.intensity ?? "");
+    }
   }
+
 
   async function handleUpdateSet(e: React.FormEvent) {
     e.preventDefault();

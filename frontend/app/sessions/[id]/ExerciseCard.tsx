@@ -45,7 +45,7 @@ type ExerciseCardProps = {
   updateSetError: string | null;
   updatingSet: boolean;
   handleUpdateSet: (e: React.FormEvent) => Promise<void>;
-  startEditingSet: (set: SetEntry) => void;
+  startEditingSet: (set: SetEntry, exerciseType: "lift" | "cardio") => void;
   handleDeleteSet: (setId: number | string) => Promise<void>;
   deletingSetById: Record<string, boolean>;
   pendingSetEditsById: Record<string, boolean>;
@@ -333,7 +333,7 @@ export default function ExerciseCard({
               handleUpdateSet={handleUpdateSet}
               startEditingSet={(set) => {
                 setShowAddSetForm(false);
-                startEditingSet(set);
+                startEditingSet(set, exercise.exercise_type);
                 }}
               handleDeleteSet={handleDeleteSet}
               deletingSetById={deletingSetById}
