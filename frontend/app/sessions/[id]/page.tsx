@@ -87,6 +87,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [exerciseType, setExerciseType] = useState<"lift" | "cardio">("lift");
+  const [editSetTimeMinutes, setEditSetTimeMinutes] = useState("");
   const cardText = "#111";
 
 
@@ -97,6 +98,7 @@ export default function SessionPage({ params }: SessionPageProps) {
       {
         reps: string;
         weight: string;
+        time_minutes: string;
         time_seconds: string;
         intensity: string;
       }
@@ -167,7 +169,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
   function updateSetForm(
     exerciseId: number,
-    field: "reps" | "weight" | "time_seconds" | "intensity",
+    field: "reps" | "weight" | "time_minutes" | "time_seconds" | "intensity",
     value: string
   ) {
     setSetFormByExercise((prev) => ({
@@ -175,6 +177,7 @@ export default function SessionPage({ params }: SessionPageProps) {
       [exerciseId]: {
         reps: prev[exerciseId]?.reps ?? "",
         weight: prev[exerciseId]?.weight ?? "",
+        time_minutes: prev[exerciseId]?.time_minutes ?? "",
         time_seconds: prev[exerciseId]?.time_seconds ?? "",
         intensity: prev[exerciseId]?.intensity ?? "",
         [field]: value,
@@ -267,6 +270,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     const form = setFormByExercise[exerciseId] ?? {
       reps: "",
       weight: "",
+      time_minutes: "",
       time_seconds: "",
       intensity: "",
     };
@@ -280,7 +284,13 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     if (form.reps.trim()) payload.reps = Number(form.reps);
     if (form.weight.trim()) payload.weight = Number(form.weight);
-    if (form.time_seconds.trim()) payload.time_seconds = Number(form.time_seconds);
+
+    const minutes = form.time_minutes.trim() ? Number(form.time_minutes) : 0;
+    const seconds = form.time_seconds.trim() ? Number(form.time_seconds) : 0;
+
+    if (minutes > 0 || seconds > 0) {
+        payload.time_seconds = minutes * 60 + seconds;
+    }
     if (form.intensity.trim()) payload.intensity = form.intensity.trim();
 
     const previousSession = session;
@@ -306,6 +316,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         [exerciseId]: {
         reps: "",
         weight: "",
+        time_minutes: "",
         time_seconds: "",
         intensity: "",
         },
@@ -473,14 +484,18 @@ export default function SessionPage({ params }: SessionPageProps) {
     if (exerciseType === "lift") {
         setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
         setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
+        setEditSetTimeMinutes("");
         setEditSetTimeSeconds("");
         setEditSetIntensity("");
     } else {
+        const totalSeconds = set.time_seconds ?? 0;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
         setEditSetReps("");
         setEditSetWeight("");
-        setEditSetTimeSeconds(
-            set.time_seconds !== undefined ? String(set.time_seconds) : ""
-        );
+        setEditSetTimeMinutes(minutes > 0 ? String(minutes) : "");
+        setEditSetTimeSeconds(seconds > 0 ? String(seconds) : "");
         setEditSetIntensity(set.intensity ?? "");
     }
   }
@@ -506,10 +521,13 @@ export default function SessionPage({ params }: SessionPageProps) {
     if (editSetReps.trim()) payload.reps = Number(editSetReps);
     if (editSetWeight.trim()) payload.weight = Number(editSetWeight);
 
-    if (editSetTimeSeconds.trim() === "" || Number(editSetTimeSeconds) === 0) {
+    const minutes = editSetTimeMinutes.trim() ? Number(editSetTimeMinutes) : 0;
+    const seconds = editSetTimeSeconds.trim() ? Number(editSetTimeSeconds) : 0;
+
+    if (minutes === 0 && seconds === 0) {
         payload.time_seconds = null;
     } else {
-        payload.time_seconds = Number(editSetTimeSeconds);
+      payload.time_seconds = minutes * 60 + seconds;
     }
 
     if (editSetIntensity.trim() === "") {
@@ -523,7 +541,6 @@ export default function SessionPage({ params }: SessionPageProps) {
     setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
 
     if (typeof setId === "string") {
-            setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
             updateQueuedAddSetByTempId(setId, payload);
             refreshPendingQueueCount(sessionId);
             markSetPending(setId);
@@ -555,7 +572,7 @@ export default function SessionPage({ params }: SessionPageProps) {
             id: `queue-edit-set-${sessionId}-${realSetId}`,
             type: "edit-set",
             sessionId,
-            setId,
+            setId: realSetId,
             payload,
             createdAt: Date.now(),
         });
@@ -907,6 +924,8 @@ export default function SessionPage({ params }: SessionPageProps) {
               setEditSetWeight={setEditSetWeight}
               editSetTimeSeconds={editSetTimeSeconds}
               setEditSetTimeSeconds={setEditSetTimeSeconds}
+              editSetTimeMinutes={editSetTimeMinutes}
+              setEditSetTimeMinutes={setEditSetTimeMinutes}
               editSetIntensity={editSetIntensity}
               setEditSetIntensity={setEditSetIntensity}
               updateSetError={updateSetError}

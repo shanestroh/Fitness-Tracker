@@ -40,6 +40,8 @@ type ExerciseCardProps = {
   setEditSetWeight: (value: string) => void;
   editSetTimeSeconds: string;
   setEditSetTimeSeconds: (value: string) => void;
+  editSetTimeMinutes: string;
+  setEditSetTimeMinutes: (value: string) => void;
   editSetIntensity: string;
   setEditSetIntensity: (value: string) => void;
   updateSetError: string | null;
