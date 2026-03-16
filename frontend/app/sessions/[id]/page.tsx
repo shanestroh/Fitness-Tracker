@@ -519,12 +519,15 @@ export default function SessionPage({ params }: SessionPageProps) {
     try {
         // TEMP OFFLINE SET: update queued add-set instead of PATCHing backend
         if (typeof setId === "string") {
+            setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
             updateQueuedAddSetByTempId(setId, payload);
             refreshPendingQueueCount(sessionId);
             markSetPending(setId);
             setEditingSetId(null);
+            setUpdatingSet(false);
             return;
         }
+
         const res = await apiFetch(`/sets/${setId}`, {
             method: "PATCH",
             body: JSON.stringify(payload),
