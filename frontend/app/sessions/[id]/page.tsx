@@ -24,7 +24,6 @@ import {
   removeQueuedAddExerciseByTempId,
   removeQueuedEditExerciseByExerciseId,
   updateQueuedAddSetByTempId,
-  getOfflineQueue
 } from "@/lib/offline/offlineQueue";
 
 import { applyQueuedChangesToSession } from "@/lib/offline/sessionQueueHelpers";
@@ -837,51 +836,6 @@ export default function SessionPage({ params }: SessionPageProps) {
             ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending`
             : "All changes synced"}
       </div>
-
-      <details style={{ marginBottom: 16 }}>
-        <summary style={{ cursor: "pointer", fontWeight: 700 }}>
-            Debug Offline Queue
-        </summary>
-
-        <pre
-            style={{
-                marginTop: 10,
-                padding: 12,
-                borderRadius: 10,
-                background: "#f7f7f7",
-                border: "1px solid #ddd",
-                overflowX: "auto",
-                fontSize: 12,
-                whiteSpace: "pre-wrap",
-            }}
-        >
-            {JSON.stringify(
-                getOfflineQueue().filter((item) => item.sessionId === sessionId),
-                null,
-                2
-            )}
-        </pre>
-
-        <button
-            type="button"
-            onClick={() => {
-                localStorage.removeItem("fitness_tracker_offline_queue");
-                window.location.reload();
-            }}
-            style={{
-                marginTop: 10,
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid #d0d0d0",
-                background: "#fff",
-                color: "#111",
-                cursor: "pointer",
-                fontWeight: 700,
-            }}
-        >
-            Reset Offline Queue
-            </button>
-        </details>
 
       <AddExerciseForm
         exerciseName={exerciseName}
