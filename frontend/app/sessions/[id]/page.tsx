@@ -506,19 +506,9 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const previousSession = session;
 
-    setSession((prev) =>
-        prev
-            ? updateSetInSession(
-                prev,
-                typeof setId === "string" ? setId : setId,
-                payload
-               )
-            : prev
-        );
+    setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
 
-    try {
-        // TEMP OFFLINE SET: update queued add-set instead of PATCHing backend
-        if (typeof setId === "string") {
+    if (typeof setId === "string") {
             setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
             updateQueuedAddSetByTempId(setId, payload);
             refreshPendingQueueCount(sessionId);
@@ -528,7 +518,10 @@ export default function SessionPage({ params }: SessionPageProps) {
             return;
         }
 
-        const res = await apiFetch(`/sets/${setId}`, {
+    const realSetId: number = setId;
+
+    try {
+        const res = await apiFetch(`/sets/${realSetId}`, {
             method: "PATCH",
             body: JSON.stringify(payload),
         });
@@ -540,12 +533,12 @@ export default function SessionPage({ params }: SessionPageProps) {
             return;
         }
 
-        clearPendingSet(setId);
+        clearPendingSet(realSetId);
         await loadSession(sessionId);
         setEditingSetId(null);
       } catch (err: any) {
         enqueueOrReplaceEditSetAction({
-            id: `queue-edit-set-${sessionId}-${setId}`,
+            id: `queue-edit-set-${sessionId}-${realSetId}`,
             type: "edit-set",
             sessionId,
             setId,
@@ -554,7 +547,7 @@ export default function SessionPage({ params }: SessionPageProps) {
         });
 
         refreshPendingQueueCount(sessionId);
-        markSetPending(setId);
+        markSetPending(realSetId);
 
         setUpdateSetError("Connection issue. Saved offline and will retry.");
         setEditingSetId(null);
