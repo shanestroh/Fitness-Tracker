@@ -20,6 +20,7 @@ import {
   enqueueOrReplaceEditExerciseAction,
   enqueueOrReplaceDeleteExerciseAction,
   removeQueuedAddSetByTempId,
+  removeQueuedAddSetsByExerciseId,
   removeQueuedAddExerciseByTempId,
 } from "@/lib/offline/offlineQueue";
 
@@ -358,6 +359,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     // Temporary optimistic exercise: no server delete needed
     if (exerciseId < 0) {
         removeQueuedAddExerciseByTempId(exerciseId);
+        removeQueuedAddSetsByExerciseId(exerciseId);
         refreshPendingQueueCount(sessionId);
         return;
         }
