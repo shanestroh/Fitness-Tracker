@@ -60,7 +60,7 @@ export default function SetRow({
       {editingSetId === set.id ? (
         <form onSubmit={handleUpdateSet} style={{ display: "grid", gap: 10 }}>
           <div style={{ fontWeight: 700 }}>Edit Set {set.set_number ?? "?"}</div>
-      {exerciseType === "life" ? (
+      {exerciseType === "lift" ? (
           <>
           <label style={{ display: "grid", gap: 4 }}>
             <span>Reps</span>
