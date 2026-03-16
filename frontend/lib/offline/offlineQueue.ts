@@ -240,3 +240,10 @@ export function removeQueuedAddSetsByExerciseId(exerciseId: number) {
   );
   writeQueue(queue);
 }
+
+export function removeQueuedEditExerciseByExerciseId(exerciseId: number) {
+  const queue = readQueue().filter(
+    (item) => !(item.type === "edit-exercise" && item.exerciseId === exerciseId)
+  );
+  writeQueue(queue);
+}

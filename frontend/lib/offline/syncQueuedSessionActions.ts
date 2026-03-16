@@ -116,6 +116,14 @@ export async function syncQueuedSessionActions({
       }
 
       if (item.type === "edit-exercise") {
+        // temp/local ids should never be sent to backend
+        if (item.exerciseId < 0) {
+            removeQueuedAction(item.id);
+            onQueueChange();
+            onExerciseEditSynced?.(item.exerciseId);
+            continue;
+        }
+
         const res = await apiFetch(`/exercises/${item.exerciseId}`, {
           method: "PATCH",
           body: JSON.stringify(item.payload),

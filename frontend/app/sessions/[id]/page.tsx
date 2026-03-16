@@ -22,6 +22,7 @@ import {
   removeQueuedAddSetByTempId,
   removeQueuedAddSetsByExerciseId,
   removeQueuedAddExerciseByTempId,
+  removeQueuedEditExerciseByExerciseId,
   getOfflineQueue
 } from "@/lib/offline/offlineQueue";
 
@@ -361,7 +362,9 @@ export default function SessionPage({ params }: SessionPageProps) {
     if (exerciseId < 0) {
         removeQueuedAddExerciseByTempId(exerciseId);
         removeQueuedAddSetsByExerciseId(exerciseId);
+        removeQueuedEditExerciseByExerciseId(exerciseId);
         refreshPendingQueueCount(sessionId);
+        clearPendingExercise(exerciseId);
         return;
         }
 
