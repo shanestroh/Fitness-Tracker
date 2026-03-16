@@ -201,7 +201,7 @@ export default function ExerciseCard({
             if (!next) {
                 setShowAddSetForm(false);
                 setEditingSetId(null);
-                setUpdateSetError(null);}
+                setUpdateSetError(null);
             }
             return next;
         });
