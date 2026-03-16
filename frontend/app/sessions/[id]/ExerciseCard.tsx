@@ -198,7 +198,11 @@ export default function ExerciseCard({
     onClick={() => {
         setIsExpanded((prev) => {
             const next = !prev;
-            if (!next) setShowAddSetForm(false);
+            if (!next) {
+                setShowAddSetForm(false);
+                setEditingSetId(null);
+                setUpdateSetError(null);}
+            }
             return next;
         });
     }}
@@ -327,7 +331,10 @@ export default function ExerciseCard({
               updateSetError={updateSetError}
               updatingSet={updatingSet}
               handleUpdateSet={handleUpdateSet}
-              startEditingSet={startEditingSet}
+              startEditingSet={(set) => {
+                setShowAddSetForm(false);
+                startEditingSet(set);
+                }}
               handleDeleteSet={handleDeleteSet}
               deletingSetById={deletingSetById}
               pendingSetEditsById={pendingSetEditsById}
@@ -342,7 +349,11 @@ export default function ExerciseCard({
         {!showAddSetForm ? (
           <button
             type="button"
-            onClick={() => setShowAddSetForm(true)}
+            onClick={() => {
+                setEditingSetId(null);
+                setUpdateSetError(null);
+                setShowAddSetForm(true);
+            }}
             style={{
               padding: "12px 16px",
               borderRadius: 10,
