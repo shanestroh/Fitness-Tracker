@@ -479,26 +479,6 @@ export default function ExerciseCard({
                 >
                   Cancel
                 </button>
-
-                <button
-                    type="button"
-                    onClick={() => {
-                        localStorage.removeItem("fitness_tracker_offline_queue");
-                        window.location.reload();
-                    }}
-                    style={{
-                        padding: "10px 14px",
-                        borderRadius: 10,
-                        border: "1px solid #d0d0d0",
-                        background: "#fff",
-                        color: "#111",
-                        cursor: "pointer",
-                        fontWeight: 700,
-                        marginBottom: 12,
-                    }}
-                >
-                    Reset Offline Queue
-                </button>
               </div>
             </form>
 
