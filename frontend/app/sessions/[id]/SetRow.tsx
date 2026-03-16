@@ -21,6 +21,7 @@ type SetRowProps = {
   pendingSetEditsById: Record<string, boolean>;
   setEditingSetId: (id: number | string | null) => void;
   setUpdateSetError: (value: string | null) => void;
+  exerciseType: "lift" | "cardio";
 };
 
 export default function SetRow({
@@ -44,6 +45,7 @@ export default function SetRow({
   setEditingSetId,
   setUpdateSetError,
   pendingSetEditsById,
+  exerciseType,
 }: SetRowProps) {
   return (
     <div
@@ -58,7 +60,8 @@ export default function SetRow({
       {editingSetId === set.id ? (
         <form onSubmit={handleUpdateSet} style={{ display: "grid", gap: 10 }}>
           <div style={{ fontWeight: 700 }}>Edit Set {set.set_number ?? "?"}</div>
-
+      {exerciseType === "life" ? (
+          <>
           <label style={{ display: "grid", gap: 4 }}>
             <span>Reps</span>
             <input
@@ -90,7 +93,9 @@ export default function SetRow({
               }}
             />
           </label>
-
+          </>
+      ) : (
+          <>
           <label style={{ display: "grid", gap: 4 }}>
             <span>Time in seconds</span>
             <input
@@ -121,6 +126,8 @@ export default function SetRow({
               }}
             />
           </label>
+          </>
+      )}
 
           {updateSetError && (
             <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>

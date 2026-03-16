@@ -340,6 +340,7 @@ export default function ExerciseCard({
               pendingSetEditsById={pendingSetEditsById}
               setEditingSetId={setEditingSetId}
               setUpdateSetError={setUpdateSetError}
+              exerciseType={exercise.exercise_type}
             />
           ))}
         </div>
@@ -352,6 +353,15 @@ export default function ExerciseCard({
             onClick={() => {
                 setEditingSetId(null);
                 setUpdateSetError(null);
+
+                if (exercise.exercise_type === "lift") {
+                    updateSetForm(exercise.id, "time_seconds", "");
+                    updateSetForm(exercise.id, "intensity", "");
+                } else {
+                    updateSetForm(exercise.id, "reps", "");
+                    updateSetForm(exercise.id, "weight", "");
+                }
+
                 setShowAddSetForm(true);
             }}
             style={{
@@ -386,6 +396,8 @@ export default function ExerciseCard({
               onSubmit={(e) => handleAddSet(e, exercise.id)}
               style={{ display: "grid", gap: 10 }}
             >
+            {exercise.exercise_type === "lift" ? (
+              <>
               <label style={{ display: "grid", gap: 4 }}>
                 <span>Reps</span>
                 <input
@@ -419,7 +431,9 @@ export default function ExerciseCard({
               }}
             />
           </label>
-
+        </>
+        ) : (
+            <>
           <label style={{ display: "grid", gap: 4 }}>
             <span>Time (seconds)</span>
             <input
@@ -428,7 +442,7 @@ export default function ExerciseCard({
                 onChange={(e) =>
                     updateSetForm(exercise.id, "time_seconds", e.target.value)
                 }
-                placeholder="Cardio only"
+                placeholder="300"
                 style={{
                     padding: 10,
                     border: "1px solid #ccc",
@@ -447,7 +461,7 @@ export default function ExerciseCard({
                 onChange={(e) =>
                     updateSetForm(exercise.id, "intensity", e.target.value)
                 }
-                placeholder="Cardio only"
+                placeholder="Moderate"
                 style={{
                     padding: 10,
                     border: "1px solid #ccc",
@@ -457,6 +471,8 @@ export default function ExerciseCard({
                 }}
             />
           </label>
+        </>
+      )}
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button
