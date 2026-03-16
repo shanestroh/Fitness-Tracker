@@ -45,6 +45,7 @@ def create_exercise_entry(
     exercise_row = ExerciseEntry(
         session_id=session_id,
         exercise=exercise_data.exercise,
+        exercise_type=exercise_data.exercise_type,
         order_index=next_index,
     )
 
@@ -61,6 +62,7 @@ def create_exercise_entry(
         "id": exercise_row.id,
         "session_id": exercise_row.session_id,
         "exercise": exercise_row.exercise,
+        "exercise_type": exercise_row.exercise_type,
         "order_index": exercise_row.order_index,
     }
     return {k: v for k, v in record.items() if v is not None}

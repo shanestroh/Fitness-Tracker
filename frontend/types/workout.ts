@@ -10,6 +10,7 @@ export type SetEntry = {
 export type ExerciseEntry = {
   id: number;
   exercise: string;
+  exercise_type: "lift" | "cardio";
   order_index?: number;
   sets: SetEntry[];
 };

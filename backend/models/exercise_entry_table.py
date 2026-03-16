@@ -1,5 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, CheckConstraint, Index
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, CheckConstraint, Index, Enum
 from backend.db import Base
+import enum
+
+class ExerciseType(str, enum.Enum):
+    lift = "lift"
+    cardio = "cardio"
 
 class ExerciseEntry(Base):
     __tablename__ = "exercise_entries"
@@ -11,6 +16,7 @@ class ExerciseEntry(Base):
         index = True
     )
     exercise = Column(String, nullable=False)
+    exercise_type = Column(Enum(ExerciseType), nullable=False, default=ExerciseType.lift)
     #orders the exercises
     order_index = Column(Integer, nullable=True)
 

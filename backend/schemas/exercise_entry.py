@@ -1,8 +1,10 @@
 from pydantic import BaseModel, field_validator, model_validator
-from typing import Optional
+from typing import Optional, Literal
 
 class CreateExerciseEntry(BaseModel):
     exercise: str
+    exercise_type: Literal["lift", "cardio"]
+    order_index: Optional[int] = None
 
     @field_validator("exercise", mode="before")
     @classmethod
@@ -15,6 +17,7 @@ class CreateExerciseEntry(BaseModel):
 
 class UpdateExerciseEntry(BaseModel):
     exercise: Optional[str] = None
+    exercise_type: Optional[Literal["lift", "cardio"]] = None
     order_index: Optional[int] = None
 
     @model_validator(mode="after")

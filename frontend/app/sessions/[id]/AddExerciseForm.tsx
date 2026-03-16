@@ -1,10 +1,12 @@
 "use client";
 
-import {useState } from "react";
+import { useState } from "react";
 
 type AddExerciseFormProps = {
   exerciseName: string;
   setExerciseName: (value: string) => void;
+  exerciseType: "lift" | "cardio";
+  setExerciseType: (value: "lift" | "cardio") => void;
   handleAddExercise: (e: React.FormEvent) => Promise<void>;
   addingExercise: boolean;
   exerciseError: string | null;
@@ -14,12 +16,14 @@ type AddExerciseFormProps = {
 export default function AddExerciseForm({
   exerciseName,
   setExerciseName,
+  exerciseType,
+  setExerciseType,
   handleAddExercise,
   addingExercise,
   exerciseError,
   cardText,
 }: AddExerciseFormProps) {
-    const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   return (
     <div style={{ marginBottom: 28 }}>
@@ -54,10 +58,7 @@ export default function AddExerciseForm({
             Add Exercise
           </h2>
 
-          <form
-            onSubmit={handleAddExercise}
-            style={{ display: "grid", gap: 12 }}
-          >
+          <form onSubmit={handleAddExercise} style={{ display: "grid", gap: 12 }}>
             <label style={{ display: "grid", gap: 6 }}>
               <span>Exercise name</span>
               <input
@@ -73,6 +74,24 @@ export default function AddExerciseForm({
                   color: "#111",
                 }}
               />
+            </label>
+
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Exercise type</span>
+              <select
+                value={exerciseType}
+                onChange={(e) => setExerciseType(e.target.value as "lift" | "cardio")}
+                style={{
+                  padding: 10,
+                  border: "1px solid #ccc",
+                  borderRadius: 8,
+                  background: "#fff",
+                  color: "#111",
+                }}
+              >
+                <option value="lift">Lift</option>
+                <option value="cardio">Cardio</option>
+              </select>
             </label>
 
             {exerciseError && (

@@ -20,6 +20,7 @@ export type PendingAddExerciseAction = {
   tempExerciseId: number;
   payload: {
     exercise: string;
+    exercise_type: "lift" | "cardio";
   };
   createdAt: number;
 };

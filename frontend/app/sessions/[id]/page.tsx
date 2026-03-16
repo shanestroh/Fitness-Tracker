@@ -86,6 +86,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [updatingExercise, setUpdatingExercise] = useState(false);
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
+  const [exerciseType, setExerciseType] = useState<"lift" | "cardio">("lift");
   const cardText = "#111";
 
 
@@ -194,6 +195,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const payload = {
       exercise: trimmedExerciseName,
+      exercise_type: exerciseType,
     };
 
     const previousSession = session;
@@ -208,6 +210,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     const optimisticExercise = {
         id: tempExerciseId,
         exercise: trimmedExerciseName,
+        exercise_type: exerciseType,
         order_index: nextOrderIndex,
         sets: [],
     };
@@ -215,6 +218,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     setSession((prev) => (prev ? addOptimisticExercise(prev, optimisticExercise) : prev));
 
     setExerciseName("");
+    setExerciseType("lift");
 
     try {
       const res = await apiFetch(`/sessions/${sessionId}/exercises`, {
@@ -843,6 +847,8 @@ export default function SessionPage({ params }: SessionPageProps) {
       <AddExerciseForm
         exerciseName={exerciseName}
         setExerciseName={setExerciseName}
+        exerciseType={exerciseType}
+        setExerciseType={setExerciseType}
         handleAddExercise={handleAddExercise}
         addingExercise={addingExercise}
         exerciseError={exerciseError}
