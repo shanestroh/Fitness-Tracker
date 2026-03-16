@@ -788,6 +788,33 @@ export default function SessionPage({ params }: SessionPageProps) {
         ← Back to Sessions
       </Link>
 
+      <div
+        style={{
+            marginBottom: 16,
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid #d9d9d9",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            background: !isOnline
+                ? "#fff7e6"
+                : pendingQueueCount > 0
+                ? "#fffbe6"
+                : "#f6ffed",
+            color: "#111",
+            fontWeight: 600,
+        }}
+      >
+        {!isOnline
+            ? pendingQueueCount > 0
+                ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending — offline, will sync later`
+                : "Offline"
+            : pendingQueueCount > 0
+            ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending`
+            : "All changes synced"}
+      </div>
+
       <SessionHeader
         split={session.split}
         date={session.date}
@@ -812,30 +839,6 @@ export default function SessionPage({ params }: SessionPageProps) {
         handleDeleteSession={handleDeleteSession}
         setShowDeleteSessionModal={setShowDeleteSessionModal}
       />
-
-      <div
-        style={{
-            marginBottom: 16,
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1px solid #d9d9d9",
-            background: !isOnline
-                ? "#fff7e6"
-                : pendingQueueCount > 0
-                ? "#fffbe6"
-                : "#f6ffed",
-            color: "#111",
-            fontWeight: 600,
-        }}
-      >
-        {!isOnline
-            ? pendingQueueCount > 0
-                ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending — offline, will sync later`
-                : "Offline"
-            : pendingQueueCount > 0
-            ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending`
-            : "All changes synced"}
-      </div>
 
       <AddExerciseForm
         exerciseName={exerciseName}
