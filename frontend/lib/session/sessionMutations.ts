@@ -50,7 +50,7 @@ export function removeSetFromSession(
 
 export function updateSetInSession(
   session: SessionFull,
-  setId: number,
+  setId: number | string,
   updates: {
     reps?: number;
     weight?: number;

@@ -247,3 +247,36 @@ export function removeQueuedEditExerciseByExerciseId(exerciseId: number) {
   );
   writeQueue(queue);
 }
+
+export function updateQueuedAddSetByTempId(
+  tempSetId: string,
+  payload: {
+    reps?: number;
+    weight?: number;
+    time_seconds?: number | null;
+    intensity?: string | null;
+  }
+) {
+  const queue = readQueue().map((item) => {
+    if (item.type === "add-set" && item.tempSetId === tempSetId) {
+      return {
+        ...item,
+        payload: {
+          ...(payload.reps !== undefined ? { reps: payload.reps } : {}),
+          ...(payload.weight !== undefined ? { weight: payload.weight } : {}),
+          ...(payload.time_seconds !== undefined && payload.time_seconds !== null
+            ? { time_seconds: payload.time_seconds }
+            : {}),
+          ...(payload.intensity !== undefined && payload.intensity !== null
+            ? { intensity: payload.intensity }
+            : {}),
+        },
+        createdAt: Date.now(),
+      };
+    }
+
+    return item;
+  });
+
+  writeQueue(queue);
+}

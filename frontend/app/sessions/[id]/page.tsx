@@ -23,6 +23,7 @@ import {
   removeQueuedAddSetsByExerciseId,
   removeQueuedAddExerciseByTempId,
   removeQueuedEditExerciseByExerciseId,
+  updateQueuedAddSetByTempId,
   getOfflineQueue
 } from "@/lib/offline/offlineQueue";
 
@@ -474,7 +475,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   async function handleUpdateSet(e: React.FormEvent) {
     e.preventDefault();
 
-    if (editingSetId === null || typeof editingSetId === "string" || !session) return;
+    if (editingSetId === null || !session) return;
 
     setUpdateSetError(null);
     setUpdatingSet(true);
@@ -505,9 +506,25 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const previousSession = session;
 
-    setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
+    setSession((prev) =>
+        prev
+            ? updateSetInSession(
+                prev,
+                typeof setId === "string" ? setId : setId,
+                payload
+               )
+            : prev
+        );
 
     try {
+        // TEMP OFFLINE SET: update queued add-set instead of PATCHing backend
+        if (typeof setId === "string") {
+            updateQueuedAddSetByTempId(setId, payload);
+            refreshPendingQueueCount(sessionId);
+            markSetPending(setId);
+            setEditingSetId(null);
+            return;
+        }
         const res = await apiFetch(`/sets/${setId}`, {
             method: "PATCH",
             body: JSON.stringify(payload),
@@ -515,14 +532,12 @@ export default function SessionPage({ params }: SessionPageProps) {
 
         if (!res.ok) {
             const text = await res.text();
-
             setSession(previousSession);
             setUpdateSetError(text || `Failed to update set: ${res.status}`);
             return;
         }
 
         clearPendingSet(setId);
-
         await loadSession(sessionId);
         setEditingSetId(null);
       } catch (err: any) {
@@ -536,7 +551,6 @@ export default function SessionPage({ params }: SessionPageProps) {
         });
 
         refreshPendingQueueCount(sessionId);
-
         markSetPending(setId);
 
         setUpdateSetError("Connection issue. Saved offline and will retry.");
