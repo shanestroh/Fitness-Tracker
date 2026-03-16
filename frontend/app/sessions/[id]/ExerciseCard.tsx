@@ -107,7 +107,7 @@ export default function ExerciseCard({
   pendingExerciseEditsById,
 }: ExerciseCardProps) {
     const [showAddSetForm, setShowAddSetForm] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <section
