@@ -129,6 +129,7 @@ def get_session_full(
         exercise_record = {
             "id": e.id,
             "exercise": e.exercise,
+            "exercise_type": e.exercise_type,
             "order_index": e.order_index,
             "sets": sets_by_exercise_id.get(e.id, []),
         }
