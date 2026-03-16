@@ -22,6 +22,7 @@ import {
   removeQueuedAddSetByTempId,
   removeQueuedAddSetsByExerciseId,
   removeQueuedAddExerciseByTempId,
+  getOfflineQueue
 } from "@/lib/offline/offlineQueue";
 
 import { applyQueuedChangesToSession } from "@/lib/offline/sessionQueueHelpers";
