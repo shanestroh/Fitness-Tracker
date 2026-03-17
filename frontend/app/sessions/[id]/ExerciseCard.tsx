@@ -233,9 +233,8 @@ export default function ExerciseCard({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) auto auto",
-              alignItems: "center",
-              gap: 16,
+              gridTemplateColumns: "minmax(0, 1fr)",
+              gap: 14,
               marginBottom: isExpanded ? 16 : 0,
             }}
           >
@@ -306,11 +305,13 @@ export default function ExerciseCard({
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "center",
                   alignItems: "center",
-                  minWidth: 120,
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
                 }}
               >
+                <div>
                 {pendingExerciseEditsById[exercise.id] ? (
                   <span className="badge badge-warning">Pending sync</span>
                 ) : (
@@ -326,6 +327,71 @@ export default function ExerciseCard({
                 </span>
               )}
             </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                justifyContent: "flex-start",
+              }}
+            >
+              {!isFirst && (
+                <button
+                  type="button"
+                  onClick={() => handleMoveExercise(exercise.id, "up")}
+                  className="btn btn-secondary"
+                  style={{
+                    minWidth: 40,
+                    width: 40,
+                    height: 40,
+                    padding: 0,
+                    borderRadius: 12,
+                  }}
+                  aria-label="Move exercise up"
+                  title="Move up"
+                >
+                  ↑
+                </button>
+              )}
+
+              {!isLast && (
+                <button
+                  type="button"
+                  onClick={() => handleMoveExercise(exercise.id, "down")}
+                  className="btn btn-secondary"
+                  style={{
+                    minWidth: 40,
+                    width: 40,
+                    height: 40,
+                    padding: 0,
+                    borderRadius: 12,
+                  }}
+                  aria-label="Move exercise down"
+                  title="Move down"
+                >
+                  ↓
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => startEditingExercise(exercise)}
+                className="btn btn-secondary"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteExercise(exercise.id)}
+                disabled={deletingExerciseById[exercise.id]}
+                className="btn btn-danger"
+              >
+                {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
 
             <div
               style={{

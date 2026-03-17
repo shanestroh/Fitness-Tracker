@@ -292,17 +292,17 @@ export default function SetRow({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "auto minmax(0, 1fr) auto",
-            alignItems: "center",
-            gap: 16,
+            gridTemplateColumns: "1fr",
+            gap: 14,
           }}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "flex-start",
-              minWidth: 90,
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
             }}
           >
             <div
@@ -317,11 +317,7 @@ export default function SetRow({
               Set {set.set_number ?? "?"}:
             </div>
 
-            {isPending && (
-              <div style={{ marginTop: 8 }}>
-                <span className="badge badge-warning">Pending sync</span>
-              </div>
-            )}
+            {isPending && <span className="badge badge-warning">Pending sync</span>}
           </div>
 
           <div
@@ -335,20 +331,20 @@ export default function SetRow({
             {exerciseType === "lift" ? (
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 20,
-                  flexWrap: "wrap",
+                  display: "grid",
+                  gridTemplateColumns: "1fr",
+                  gap: 12,
                   width: "100%",
+                  maxWidth: 260,
+                  justifyItems: "center",
                 }}
               >
-                {set.reps !== undefined && statBox(set.reps, "reps", 120)}
+                {set.reps !== undefined && statBox(set.reps, "reps", 0)}
 
                 {set.reps !== undefined && set.weight !== undefined && (
                   <div
                     style={{
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: 800,
                       color: "var(--text-muted)",
                       lineHeight: 1,
@@ -358,7 +354,7 @@ export default function SetRow({
                   </div>
                 )}
 
-                {set.weight !== undefined && statBox(set.weight, "lbs", 120)}
+                {set.weight !== undefined && statBox(set.weight, "lbs", 0)}
               </div>
             ) : (
               <div
@@ -366,11 +362,10 @@ export default function SetRow({
                   display: "grid",
                   gridTemplateColumns:
                     set.time_seconds !== undefined && set.intensity
-                      ? "minmax(180px, 1fr) minmax(180px, 1fr)"
-                      : "minmax(260px, 420px)",
-                  gap: 14,
+                      ? "1fr"
+                      : "1fr",
+                  gap: 12,
                   width: "100%",
-                  justifyContent: "center",
                 }}
               >
                 {set.time_seconds !== undefined && (
@@ -381,6 +376,7 @@ export default function SetRow({
                       background: "var(--surface-alt)",
                       border: "1px solid var(--border)",
                       textAlign: "center",
+                      width: "100%",
                     }}
                   >
                     <div
@@ -414,6 +410,7 @@ export default function SetRow({
                       background: "var(--surface-alt)",
                       border: "1px solid var(--border)",
                       textAlign: "center",
+                      width: "100%",
                     }}
                   >
                     <div
@@ -447,7 +444,7 @@ export default function SetRow({
               display: "flex",
               gap: 8,
               flexWrap: "wrap",
-              justifyContent: "flex-end",
+              justifyContent: "flex-start",
             }}
           >
             <button
