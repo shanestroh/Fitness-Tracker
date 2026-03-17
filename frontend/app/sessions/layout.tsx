@@ -1,13 +1,17 @@
-"use client"
+"use client";
 
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 
-export default function SessionsLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   useIdleLogout();
 
-  return <>{children}</>;
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
 }
