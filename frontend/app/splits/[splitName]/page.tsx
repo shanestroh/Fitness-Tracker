@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { apiFetch } from "@/lib/apiFetch";
 import EmptyState from "@/app/components/EmptyState";
+import ErrorState from "@/app/components/ErrorState";
 import SessionCard from "@/app/components/SessionCard";
 
 type SessionSummary = {
@@ -29,6 +30,7 @@ async function getSessions(): Promise<SessionsResult> {
 
     if (!res.ok) {
       const text = await res.text();
+      console.error("Failed to fetch sessions:", res.status, text);
       return {
         sessions: [],
         error: text || `Failed to fetch sessions: ${res.status}`,
@@ -40,9 +42,10 @@ async function getSessions(): Promise<SessionsResult> {
       error: null,
     };
   } catch (error: any) {
+    console.error("Error fetching sessions:", error);
     return {
       sessions: [],
-      error: error?.message ?? "Failed to load sessions",
+      error: error?.message ?? "Failed to load workouts for this split",
     };
   }
 }
@@ -60,7 +63,7 @@ export default async function SplitDetailPage({ params }: Props) {
   const { splitName } = await params;
   const decodedSplitName = decodeURIComponent(splitName);
 
-  const sessions = await getSessions();
+  const { sessions, error } = await getSessions();
 
   const filteredSessions = sessions
     .filter(
@@ -83,7 +86,12 @@ export default async function SplitDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {filteredSessions.length === 0 ? (
+      {error ? (
+        <ErrorState
+          title={`Could not load ${prettySplitName} workouts`}
+          message={error}
+        />
+      ) : filteredSessions.length === 0 ? (
         <EmptyState
           title="No workouts found"
           description={`There are no sessions saved under the ${prettySplitName} split yet.`}

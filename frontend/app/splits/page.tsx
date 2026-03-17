@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { apiFetch } from "@/lib/apiFetch";
 import EmptyState from "@/app/components/EmptyState";
+import ErrorState from "@/app/components/ErrorState";
 import SplitCard from "@/app/components/SplitCard";
 
 type SessionSummary = {
@@ -12,20 +13,34 @@ type SessionSummary = {
   exercise_count: number;
 };
 
-async function getSessions(): Promise<SessionSummary[]> {
+type SessionsResult = {
+  sessions: SessionSummary[];
+  error: string | null;
+};
+
+async function getSessions(): Promise<SessionsResult> {
   try {
     const res = await apiFetch("/sessions");
 
     if (!res.ok) {
       const text = await res.text();
       console.error("Failed to fetch sessions:", res.status, text);
-      return [];
+      return {
+        sessions: [],
+        error: text || `Failed to fetch sessions: ${res.status}`,
+      };
     }
 
-    return await res.json();
-  } catch (error) {
+    return {
+      sessions: await res.json(),
+      error: null,
+    };
+  } catch (error: any) {
     console.error("Error fetching sessions:", error);
-    return [];
+    return {
+      sessions: [],
+      error: error?.message ?? "Failed to load splits",
+    };
   }
 }
 
@@ -39,7 +54,7 @@ function formatSplitName(split: string) {
 }
 
 export default async function SplitsPage() {
-  const sessions = await getSessions();
+  const { sessions, error } = await getSessions();
 
   const grouped = sessions.reduce(
     (acc, session) => {
@@ -76,7 +91,9 @@ export default async function SplitsPage() {
         </div>
       </div>
 
-      {splitEntries.length === 0 ? (
+      {error ? (
+        <ErrorState title="Could not load splits" message={error} />
+      ) : splitEntries.length === 0 ? (
         <EmptyState
           title="No splits yet"
           description="Once you create workout sessions, your splits will appear here automatically."
