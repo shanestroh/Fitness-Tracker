@@ -54,6 +54,7 @@ type ExerciseCardProps = {
   pendingSetEditsById: Record<string, boolean>;
   setEditingSetId: (id: number | string | null) => void;
   setUpdateSetError: (value: string | null) => void;
+
   editingExerciseId: number | null;
   editExerciseName: string;
   setEditExerciseName: (value: string) => void;
@@ -66,7 +67,6 @@ type ExerciseCardProps = {
   startEditingExercise: (exercise: ExerciseEntry) => void;
   handleUpdateExercise: (exerciseId: number) => Promise<void>;
   handleMoveExercise: (exerciseId: number, direction: "up" | "down") => Promise<void>;
-
 };
 
 export default function ExerciseCard({
@@ -115,468 +115,571 @@ export default function ExerciseCard({
   handleMoveExercise,
   pendingExerciseEditsById,
 }: ExerciseCardProps) {
-    const [showAddSetForm, setShowAddSetForm] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(true);
+  const [showAddSetForm, setShowAddSetForm] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const exerciseCountLabel =
+    exercise.sets.length === 1 ? "1 set" : `${exercise.sets.length} sets`;
 
   return (
     <section
+      className="section-card"
       style={{
-        border: "1px solid #e5e5e5",
-        borderRadius: 16,
-        padding: 20,
-        background: "#fff",
         color: cardText,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+        padding: 20,
       }}
     >
-{editingExerciseId === exercise.id ? (
-  <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
-    <label style={{ display: "grid", gap: 6 }}>
-      <span>Exercise name</span>
-      <input
-        value={editExerciseName}
-        onChange={(e) => setEditExerciseName(e.target.value)}
-        style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            background: "#fff",
-            color: "#111",
-        }}
-      />
-    </label>
+      {editingExerciseId === exercise.id ? (
+        <div className="stack-md">
+          <div>
+            <div
+              style={{
+                marginBottom: 6,
+                fontSize: 13,
+                fontWeight: 800,
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Edit exercise
+            </div>
 
-    <label style={{ display: "grid", gap: 6 }}>
-      <span>Exercise type</span>
-      <select
-        value={editExerciseType}
-        onChange={(e) =>
-          setEditExerciseType(e.target.value as "lift" | "cardio")
-        }
-        style={{
-          padding: 10,
-          border: "1px solid #ccc",
-          borderRadius: 8,
-          background: "#fff",
-          color: "#111",
-        }}
-      >
-        <option value="lift">Lift</option>
-        <option value="cardio">Cardio</option>
-      </select>
-    </label>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: 24,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "var(--text)",
+              }}
+            >
+              Update exercise details
+            </h3>
+          </div>
 
-    {updateExerciseError && (
-      <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-        {updateExerciseError}
-      </div>
-    )}
+          <label className="stack-sm">
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--text)",
+              }}
+            >
+              Exercise name
+            </span>
+            <input
+              value={editExerciseName}
+              onChange={(e) => setEditExerciseName(e.target.value)}
+              placeholder="Exercise name"
+            />
+          </label>
 
-    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-      <button
-        type="button"
-        onClick={() => handleUpdateExercise(exercise.id)}
-        disabled={updatingExercise}
-        style={{
-          padding: "10px 14px",
-          borderRadius: 10,
-          border: "1px solid #111",
-          background: "#111",
-          color: "#fff",
-          cursor: updatingExercise ? "not-allowed" : "pointer",
-          fontWeight: 700,
-        }}
-      >
-        {updatingExercise ? "Saving..." : "Save"}
-      </button>
+          <label className="stack-sm">
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--text)",
+              }}
+            >
+              Exercise type
+            </span>
+            <select
+              value={editExerciseType}
+              onChange={(e) =>
+                setEditExerciseType(e.target.value as "lift" | "cardio")
+              }
+            >
+              <option value="lift">Lift</option>
+              <option value="cardio">Cardio</option>
+            </select>
+          </label>
 
-      <button
-        type="button"
-        onClick={() => {
-          setEditingExerciseId(null);
-          setUpdateExerciseError(null);
-        }}
-        style={{
-          padding: "10px 14px",
-          borderRadius: 10,
-          border: "1px solid #d0d0d0",
-          background: "#fff",
-          color: "#111",
-          cursor: "pointer",
-          fontWeight: 700,
-        }}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-) : (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: 10,
-      gap: 12,
-      flexWrap:"wrap"
-    }}
-  >
+          {updateExerciseError && (
+            <div
+              style={{
+                color: "var(--danger)",
+                whiteSpace: "pre-wrap",
+                fontWeight: 600,
+              }}
+            >
+              {updateExerciseError}
+            </div>
+          )}
 
-  <button
-    type="button"
-    onClick={() => {
-        setIsExpanded((prev) => {
-            const next = !prev;
-            if (!next) {
-                setShowAddSetForm(false);
-                setEditingSetId(null);
-                setUpdateSetError(null);
-            }
-            return next;
-        });
-    }}
-    style={{
-        background: "none",
-        border: "none",
-        padding: 0,
-        margin: 0,
-        cursor: "pointer",
-        font: "inherit",
-        color: "inherit",
-        textAlign: "left",
-        flex: "1 1 220px",
-        minWidth: 0,
-    }}
-    >
-    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-    <h3 style={{ fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
-        {exercise.order_index !== undefined ? `${exercise.order_index}. ` : ""}
-        {exercise.exercise} {isExpanded ? "▼" : "▶"}
-    </h3>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => handleUpdateExercise(exercise.id)}
+              disabled={updatingExercise}
+              className="btn btn-primary"
+            >
+              {updatingExercise ? "Saving..." : "Save Exercise"}
+            </button>
 
-    {pendingExerciseEditsById[exercise.id] && (
-        <span
+            <button
+              type="button"
+              onClick={() => {
+                setEditingExerciseId(null);
+                setUpdateExerciseError(null);
+              }}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div
             style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 16,
+              flexWrap: "wrap",
+              marginBottom: isExpanded ? 16 : 0,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setIsExpanded((prev) => {
+                  const next = !prev;
+                  if (!next) {
+                    setShowAddSetForm(false);
+                    setEditingSetId(null);
+                    setUpdateSetError(null);
+                  }
+                  return next;
+                });
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                margin: 0,
+                cursor: "pointer",
+                textAlign: "left",
+                color: "inherit",
+                flex: "1 1 260px",
+                minWidth: 0,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 8,
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 24,
+                    lineHeight: 1.15,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: "var(--text)",
+                  }}
+                >
+                  {exercise.order_index !== undefined
+                    ? `${exercise.order_index}. ${exercise.exercise}`
+                    : exercise.exercise}
+                </h3>
+
+                <span className="badge badge-neutral">
+                  {exercise.exercise_type === "lift" ? "Lift" : "Cardio"}
+                </span>
+
+                {pendingExerciseEditsById[exercise.id] && (
+                  <span className="badge badge-warning">Pending sync</span>
+                )}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 14,
+                    color: "var(--text-muted)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {exerciseCountLabel}
+                </span>
+
+                <span
+                  style={{
+                    fontSize: 14,
+                    color: "var(--primary)",
+                    fontWeight: 700,
+                  }}
+                >
+                  {isExpanded ? "Hide details ▲" : "Show details ▼"}
+                </span>
+              </div>
+            </button>
+
+            <div
+              style={{
                 display: "flex",
                 gap: 8,
                 flexWrap: "wrap",
                 justifyContent: "flex-end",
-            }}
-        >
-            Syncing...
-        </span>
-      )}
-    </div>
-  </button>
-    {!isFirst && (
-      <button
-        type="button"
-        onClick={() => handleMoveExercise(exercise.id, "up")}
-        style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "1px solid #d0d0d0",
-            background: "#fff",
-            cursor: "pointer",
-            color: "#111",
-            fontWeight: 700,
-            }}
-        >
-        ↑
-        </button>
-        )}
-    {!isLast && (
-      <button
-        type="button"
-        onClick={() => handleMoveExercise(exercise.id, "down")}
-        style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "1px solid #d0d0d0",
-            background: "#fff",
-            color: "#111",
-            cursor: "pointer",
-            fontWeight: 700,
-        }}
-    >
-        ↓
-        </button>
-    )}
-      <button
-        type="button"
-        onClick={() => startEditingExercise(exercise)}
-        style={{
-          padding: "10px 14px",
-          borderRadius: 10,
-          border: "1px solid #d0d0d0",
-          background: "#fff",
-          color: "#111",
-          cursor: "pointer",
-          fontWeight: 700,
-        }}
-      >
-        Edit Exercise
-      </button>
-
-      <button
-        type="button"
-        onClick={() => handleDeleteExercise(exercise.id)}
-        disabled={deletingExerciseById[exercise.id]}
-        style={{
-          padding: "10px 14px",
-          borderRadius: 10,
-          border: "1px solid #f0b8c1",
-          background: "#fff",
-          color: "#b00020",
-          cursor: deletingExerciseById[exercise.id] ? "not-allowed" : "pointer",
-          fontWeight: 700,
-        }}
-      >
-        {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete Exercise"}
-      </button>
-    </div>
-)}
-
-{isExpanded && (
-  <>
-    {exercise.sets.length === 0 ? (
-        <p style={{ color: "#666", marginTop: 8 }}>No sets yet.</p>
-      ) : (
-        <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
-          {exercise.sets.map((set) => (
-            <SetRow
-              key={set.id}
-              set={set}
-              cardText={cardText}
-              editingSetId={editingSetId}
-              editSetReps={editSetReps}
-              setEditSetReps={setEditSetReps}
-              editSetWeight={editSetWeight}
-              setEditSetWeight={setEditSetWeight}
-              editSetTimeSeconds={editSetTimeSeconds}
-              setEditSetTimeSeconds={setEditSetTimeSeconds}
-              editSetTimeMinutes={editSetTimeMinutes}
-              setEditSetTimeMinutes={setEditSetTimeMinutes}
-              editSetIntensity={editSetIntensity}
-              setEditSetIntensity={setEditSetIntensity}
-              updateSetError={updateSetError}
-              updatingSet={updatingSet}
-              handleUpdateSet={handleUpdateSet}
-              startEditingSet={(set) => {
-                setShowAddSetForm(false);
-                startEditingSet(set, exercise.exercise_type);
-                }}
-              handleDeleteSet={handleDeleteSet}
-              deletingSetById={deletingSetById}
-              pendingSetEditsById={pendingSetEditsById}
-              setEditingSetId={setEditingSetId}
-              setUpdateSetError={setUpdateSetError}
-              exerciseType={exercise.exercise_type}
-            />
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginTop: 16 }}>
-        {!showAddSetForm ? (
-          <button
-            type="button"
-            onClick={() => {
-                setEditingSetId(null);
-                setUpdateSetError(null);
-
-                if (exercise.exercise_type === "lift") {
-                    updateSetForm(exercise.id, "time_seconds", "");
-                    updateSetForm(exercise.id, "intensity", "");
-                } else {
-                    updateSetForm(exercise.id, "reps", "");
-                    updateSetForm(exercise.id, "weight", "");
-                }
-
-                setShowAddSetForm(true);
-            }}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 10,
-              border: "1px solid #111",
-              background: "#111",
-              color: "#fff",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            Add Set
-          </button>
-        ) : (
-      <section
-        style={{
-          border: "1px solid #e5e5e5",
-          borderRadius: 14,
-          padding: 16,
-          marginBottom: 16,
-          background: "#fff",
-          color: cardText,
-          boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
-        }}
-      >
-        <h4 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px 0" }}>
-          Add Set
-        </h4>
-
-        <form
-              onSubmit={(e) => handleAddSet(e, exercise.id)}
-              style={{ display: "grid", gap: 10 }}
-            >
-            {exercise.exercise_type === "lift" ? (
-              <>
-              <label style={{ display: "grid", gap: 4 }}>
-                <span>Reps</span>
-                <input
-                  type="number"
-                  value={setFormByExercise[exercise.id]?.reps ?? ""}
-                  onChange={(e) => updateSetForm(exercise.id, "reps", e.target.value)}
-                  placeholder="10"
-                  style={{
-                    padding: 10,
-                    border: "1px solid #ccc",
-                    borderRadius: 8,
-                    background: "#fff",
-                    color: "#111",
-                  }}
-                />
-              </label>
-
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Weight</span>
-            <input
-              type="number"
-              value={setFormByExercise[exercise.id]?.weight ?? ""}
-              onChange={(e) => updateSetForm(exercise.id, "weight", e.target.value)}
-              placeholder="135"
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                background: "#fff",
-                color: "#111",
               }}
-            />
-          </label>
-        </>
-        ) : (
-            <>
-          <div style={{ display: "grid", gap: 8 }}>
-            <span>Time</span>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                 <label style={{ display: "grid", gap: 4 }}>
-                    <span>Minutes</span>
-                    <input
-                        type="number"
-                        min="0"
-                        value={setFormByExercise[exercise.id]?.time_minutes ?? ""}
-                        onChange={(e) =>
-                            updateSetForm(exercise.id, "time_minutes", e.target.value)
-                        }
-                        placeholder="5"
-                        style={{
-                            padding: 10,
-                            border: "1px solid #ccc",
-                            borderRadius: 8,
-                            background: "#fff",
-                            color: "#111",
-                        }}
-                    />
-                </label>
+            >
+              {!isFirst && (
+                <button
+                  type="button"
+                  onClick={() => handleMoveExercise(exercise.id, "up")}
+                  className="btn btn-secondary"
+                  style={{ minWidth: 44, paddingInline: 12 }}
+                  aria-label="Move exercise up"
+                  title="Move up"
+                >
+                  ↑
+                </button>
+              )}
 
-                <label style={{ display: "grid", gap: 4 }}>
-                    <span>Seconds</span>
-                    <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={setFormByExercise[exercise.id]?.time_seconds ?? ""}
-                        onChange={(e) =>
-                            updateSetForm(exercise.id, "time_seconds", e.target.value)
-                        }
-                        placeholder="30"
-                        style={{
-                            padding: 10,
-                            border: "1px solid #ccc",
-                            borderRadius: 8,
-                            background: "#fff",
-                            color: "#111",
-                        }}
-                    />
-                </label>
+              {!isLast && (
+                <button
+                  type="button"
+                  onClick={() => handleMoveExercise(exercise.id, "down")}
+                  className="btn btn-secondary"
+                  style={{ minWidth: 44, paddingInline: 12 }}
+                  aria-label="Move exercise down"
+                  title="Move down"
+                >
+                  ↓
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => startEditingExercise(exercise)}
+                className="btn btn-secondary"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteExercise(exercise.id)}
+                disabled={deletingExerciseById[exercise.id]}
+                className="btn btn-danger"
+              >
+                {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
 
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Intensity</span>
-            <input
-                type="text"
-                value={setFormByExercise[exercise.id]?.intensity ?? ""}
-                onChange={(e) =>
-                    updateSetForm(exercise.id, "intensity", e.target.value)
-                }
-                placeholder="Moderate"
-                style={{
-                    padding: 10,
-                    border: "1px solid #ccc",
-                    borderRadius: 8,
-                    background: "#fff",
-                    color: "#111",
-                }}
-            />
-          </label>
+          {isExpanded && (
+            <>
+              {exercise.sets.length === 0 ? (
+                <section
+                  style={{
+                    border: "1px dashed var(--border-strong)",
+                    borderRadius: "var(--radius-md)",
+                    background: "var(--surface-alt)",
+                    padding: 16,
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "var(--text-muted)",
+                      fontSize: 15,
+                    }}
+                  >
+                    No sets yet.
+                  </p>
+                </section>
+              ) : (
+                <div style={{ display: "grid", gap: 10 }}>
+                  {exercise.sets.map((set) => (
+                    <SetRow
+                      key={set.id}
+                      set={set}
+                      cardText={cardText}
+                      editingSetId={editingSetId}
+                      editSetReps={editSetReps}
+                      setEditSetReps={setEditSetReps}
+                      editSetWeight={editSetWeight}
+                      setEditSetWeight={setEditSetWeight}
+                      editSetTimeSeconds={editSetTimeSeconds}
+                      setEditSetTimeSeconds={setEditSetTimeSeconds}
+                      editSetTimeMinutes={editSetTimeMinutes}
+                      setEditSetTimeMinutes={setEditSetTimeMinutes}
+                      editSetIntensity={editSetIntensity}
+                      setEditSetIntensity={setEditSetIntensity}
+                      updateSetError={updateSetError}
+                      updatingSet={updatingSet}
+                      handleUpdateSet={handleUpdateSet}
+                      startEditingSet={(set) => {
+                        setShowAddSetForm(false);
+                        startEditingSet(set, exercise.exercise_type);
+                      }}
+                      handleDeleteSet={handleDeleteSet}
+                      deletingSetById={deletingSetById}
+                      pendingSetEditsById={pendingSetEditsById}
+                      setEditingSetId={setEditingSetId}
+                      setUpdateSetError={setUpdateSetError}
+                      exerciseType={exercise.exercise_type}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div style={{ marginTop: 16 }}>
+                {!showAddSetForm ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingSetId(null);
+                      setUpdateSetError(null);
+
+                      if (exercise.exercise_type === "lift") {
+                        updateSetForm(exercise.id, "time_seconds", "");
+                        updateSetForm(exercise.id, "intensity", "");
+                      } else {
+                        updateSetForm(exercise.id, "reps", "");
+                        updateSetForm(exercise.id, "weight", "");
+                      }
+
+                      setShowAddSetForm(true);
+                    }}
+                    className="btn btn-primary"
+                  >
+                    + Add Set
+                  </button>
+                ) : (
+                  <section
+                    style={{
+                      marginTop: 4,
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-md)",
+                      background: "var(--surface-alt)",
+                      padding: 16,
+                    }}
+                  >
+                    <div style={{ marginBottom: 14 }}>
+                      <div
+                        style={{
+                          marginBottom: 6,
+                          fontSize: 13,
+                          fontWeight: 800,
+                          color: "var(--text-muted)",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        New set
+                      </div>
+
+                      <h4
+                        style={{
+                          margin: 0,
+                          fontSize: 18,
+                          fontWeight: 800,
+                          letterSpacing: "-0.02em",
+                          color: "var(--text)",
+                        }}
+                      >
+                        Add Set
+                      </h4>
+                    </div>
+
+                    <form
+                      onSubmit={(e) => handleAddSet(e, exercise.id)}
+                      className="stack-md"
+                    >
+                      {exercise.exercise_type === "lift" ? (
+                        <>
+                          <label className="stack-sm">
+                            <span
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: "var(--text)",
+                              }}
+                            >
+                              Reps
+                            </span>
+                            <input
+                              type="number"
+                              value={setFormByExercise[exercise.id]?.reps ?? ""}
+                              onChange={(e) =>
+                                updateSetForm(exercise.id, "reps", e.target.value)
+                              }
+                              placeholder="10"
+                            />
+                          </label>
+
+                          <label className="stack-sm">
+                            <span
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: "var(--text)",
+                              }}
+                            >
+                              Weight
+                            </span>
+                            <input
+                              type="number"
+                              value={setFormByExercise[exercise.id]?.weight ?? ""}
+                              onChange={(e) =>
+                                updateSetForm(exercise.id, "weight", e.target.value)
+                              }
+                              placeholder="135"
+                            />
+                          </label>
+                        </>
+                      ) : (
+                        <>
+                          <div className="stack-sm">
+                            <span
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: "var(--text)",
+                              }}
+                            >
+                              Time
+                            </span>
+
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: 10,
+                              }}
+                            >
+                              <label className="stack-sm">
+                                <span
+                                  style={{
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
+                                  Minutes
+                                </span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={setFormByExercise[exercise.id]?.time_minutes ?? ""}
+                                  onChange={(e) =>
+                                    updateSetForm(
+                                      exercise.id,
+                                      "time_minutes",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="5"
+                                />
+                              </label>
+
+                              <label className="stack-sm">
+                                <span
+                                  style={{
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
+                                  Seconds
+                                </span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="59"
+                                  value={setFormByExercise[exercise.id]?.time_seconds ?? ""}
+                                  onChange={(e) =>
+                                    updateSetForm(
+                                      exercise.id,
+                                      "time_seconds",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="30"
+                                />
+                              </label>
+                            </div>
+                          </div>
+
+                          <label className="stack-sm">
+                            <span
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: "var(--text)",
+                              }}
+                            >
+                              Intensity
+                            </span>
+                            <input
+                              type="text"
+                              value={setFormByExercise[exercise.id]?.intensity ?? ""}
+                              onChange={(e) =>
+                                updateSetForm(exercise.id, "intensity", e.target.value)
+                              }
+                              placeholder="Moderate"
+                            />
+                          </label>
+                        </>
+                      )}
+
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                          type="submit"
+                          disabled={addingSetByExercise[exercise.id]}
+                          className="btn btn-primary"
+                        >
+                          {addingSetByExercise[exercise.id]
+                            ? "Adding..."
+                            : "Save Set"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowAddSetForm(false)}
+                          className="btn btn-secondary"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+
+                    {setErrorByExercise[exercise.id] && (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          color: "var(--danger)",
+                          whiteSpace: "pre-wrap",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {setErrorByExercise[exercise.id]}
+                      </div>
+                    )}
+                  </section>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
-
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button
-                  type="submit"
-                  disabled={addingSetByExercise[exercise.id]}
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: 10,
-                    border: "1px solid #111",
-                    background: "#111",
-                    color: "#fff",
-                    cursor: addingSetByExercise[exercise.id] ? "not-allowed" : "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  {addingSetByExercise[exercise.id] ? "Adding..." : "Save Set"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowAddSetForm(false)}
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: 10,
-                    border: "1px solid #d0d0d0",
-                    background: "#fff",
-                    color: "#111",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-
-            {setErrorByExercise[exercise.id] && (
-              <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginTop: 10 }}>
-                {setErrorByExercise[exercise.id]}
-              </div>
-            )}
-          </section>
-        )}
-      </div>
-    </>
-    )}
     </section>
   );
 }

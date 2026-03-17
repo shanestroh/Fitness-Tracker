@@ -23,8 +23,8 @@ type SetRowProps = {
   setEditSetWeight: (value: string) => void;
   editSetTimeSeconds: string;
   setEditSetTimeSeconds: (value: string) => void;
-  editSetTimeMinutes: string
-  setEditSetTimeMinutes: (value: string) => void
+  editSetTimeMinutes: string;
+  setEditSetTimeMinutes: (value: string) => void;
   editSetIntensity: string;
   setEditSetIntensity: (value: string) => void;
   updateSetError: string | null;
@@ -64,115 +64,169 @@ export default function SetRow({
   pendingSetEditsById,
   exerciseType,
 }: SetRowProps) {
+  const isEditing = editingSetId === set.id;
+  const isDeleting = deletingSetById[String(set.id)];
+  const isPending = pendingSetEditsById[String(set.id)];
+
   return (
     <div
       style={{
-        padding: "14px 16px",
-        border: "1px solid #e5e5e5",
-        borderRadius: 12,
-        background: "#fff",
+        padding: 14,
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        background: "var(--surface)",
         color: cardText,
       }}
     >
-      {editingSetId === set.id ? (
-        <form onSubmit={handleUpdateSet} style={{ display: "grid", gap: 10 }}>
-          <div style={{ fontWeight: 700 }}>Edit Set {set.set_number ?? "?"}</div>
-      {exerciseType === "lift" ? (
-          <>
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Reps</span>
-            <input
-              type="number"
-              value={editSetReps}
-              onChange={(e) => setEditSetReps(e.target.value)}
+      {isEditing ? (
+        <form onSubmit={handleUpdateSet} className="stack-md">
+          <div>
+            <div
               style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                background: "#fff",
-                color: "#111",
+                marginBottom: 6,
+                fontSize: 13,
+                fontWeight: 800,
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
               }}
-            />
-          </label>
+            >
+              Edit set
+            </div>
 
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Weight</span>
-            <input
-              type="number"
-              value={editSetWeight}
-              onChange={(e) => setEditSetWeight(e.target.value)}
+            <div
               style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                background: "#fff",
-                color: "#111",
+                fontSize: 18,
+                fontWeight: 800,
+                color: "var(--text)",
+                letterSpacing: "-0.02em",
               }}
-            />
-          </label>
-          </>
-      ) : (
-          <>
-          <div style={{ display: "grid", gap: 8 }}>
-            <span>Time</span>
+            >
+              Set {set.set_number ?? "?"}
+            </div>
+          </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <label style={{ display: "grid", gap: 4 }}>
-                    <span>Minutes</span>
+          {exerciseType === "lift" ? (
+            <>
+              <label className="stack-sm">
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "var(--text)",
+                  }}
+                >
+                  Reps
+                </span>
+                <input
+                  type="number"
+                  value={editSetReps}
+                  onChange={(e) => setEditSetReps(e.target.value)}
+                />
+              </label>
+
+              <label className="stack-sm">
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "var(--text)",
+                  }}
+                >
+                  Weight
+                </span>
+                <input
+                  type="number"
+                  value={editSetWeight}
+                  onChange={(e) => setEditSetWeight(e.target.value)}
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <div className="stack-sm">
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "var(--text)",
+                  }}
+                >
+                  Time
+                </span>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 10,
+                  }}
+                >
+                  <label className="stack-sm">
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Minutes
+                    </span>
                     <input
-                        type="number"
-                        min="0"
-                        value={editSetTimeMinutes}
-                        onChange={(e) => setEditSetTimeMinutes(e.target.value)}
-                        style={{
-                            padding: 10,
-                            border: "1px solid #ccc",
-                            borderRadius: 8,
-                            background: "#fff",
-                            color: "#111",
-                        }}
+                      type="number"
+                      min="0"
+                      value={editSetTimeMinutes}
+                      onChange={(e) => setEditSetTimeMinutes(e.target.value)}
                     />
-          </label>
+                  </label>
 
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Seconds</span>
-            <input
-              type="number"
-              min="0"
-              max="59"
-              value={editSetTimeSeconds}
-              onChange={(e) => setEditSetTimeSeconds(e.target.value)}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                background: "#fff",
-                color: "#111",
-              }}
-            />
-          </label>
-      </div>
-    </div>
+                  <label className="stack-sm">
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Seconds
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={editSetTimeSeconds}
+                      onChange={(e) => setEditSetTimeSeconds(e.target.value)}
+                    />
+                  </label>
+                </div>
+              </div>
 
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Intensity</span>
-            <input
-              value={editSetIntensity}
-              onChange={(e) => setEditSetIntensity(e.target.value)}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                background: "#fff",
-                color: "#111",
-              }}
-            />
-          </label>
-          </>
-      )}
+              <label className="stack-sm">
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "var(--text)",
+                  }}
+                >
+                  Intensity
+                </span>
+                <input
+                  value={editSetIntensity}
+                  onChange={(e) => setEditSetIntensity(e.target.value)}
+                />
+              </label>
+            </>
+          )}
 
           {updateSetError && (
-            <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
+            <div
+              style={{
+                color: "var(--danger)",
+                whiteSpace: "pre-wrap",
+                fontWeight: 600,
+              }}
+            >
               {updateSetError}
             </div>
           )}
@@ -181,15 +235,7 @@ export default function SetRow({
             <button
               type="submit"
               disabled={updatingSet}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid #111",
-                background: "#111",
-                color: "#fff",
-                cursor: updatingSet ? "not-allowed" : "pointer",
-                fontWeight: 700,
-              }}
+              className="btn btn-primary"
             >
               {updatingSet ? "Saving..." : "Save"}
             </button>
@@ -200,15 +246,7 @@ export default function SetRow({
                 setEditingSetId(null);
                 setUpdateSetError(null);
               }}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid #d0d0d0",
-                background: "#fff",
-                color: "#111",
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
+              className="btn btn-secondary"
             >
               Cancel
             </button>
@@ -224,53 +262,72 @@ export default function SetRow({
             flexWrap: "wrap",
           }}
         >
-          <div>
-            <strong>Set {set.set_number ?? "?"}:</strong>
-            <span style={{ marginLeft: 12 }}>
-              {set.reps !== undefined ? `${set.reps} reps` : ""}
-              {set.weight !== undefined ? ` x ${set.weight} lbs` : ""}
-              {set.time_seconds !== undefined && formatTime(set.time_seconds)}
-              {set.intensity ? ` · ${set.intensity}` : ""}
-            </span>
-            {pendingSetEditsById[String(set.id)] && (
-                <span style={{ marginLeft: 10, fontSize: 12, color: "#a15c00", fontWeight: 700 }}>
-                    Syncing...
+          <div style={{ minWidth: 0, flex: "1 1 240px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap",
+                marginBottom: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 15,
+                  fontWeight: 800,
+                  color: "var(--text)",
+                }}
+              >
+                Set {set.set_number ?? "?"}
+              </span>
+
+              {isPending && <span className="badge badge-warning">Pending sync</span>}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {set.reps !== undefined && (
+                <span className="badge badge-neutral">{set.reps} reps</span>
+              )}
+
+              {set.weight !== undefined && (
+                <span className="badge badge-neutral">{set.weight} lbs</span>
+              )}
+
+              {set.time_seconds !== undefined && (
+                <span className="badge badge-neutral">
+                  {formatTime(set.time_seconds)}
                 </span>
-            )}
+              )}
+
+              {set.intensity && (
+                <span className="badge badge-neutral">{set.intensity}</span>
+              )}
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={() => startEditingSet(set)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 10,
-                border: "1px solid #d0d0d0",
-                background: "#fff",
-                color: "#111",
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
+              className="btn btn-secondary"
             >
-              Edit Set
+              Edit
             </button>
 
             <button
               type="button"
               onClick={() => handleDeleteSet(set.id)}
-              disabled={deletingSetById[String(set.id)]}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 10,
-                border: "1px solid #f0b8c1",
-                background: "#fff",
-                color: "#b00020",
-                cursor: deletingSetById[set.id] ? "not-allowed" : "pointer",
-                fontWeight: 700,
-              }}
+              disabled={isDeleting}
+              className="btn btn-danger"
             >
-              {deletingSetById[set.id] ? "Deleting..." : "Delete Set"}
+              {isDeleting ? "Deleting..." : "Delete"}
             </button>
           </div>
         </div>
