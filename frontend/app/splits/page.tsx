@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import { apiFetch } from "@/lib/apiFetch";
+import EmptyState from "@/app/components/EmptyState";
+import SplitCard from "@/app/components/SplitCard";
 
 type SessionSummary = {
   id: number;
@@ -37,25 +38,6 @@ function formatSplitName(split: string) {
   return split.charAt(0).toUpperCase() + split.slice(1);
 }
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-
-  const month = date.toLocaleString("en-US", { month: "short" });
-  const day = date.getDate();
-  const year = date.getFullYear();
-
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-      ? "nd"
-      : day % 10 === 3 && day !== 13
-      ? "rd"
-      : "th";
-
-  return `${month} ${day}${suffix}, ${year}`;
-}
-
 export default async function SplitsPage() {
   const sessions = await getSessions();
 
@@ -73,56 +55,42 @@ export default async function SplitsPage() {
     {} as Record<string, SessionSummary[]>
   );
 
-  const splitEntries = Object.entries(grouped).sort((a, b) => {
-    return b[1].length - a[1].length;
-  });
+  const splitEntries = Object.entries(grouped)
+    .map(([splitKey, splitSessions]) => {
+      const sortedSessions = [...splitSessions].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+
+      return [splitKey, sortedSessions] as const;
+    })
+    .sort((a, b) => b[1].length - a[1].length);
 
   return (
-    <main style={{ maxWidth: 700, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 20 }}>
-        Browse by Split
-      </h1>
+    <main className="page-shell">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Browse Splits</h1>
+          <p className="page-subtitle">
+            Explore your workout history by training split.
+          </p>
+        </div>
+      </div>
 
       {splitEntries.length === 0 ? (
-        <p>No splits yet.</p>
+        <EmptyState
+          title="No splits yet"
+          description="Once you create workout sessions, your splits will appear here automatically."
+        />
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 14 }}>
           {splitEntries.map(([splitKey, splitSessions]) => (
-            <Link
+            <SplitCard
               key={splitKey}
-              href={`/splits/${encodeURIComponent(splitKey)}`}
-              style={{
-                display: "block",
-                padding: 16,
-                border: "1px solid #ddd",
-                borderRadius: 12,
-                textDecoration: "none",
-                background: "#fff",
-                color: "#111",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-                  {formatSplitName(splitKey)}
-                </h2>
-
-                <span style={{ color: "#666", fontSize: 14 }}>
-                  {splitSessions.length}{" "}
-                  {splitSessions.length === 1 ? "Workout" : "Workouts"}
-                </span>
-              </div>
-
-              <p style={{ margin: "8px 0 0", color: "#555" }}>
-                Last workout: {formatDate(splitSessions[0].date)}
-              </p>
-            </Link>
+              splitKey={splitKey}
+              splitName={formatSplitName(splitKey)}
+              sessionCount={splitSessions.length}
+              lastWorkoutDate={splitSessions[0].date}
+            />
           ))}
         </div>
       )}
