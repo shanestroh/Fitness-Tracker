@@ -85,93 +85,71 @@ export default function NewSessionPage() {
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16 }}>
-        Create Workout Session
-      </h1>
-
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Date</span>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            style={{
-              padding: 10,
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              background: "#fff",
-              color: "#111",
-            }}
-          />
-        </label>
-
-        <SplitSelector
-          splitOption={splitOption}
-          setSplitOption={setSplitOption}
-          customSplit={customSplit}
-          setCustomSplit={setCustomSplit}
-        />
-
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Notes (optional)</span>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="How did it feel?"
-            rows={4}
-            style={{
-              padding: 10,
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              background: "#fff",
-              color: "#111",
-            }}
-          />
-        </label>
-
-        {error && (
-          <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-            {error}
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button
-            type="submit"
-            disabled={loading || !finalSplit}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 10,
-              border: "1px solid #d0d0d0",
-              background: "#fff",
-              cursor: loading || !finalSplit ? "not-allowed" : "pointer",
-              fontWeight: 700,
-              color: "#111",
-            }}
-          >
-            {loading ? "Creating..." : "Create Session"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => router.push("/sessions")}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 10,
-              border: "1px solid #d0d0d0",
-              background: "#fff",
-              cursor: "pointer",
-              fontWeight: 700,
-              color: "#444",
-            }}
-          >
-            Cancel
-          </button>
+    <main className="page-shell">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Create Workout Session</h1>
+          <p className="page-subtitle">
+            Start a new workout and log the split, date, and notes.
+          </p>
         </div>
-      </form>
+      </div>
+
+      <section
+        className="section-card"
+        style={{
+          maxWidth: 560,
+        }}
+      >
+        <form onSubmit={handleSubmit} className="stack-md">
+          <label className="stack-sm">
+            <span className="field-label">Date</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+          </label>
+
+          <SplitSelector
+            splitOption={splitOption}
+            setSplitOption={setSplitOption}
+            customSplit={customSplit}
+            setCustomSplit={setCustomSplit}
+          />
+
+          <label className="stack-sm">
+            <span className="field-label">Notes (optional)</span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="How did it feel?"
+              rows={4}
+            />
+          </label>
+
+          {error && <div className="danger-text">{error}</div>}
+
+          <div className="action-row">
+            <button
+              type="submit"
+              disabled={loading || !finalSplit}
+              className="btn btn-primary"
+            >
+              {loading ? "Creating..." : "Create Session"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.push("/sessions")}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </section>
     </main>
   );
 }
