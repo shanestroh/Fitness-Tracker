@@ -43,43 +43,16 @@ export default function AddExerciseForm({
           }}
         >
           <div style={{ marginBottom: 14 }}>
-            <div
-              style={{
-                marginBottom: 6,
-                fontSize: 13,
-                fontWeight: 800,
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
-              New exercise
-            </div>
+            <div className="eyebrow">New exercise</div>
 
-            <h2
-              style={{
-                margin: 0,
-                fontSize: 24,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                color: "var(--text)",
-              }}
-            >
+            <h2 className="section-heading section-heading-lg">
               Add Exercise
             </h2>
           </div>
 
           <form onSubmit={handleAddExercise} className="stack-md">
             <label className="stack-sm">
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "var(--text)",
-                }}
-              >
-                Exercise name
-              </span>
+              <span className="field-label">Exercise name</span>
               <input
                 value={exerciseName}
                 onChange={(e) => setExerciseName(e.target.value)}
@@ -89,18 +62,12 @@ export default function AddExerciseForm({
             </label>
 
             <label className="stack-sm">
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "var(--text)",
-                }}
-              >
-                Exercise type
-              </span>
+              <span className="field-label">Exercise type</span>
               <select
                 value={exerciseType}
-                onChange={(e) => setExerciseType(e.target.value as "lift" | "cardio")}
+                onChange={(e) =>
+                  setExerciseType(e.target.value as "lift" | "cardio")
+                }
               >
                 <option value="lift">Lift</option>
                 <option value="cardio">Cardio</option>
@@ -108,18 +75,10 @@ export default function AddExerciseForm({
             </label>
 
             {exerciseError && (
-              <div
-                style={{
-                  color: "var(--danger)",
-                  whiteSpace: "pre-wrap",
-                  fontWeight: 600,
-                }}
-              >
-                {exerciseError}
-              </div>
+              <div className="danger-text">{exerciseError}</div>
             )}
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div className="action-row">
               <button
                 type="submit"
                 disabled={addingExercise}

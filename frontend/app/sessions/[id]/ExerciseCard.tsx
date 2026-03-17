@@ -118,7 +118,6 @@ export default function ExerciseCard({
   const [showAddSetForm, setShowAddSetForm] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
 
-
   return (
     <section
       className="section-card"
@@ -130,42 +129,14 @@ export default function ExerciseCard({
       {editingExerciseId === exercise.id ? (
         <div className="stack-md">
           <div>
-            <div
-              style={{
-                marginBottom: 6,
-                fontSize: 13,
-                fontWeight: 800,
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Edit exercise
-            </div>
-
-            <h3
-              style={{
-                margin: 0,
-                fontSize: 24,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                color: "var(--text)",
-              }}
-            >
+            <div className="eyebrow">Edit exercise</div>
+            <h3 className="section-heading section-heading-lg">
               Update exercise details
             </h3>
           </div>
 
           <label className="stack-sm">
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: "var(--text)",
-              }}
-            >
-              Exercise name
-            </span>
+            <span className="field-label">Exercise name</span>
             <input
               value={editExerciseName}
               onChange={(e) => setEditExerciseName(e.target.value)}
@@ -174,15 +145,7 @@ export default function ExerciseCard({
           </label>
 
           <label className="stack-sm">
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: "var(--text)",
-              }}
-            >
-              Exercise type
-            </span>
+            <span className="field-label">Exercise type</span>
             <select
               value={editExerciseType}
               onChange={(e) =>
@@ -195,18 +158,10 @@ export default function ExerciseCard({
           </label>
 
           {updateExerciseError && (
-            <div
-              style={{
-                color: "var(--danger)",
-                whiteSpace: "pre-wrap",
-                fontWeight: 600,
-              }}
-            >
-              {updateExerciseError}
-            </div>
+            <div className="danger-text">{updateExerciseError}</div>
           )}
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="action-row">
             <button
               type="button"
               onClick={() => handleUpdateExercise(exercise.id)}
@@ -231,12 +186,8 @@ export default function ExerciseCard({
       ) : (
         <>
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr)",
-              gap: 14,
-              marginBottom: isExpanded ? 16 : 0,
-            }}
+            className="exercise-header-grid"
+            style={{ marginBottom: isExpanded ? 16 : 0 }}
           >
             <button
               type="button"
@@ -262,24 +213,10 @@ export default function ExerciseCard({
                 minWidth: 0,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 8,
-                }}
-              >
+              <div className="exercise-title-row">
                 <h3
-                  style={{
-                    margin: 0,
-                    fontSize: 24,
-                    lineHeight: 1.15,
-                    fontWeight: 800,
-                    letterSpacing: "-0.02em",
-                    color: "var(--text)",
-                  }}
+                  className="section-heading section-heading-lg"
+                  style={{ lineHeight: 1.15 }}
                 >
                   {exercise.order_index !== undefined
                     ? `${exercise.order_index}. ${exercise.exercise}`
@@ -302,116 +239,82 @@ export default function ExerciseCard({
               </div>
             </button>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  flexWrap: "wrap",
-                }}
-              >
-                <div>
+            <div className="exercise-meta-row">
+              <div>
                 {pendingExerciseEditsById[exercise.id] ? (
                   <span className="badge badge-warning">Pending sync</span>
                 ) : (
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "var(--text-muted)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {exercise.sets.length} {exercise.sets.length === 1 ? "set" : "sets"}
-                </span>
-              )}
-            </div>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--text-muted)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {exercise.sets.length}{" "}
+                    {exercise.sets.length === 1 ? "set" : "sets"}
+                  </span>
+                )}
+              </div>
 
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-              }}
-            >
-              {!isFirst && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  justifyContent: "flex-start",
+                }}
+              >
+                {!isFirst && (
+                  <button
+                    type="button"
+                    onClick={() => handleMoveExercise(exercise.id, "up")}
+                    className="btn btn-secondary icon-btn"
+                    aria-label="Move exercise up"
+                    title="Move up"
+                  >
+                    ↑
+                  </button>
+                )}
+
+                {!isLast && (
+                  <button
+                    type="button"
+                    onClick={() => handleMoveExercise(exercise.id, "down")}
+                    className="btn btn-secondary icon-btn"
+                    aria-label="Move exercise down"
+                    title="Move down"
+                  >
+                    ↓
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  onClick={() => handleMoveExercise(exercise.id, "up")}
+                  onClick={() => startEditingExercise(exercise)}
                   className="btn btn-secondary"
-                  style={{
-                    minWidth: 40,
-                    width: 40,
-                    height: 40,
-                    padding: 0,
-                    borderRadius: 12,
-                  }}
-                  aria-label="Move exercise up"
-                  title="Move up"
                 >
-                  ↑
+                  Edit
                 </button>
-              )}
 
-              {!isLast && (
                 <button
                   type="button"
-                  onClick={() => handleMoveExercise(exercise.id, "down")}
-                  className="btn btn-secondary"
-                  style={{
-                    minWidth: 40,
-                    width: 40,
-                    height: 40,
-                    padding: 0,
-                    borderRadius: 12,
-                  }}
-                  aria-label="Move exercise down"
-                  title="Move down"
+                  onClick={() => handleDeleteExercise(exercise.id)}
+                  disabled={deletingExerciseById[exercise.id]}
+                  className="btn btn-danger"
                 >
-                  ↓
+                  {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete"}
                 </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => startEditingExercise(exercise)}
-                className="btn btn-secondary"
-              >
-                Edit
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDeleteExercise(exercise.id)}
-                disabled={deletingExerciseById[exercise.id]}
-                className="btn btn-danger"
-              >
-                {deletingExerciseById[exercise.id] ? "Deleting..." : "Delete"}
-              </button>
+              </div>
             </div>
           </div>
-        </div>
 
           {isExpanded && (
             <>
               {exercise.sets.length === 0 ? (
-                <section
-                  style={{
-                    border: "1px dashed var(--border-strong)",
-                    borderRadius: "var(--radius-md)",
-                    background: "var(--surface-alt)",
-                    padding: 16,
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "var(--text-muted)",
-                      fontSize: 15,
-                    }}
-                  >
+                <section className="empty-dashed-panel">
+                  <p className="muted-copy" style={{ margin: 0 }}>
                     No sets yet.
                   </p>
                 </section>
@@ -474,38 +377,10 @@ export default function ExerciseCard({
                     + Add Set
                   </button>
                 ) : (
-                  <section
-                    style={{
-                      marginTop: 4,
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-md)",
-                      background: "var(--surface-alt)",
-                      padding: 16,
-                    }}
-                  >
+                  <section className="subtle-panel" style={{ marginTop: 4 }}>
                     <div style={{ marginBottom: 14 }}>
-                      <div
-                        style={{
-                          marginBottom: 6,
-                          fontSize: 13,
-                          fontWeight: 800,
-                          color: "var(--text-muted)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        New set
-                      </div>
-
-                      <h4
-                        style={{
-                          margin: 0,
-                          fontSize: 18,
-                          fontWeight: 800,
-                          letterSpacing: "-0.02em",
-                          color: "var(--text)",
-                        }}
-                      >
+                      <div className="eyebrow">New set</div>
+                      <h4 className="section-heading section-heading-md">
                         Add Set
                       </h4>
                     </div>
@@ -517,15 +392,7 @@ export default function ExerciseCard({
                       {exercise.exercise_type === "lift" ? (
                         <>
                           <label className="stack-sm">
-                            <span
-                              style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: "var(--text)",
-                              }}
-                            >
-                              Reps
-                            </span>
+                            <span className="field-label">Reps</span>
                             <input
                               type="number"
                               value={setFormByExercise[exercise.id]?.reps ?? ""}
@@ -537,15 +404,7 @@ export default function ExerciseCard({
                           </label>
 
                           <label className="stack-sm">
-                            <span
-                              style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: "var(--text)",
-                              }}
-                            >
-                              Weight
-                            </span>
+                            <span className="field-label">Weight</span>
                             <input
                               type="number"
                               value={setFormByExercise[exercise.id]?.weight ?? ""}
@@ -559,15 +418,7 @@ export default function ExerciseCard({
                       ) : (
                         <>
                           <div className="stack-sm">
-                            <span
-                              style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: "var(--text)",
-                              }}
-                            >
-                              Time
-                            </span>
+                            <span className="field-label">Time</span>
 
                             <div
                               style={{
@@ -577,15 +428,7 @@ export default function ExerciseCard({
                               }}
                             >
                               <label className="stack-sm">
-                                <span
-                                  style={{
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    color: "var(--text-muted)",
-                                  }}
-                                >
-                                  Minutes
-                                </span>
+                                <span className="field-label-sm">Minutes</span>
                                 <input
                                   type="number"
                                   min="0"
@@ -602,15 +445,7 @@ export default function ExerciseCard({
                               </label>
 
                               <label className="stack-sm">
-                                <span
-                                  style={{
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    color: "var(--text-muted)",
-                                  }}
-                                >
-                                  Seconds
-                                </span>
+                                <span className="field-label-sm">Seconds</span>
                                 <input
                                   type="number"
                                   min="0"
@@ -630,15 +465,7 @@ export default function ExerciseCard({
                           </div>
 
                           <label className="stack-sm">
-                            <span
-                              style={{
-                                fontSize: 14,
-                                fontWeight: 700,
-                                color: "var(--text)",
-                              }}
-                            >
-                              Intensity
-                            </span>
+                            <span className="field-label">Intensity</span>
                             <input
                               type="text"
                               value={setFormByExercise[exercise.id]?.intensity ?? ""}
@@ -651,7 +478,7 @@ export default function ExerciseCard({
                         </>
                       )}
 
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <div className="action-row">
                         <button
                           type="submit"
                           disabled={addingSetByExercise[exercise.id]}
@@ -673,14 +500,7 @@ export default function ExerciseCard({
                     </form>
 
                     {setErrorByExercise[exercise.id] && (
-                      <div
-                        style={{
-                          marginTop: 10,
-                          color: "var(--danger)",
-                          whiteSpace: "pre-wrap",
-                          fontWeight: 600,
-                        }}
-                      >
+                      <div className="danger-text" style={{ marginTop: 10 }}>
                         {setErrorByExercise[exercise.id]}
                       </div>
                     )}

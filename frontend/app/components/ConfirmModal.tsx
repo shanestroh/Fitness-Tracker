@@ -24,29 +24,10 @@ export default function ConfirmModal({
   if (!open) return null;
 
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(15, 23, 42, 0.42)",
-        backdropFilter: "blur(4px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        zIndex: 1000,
-      }}
-    >
+    <div onClick={onCancel} className="modal-overlay">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="surface-card"
-        style={{
-          width: "100%",
-          maxWidth: 440,
-          padding: 22,
-          boxShadow: "var(--shadow-md)",
-        }}
+        className="surface-card modal-card"
       >
         <div
           style={{
@@ -59,37 +40,26 @@ export default function ConfirmModal({
         </div>
 
         <h2
+          className="section-heading section-heading-lg"
           style={{
-            margin: "0 0 8px 0",
-            fontSize: 24,
             lineHeight: 1.2,
-            fontWeight: 800,
-            letterSpacing: "-0.02em",
-            color: "var(--text)",
+            marginBottom: 8,
           }}
         >
           {title}
         </h2>
 
         <p
+          className="muted-copy"
           style={{
             margin: "0 0 22px 0",
-            color: "var(--text-muted)",
             lineHeight: 1.6,
-            fontSize: 15,
           }}
         >
           {message}
         </p>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            justifyContent: "flex-end",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="action-row-end">
           <button
             type="button"
             onClick={onCancel}

@@ -21,92 +21,37 @@ export default function AppHeader() {
   }
 
   return (
-    <header
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        backdropFilter: "blur(10px)",
-        background: "rgba(255,255,255,0.88)",
-        borderBottom: "1px solid var(--border)",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "var(--max-content-width)",
-          margin: "0 auto",
-          padding: "10px 12px",
-          display: "grid",
-          gridTemplateColumns: "auto 1fr auto",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
+    <header className="app-header">
+      <div className="app-header-inner">
         <div
-          style={{
-            minWidth: isHomePage ? 0 : 72,
-            display: "flex",
-            justifyContent: "flex-start",
-          }}
+          className="app-header-side app-header-side-left"
+          style={{ minWidth: isHomePage ? 0 : 72 }}
         >
-          {!isHomePage ? (
+          {!isHomePage && (
             <button
               onClick={() => router.back()}
               className="btn btn-secondary"
-              style={{
-                minHeight: 36,
-                padding: "8px 12px",
-                borderRadius: 10,
-                fontWeight: 700,
-                whiteSpace: "nowrap",
-              }}
+              style={{ whiteSpace: "nowrap" }}
             >
               ← Back
             </button>
-          ) : null}
+          )}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            minWidth: 0,
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              textDecoration: "none",
-              color: "var(--text)",
-              fontWeight: 800,
-              fontSize: "clamp(15px, 4vw, 18px)",
-              letterSpacing: "-0.01em",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
+        <div className="app-header-center">
+          <Link href="/" className="app-header-title">
             Skrunch&apos;s Fitness Tracker
           </Link>
         </div>
 
         <div
-          style={{
-            minWidth: 72,
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
+          className="app-header-side app-header-side-right"
+          style={{ minWidth: 72 }}
         >
           <button
             onClick={handleLogout}
             className="btn btn-secondary"
-            style={{
-              minHeight: 36,
-              padding: "8px 12px",
-              borderRadius: 10,
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-            }}
+            style={{ whiteSpace: "nowrap" }}
           >
             Logout
           </button>

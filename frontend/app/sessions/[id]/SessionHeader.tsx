@@ -103,13 +103,10 @@ export default function SessionHeader({
             <div style={{ flex: "1 1 260px", minWidth: 0 }}>
               <div style={{ marginBottom: 10 }}>
                 <h1
+                  className="section-heading"
                   style={{
-                    margin: 0,
                     fontSize: 32,
                     lineHeight: 1.1,
-                    fontWeight: 800,
-                    letterSpacing: "-0.02em",
-                    color: "var(--text)",
                   }}
                 >
                   {split}
@@ -128,27 +125,8 @@ export default function SessionHeader({
               </p>
 
               {notes ? (
-                <div
-                  style={{
-                    marginTop: 16,
-                    padding: 14,
-                    borderRadius: 14,
-                    background: "var(--surface-alt)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <div
-                    style={{
-                      marginBottom: 6,
-                      fontSize: 13,
-                      fontWeight: 800,
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    Notes
-                  </div>
+                <div className="subtle-panel" style={{ marginTop: 16, padding: 14 }}>
+                  <div className="eyebrow">Notes</div>
 
                   <p
                     style={{
@@ -162,19 +140,13 @@ export default function SessionHeader({
                   </p>
                 </div>
               ) : (
-                <p
-                  style={{
-                    margin: "14px 0 0",
-                    color: "var(--text-muted)",
-                    fontSize: 15,
-                  }}
-                >
+                <p className="muted-copy" style={{ margin: "14px 0 0" }}>
                   No notes added for this session.
                 </p>
               )}
             </div>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div className="action-row">
               <button
                 type="button"
                 onClick={() => {
@@ -198,14 +170,7 @@ export default function SessionHeader({
           </div>
 
           {deleteSessionError && (
-            <div
-              style={{
-                marginTop: 14,
-                color: "var(--danger)",
-                whiteSpace: "pre-wrap",
-                fontWeight: 600,
-              }}
-            >
+            <div className="danger-text" style={{ marginTop: 14 }}>
               {deleteSessionError}
             </div>
           )}
@@ -213,25 +178,14 @@ export default function SessionHeader({
       ) : (
         <form onSubmit={handleUpdateSession} className="stack-md">
           <div>
-            <div
-              style={{
-                marginBottom: 8,
-                fontSize: 13,
-                fontWeight: 800,
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
+            <div className="eyebrow" style={{ marginBottom: 8 }}>
               Edit session
             </div>
 
             <h2
+              className="section-heading"
               style={{
-                margin: 0,
                 fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
               }}
             >
               Update workout details
@@ -246,15 +200,7 @@ export default function SessionHeader({
           />
 
           <label className="stack-sm">
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: "var(--text)",
-              }}
-            >
-              Date
-            </span>
+            <span className="field-label">Date</span>
             <input
               type="date"
               value={editDate}
@@ -264,15 +210,7 @@ export default function SessionHeader({
           </label>
 
           <label className="stack-sm">
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: "var(--text)",
-              }}
-            >
-              Notes
-            </span>
+            <span className="field-label">Notes</span>
             <textarea
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
@@ -282,18 +220,10 @@ export default function SessionHeader({
           </label>
 
           {updateSessionError && (
-            <div
-              style={{
-                color: "var(--danger)",
-                whiteSpace: "pre-wrap",
-                fontWeight: 600,
-              }}
-            >
-              {updateSessionError}
-            </div>
+            <div className="danger-text">{updateSessionError}</div>
           )}
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="action-row">
             <button
               type="submit"
               disabled={
