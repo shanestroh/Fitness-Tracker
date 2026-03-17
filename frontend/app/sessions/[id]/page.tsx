@@ -661,11 +661,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
-  function startEditingExercise(exercise: { id: number; exercise: string }) {
-    id: number;
-    exercise: string;
-    exercise_type: "lift" | "cardio";
-  }) {
+  function startEditingExercise(exercise: {
     setEditingExerciseId(exercise.id);
     setEditExerciseName(exercise.exercise);
     setEditExerciseType(exercise.exercise_type);
