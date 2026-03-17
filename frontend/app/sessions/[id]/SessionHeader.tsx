@@ -101,15 +101,7 @@ export default function SessionHeader({
             }}
           >
             <div style={{ flex: "1 1 260px", minWidth: 0 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 10,
-                }}
-              >
+              <div style={{ marginBottom: 10 }}>
                 <h1
                   style={{
                     margin: 0,
@@ -122,8 +114,6 @@ export default function SessionHeader({
                 >
                   {split}
                 </h1>
-
-                <span className="badge badge-neutral">Session</span>
               </div>
 
               <p
