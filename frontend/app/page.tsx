@@ -17,7 +17,7 @@ export default async function HomePage() {
         <h1
           style={{
             margin: 0,
-            fontSize: "clamp(28px, 6vw, 42px)"
+            fontSize: "clamp(28px, 6vw, 42px)",
             lineHeight: 1.05,
             fontWeight: 900,
             letterSpacing: "-0.03em",
