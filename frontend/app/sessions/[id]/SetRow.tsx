@@ -299,16 +299,19 @@ export default function SetRow({
         >
           <div
             style={{
-              alignSelf: "start",
-              minWidth: 72,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              minWidth: 90,
             }}
           >
             <div
               style={{
-                fontSize: 16,
-                fontWeight: 800,
+                fontSize: 17,
+                fontWeight: 900,
                 color: "var(--text)",
                 whiteSpace: "nowrap",
+                letterSpacing: "-0.01em",
               }}
             >
               Set {set.set_number ?? "?"}:
