@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { apiFetch } from "@/lib/apiFetch";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 
 type SessionSummary = {
   id: number;
