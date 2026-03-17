@@ -37,9 +37,9 @@ import {
 } from "@/lib/session/sessionMutations";
 
 type SessionPageProps = {
-    params: Promise<{
-        id: number | string;
-    }>;
+  params: Promise<{
+    id: number | string;
+  }>;
 };
 
 const PRESET_SPLITS = ["Push", "Pull", "Legs", "Shoulders", "Cardio"];
@@ -90,8 +90,6 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [editSetTimeMinutes, setEditSetTimeMinutes] = useState("");
   const cardText = "#111";
 
-
-
   const [setFormByExercise, setSetFormByExercise] = useState<
     Record<
       number,
@@ -132,7 +130,6 @@ export default function SessionPage({ params }: SessionPageProps) {
       setEditCustomSplit(isPresetSplit ? "" : loadedSplit);
       setEditDate(hydratedSession.date ?? "");
       setEditNotes(hydratedSession.notes ?? "");
-
     } catch (err: any) {
       setPageError(err?.message ?? "Failed to load session");
     } finally {
@@ -157,11 +154,11 @@ export default function SessionPage({ params }: SessionPageProps) {
 
   useEffect(() => {
     async function unwrapParams() {
-        const resolvedParams = await params;
-        const id = String(resolvedParams.id);
+      const resolvedParams = await params;
+      const id = String(resolvedParams.id);
 
-        setSessionId(id);
-        await loadSession(id);
+      setSessionId(id);
+      await loadSession(id);
     }
 
     unwrapParams();
@@ -204,18 +201,18 @@ export default function SessionPage({ params }: SessionPageProps) {
     const previousSession = session;
 
     const nextOrderIndex =
-        session.exercises.length > 0
-            ? Math.max(...session.exercises.map((ex) => ex.order_index ?? 0)) + 1
-            : 1;
+      session.exercises.length > 0
+        ? Math.max(...session.exercises.map((ex) => ex.order_index ?? 0)) + 1
+        : 1;
 
     const tempExerciseId = -Date.now();
 
     const optimisticExercise = {
-        id: tempExerciseId,
-        exercise: trimmedExerciseName,
-        exercise_type: exerciseType,
-        order_index: nextOrderIndex,
-        sets: [],
+      id: tempExerciseId,
+      exercise: trimmedExerciseName,
+      exercise_type: exerciseType,
+      order_index: nextOrderIndex,
+      sets: [],
     };
 
     setSession((prev) => (prev ? addOptimisticExercise(prev, optimisticExercise) : prev));
@@ -231,7 +228,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
       if (!res.ok) {
         const text = await res.text();
-        setSession(previousSession)
+        setSession(previousSession);
         setExerciseError(text || `Failed to add exercise: ${res.status}`);
         return;
       }
@@ -239,12 +236,12 @@ export default function SessionPage({ params }: SessionPageProps) {
       await loadSession(sessionId);
     } catch (err: any) {
       enqueueAddExerciseAction({
-          id: `queue-${Date.now()}-exercise`,
-          type: "add-exercise",
-          sessionId,
-          tempExerciseId,
-          payload,
-          createdAt: Date.now(),
+        id: `queue-${Date.now()}-exercise`,
+        type: "add-exercise",
+        sessionId,
+        tempExerciseId,
+        payload,
+        createdAt: Date.now(),
       });
 
       refreshPendingQueueCount(sessionId);
@@ -289,7 +286,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     const seconds = form.time_seconds.trim() ? Number(form.time_seconds) : 0;
 
     if (minutes > 0 || seconds > 0) {
-        payload.time_seconds = minutes * 60 + seconds;
+      payload.time_seconds = minutes * 60 + seconds;
     }
     if (form.intensity.trim()) payload.intensity = form.intensity.trim();
 
@@ -301,70 +298,68 @@ export default function SessionPage({ params }: SessionPageProps) {
     const tempSetId = `temp-${Date.now()}`;
 
     const optimisticSet = {
-        id: tempSetId,
-        set_number: nextSetNumber,
-        reps: payload.reps,
-        weight: payload.weight,
-        time_seconds: payload.time_seconds,
-        intensity: payload.intensity,
+      id: tempSetId,
+      set_number: nextSetNumber,
+      reps: payload.reps,
+      weight: payload.weight,
+      time_seconds: payload.time_seconds,
+      intensity: payload.intensity,
     };
 
     setSession((prev) => (prev ? addOptimisticSet(prev, exerciseId, optimisticSet) : prev));
 
     setSetFormByExercise((prev) => ({
-        ...prev,
-        [exerciseId]: {
+      ...prev,
+      [exerciseId]: {
         reps: "",
         weight: "",
         time_minutes: "",
         time_seconds: "",
         intensity: "",
-        },
+      },
     }));
 
     try {
-        const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
-            method: "POST",
-            body: JSON.stringify(payload),
-        });
+      const res = await apiFetch(`/exercises/${exerciseId}/sets`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
-        if (!res.ok) {
-            const text = await res.text();
+      if (!res.ok) {
+        const text = await res.text();
+        setSession(previousSession);
+        setSetErrorByExercise((prev) => ({
+          ...prev,
+          [exerciseId]: text || `Failed to add set: ${res.status}`,
+        }));
+        return;
+      }
 
-            //Real server rejection: rollback and show actual error
-            setSession(previousSession)
-            setSetErrorByExercise((prev) => ({
-                ...prev,
-                [exerciseId]: text || `Failed to add set: ${res.status}`,
-            }));
-            return;
-        }
+      await loadSession(sessionId);
+    } catch (err: any) {
+      enqueueAddSetAction({
+        id: `queue-${Date.now()}-${exerciseId}`,
+        type: "add-set",
+        sessionId,
+        exerciseId,
+        tempSetId,
+        payload,
+        createdAt: Date.now(),
+      });
 
-        await loadSession(sessionId);
-      } catch (err: any) {
-            enqueueAddSetAction({
-                id: `queue-${Date.now()}-${exerciseId}`,
-                type: "add-set",
-                sessionId,
-                exerciseId,
-                tempSetId,
-                payload,
-                createdAt: Date.now(),
-            });
+      refreshPendingQueueCount(sessionId);
 
-            refreshPendingQueueCount(sessionId);
-
-            setSetErrorByExercise((prev) => ({
-                ...prev,
-                [exerciseId]: "Connection issue. Saved offline and will retry.",
-            }));
-          } finally {
-            setAddingSetByExercise((prev) => ({
-                ...prev,
-                [exerciseId]: false,
-            }));
-        }
+      setSetErrorByExercise((prev) => ({
+        ...prev,
+        [exerciseId]: "Connection issue. Saved offline and will retry.",
+      }));
+    } finally {
+      setAddingSetByExercise((prev) => ({
+        ...prev,
+        [exerciseId]: false,
+      }));
     }
+  }
 
   async function handleDeleteExercise(exerciseId: number) {
     if (!sessionId || !session) return;
@@ -373,15 +368,14 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     setSession((prev) => (prev ? removeExerciseFromSession(prev, exerciseId) : prev));
 
-    // Temporary optimistic exercise: no server delete needed
     if (exerciseId < 0) {
-        removeQueuedAddExerciseByTempId(exerciseId);
-        removeQueuedAddSetsByExerciseId(exerciseId);
-        removeQueuedEditExerciseByExerciseId(exerciseId);
-        refreshPendingQueueCount(sessionId);
-        clearPendingExercise(exerciseId);
-        return;
-        }
+      removeQueuedAddExerciseByTempId(exerciseId);
+      removeQueuedAddSetsByExerciseId(exerciseId);
+      removeQueuedEditExerciseByExerciseId(exerciseId);
+      refreshPendingQueueCount(sessionId);
+      clearPendingExercise(exerciseId);
+      return;
+    }
 
     setDeletingExerciseById((prev) => ({
       ...prev,
@@ -404,11 +398,11 @@ export default function SessionPage({ params }: SessionPageProps) {
       await loadSession(sessionId);
     } catch (err: any) {
       enqueueOrReplaceDeleteExerciseAction({
-          id: `queue-delete-exercise-${sessionId}-${exerciseId}`,
-           type: "delete-exercise",
-           sessionId,
-           exerciseId,
-           createdAt: Date.now(),
+        id: `queue-delete-exercise-${sessionId}-${exerciseId}`,
+        type: "delete-exercise",
+        sessionId,
+        exerciseId,
+        createdAt: Date.now(),
       });
 
       refreshPendingQueueCount(sessionId);
@@ -433,46 +427,46 @@ export default function SessionPage({ params }: SessionPageProps) {
     setSession((prev) => (prev ? removeSetFromSession(prev, setId) : prev));
 
     if (typeof setId === "string") {
-        removeQueuedAddSetByTempId(setId);
-        refreshPendingQueueCount(sessionId);
-        return;
+      removeQueuedAddSetByTempId(setId);
+      refreshPendingQueueCount(sessionId);
+      return;
     }
 
     setDeletingSetById((prev) => ({
-        ...prev,
-        [setKey]: true,
+      ...prev,
+      [setKey]: true,
     }));
 
     try {
-        const res = await apiFetch(`/sets/${setId}`, {
-            method: "DELETE",
-        });
+      const res = await apiFetch(`/sets/${setId}`, {
+        method: "DELETE",
+      });
 
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(text || `Failed to delete set: ${res.status}`);
-        }
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to delete set: ${res.status}`);
+      }
 
-        clearPendingSet(setId);
+      clearPendingSet(setId);
 
-        await loadSession(sessionId);
-      } catch (err: any) {
-        enqueueOrReplaceDeleteSetAction({
-            id: `queue-delete-set-${sessionId}-${setId}`,
-            type: "delete-set",
-            sessionId,
-            setId,
-            createdAt: Date.now(),
-        });
+      await loadSession(sessionId);
+    } catch (err: any) {
+      enqueueOrReplaceDeleteSetAction({
+        id: `queue-delete-set-${sessionId}-${setId}`,
+        type: "delete-set",
+        sessionId,
+        setId,
+        createdAt: Date.now(),
+      });
 
-        refreshPendingQueueCount(sessionId);
-        clearPendingSet(setId);
+      refreshPendingQueueCount(sessionId);
+      clearPendingSet(setId);
 
-        setDeleteSetError("Connection issue. Delete saved offline and will retry.");
-      } finally {
-        setDeletingSetById((prev) => ({
-            ...prev,
-            [setKey]: false,
+      setDeleteSetError("Connection issue. Delete saved offline and will retry.");
+    } finally {
+      setDeletingSetById((prev) => ({
+        ...prev,
+        [setKey]: false,
       }));
     }
   }
@@ -482,24 +476,23 @@ export default function SessionPage({ params }: SessionPageProps) {
     setUpdateSetError(null);
 
     if (exerciseType === "lift") {
-        setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
-        setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
-        setEditSetTimeMinutes("");
-        setEditSetTimeSeconds("");
-        setEditSetIntensity("");
+      setEditSetReps(set.reps !== undefined ? String(set.reps) : "");
+      setEditSetWeight(set.weight !== undefined ? String(set.weight) : "");
+      setEditSetTimeMinutes("");
+      setEditSetTimeSeconds("");
+      setEditSetIntensity("");
     } else {
-        const totalSeconds = set.time_seconds ?? 0;
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
+      const totalSeconds = set.time_seconds ?? 0;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
 
-        setEditSetReps("");
-        setEditSetWeight("");
-        setEditSetTimeMinutes(minutes > 0 ? String(minutes) : "");
-        setEditSetTimeSeconds(seconds > 0 ? String(seconds) : "");
-        setEditSetIntensity(set.intensity ?? "");
+      setEditSetReps("");
+      setEditSetWeight("");
+      setEditSetTimeMinutes(minutes > 0 ? String(minutes) : "");
+      setEditSetTimeSeconds(seconds > 0 ? String(seconds) : "");
+      setEditSetIntensity(set.intensity ?? "");
     }
   }
-
 
   async function handleUpdateSet(e: React.FormEvent) {
     e.preventDefault();
@@ -512,10 +505,10 @@ export default function SessionPage({ params }: SessionPageProps) {
     const setId = editingSetId;
 
     const payload: {
-        reps?: number;
-        weight?: number;
-        time_seconds?: number | null;
-        intensity?: string | null;
+      reps?: number;
+      weight?: number;
+      time_seconds?: number | null;
+      intensity?: string | null;
     } = {};
 
     if (editSetReps.trim()) payload.reps = Number(editSetReps);
@@ -525,15 +518,15 @@ export default function SessionPage({ params }: SessionPageProps) {
     const seconds = editSetTimeSeconds.trim() ? Number(editSetTimeSeconds) : 0;
 
     if (minutes === 0 && seconds === 0) {
-        payload.time_seconds = null;
+      payload.time_seconds = null;
     } else {
       payload.time_seconds = minutes * 60 + seconds;
     }
 
     if (editSetIntensity.trim() === "") {
-        payload.intensity = null;
+      payload.intensity = null;
     } else {
-        payload.intensity = editSetIntensity.trim();
+      payload.intensity = editSetIntensity.trim();
     }
 
     const previousSession = session;
@@ -541,51 +534,51 @@ export default function SessionPage({ params }: SessionPageProps) {
     setSession((prev) => (prev ? updateSetInSession(prev, setId, payload) : prev));
 
     if (typeof setId === "string") {
-            updateQueuedAddSetByTempId(setId, payload);
-            refreshPendingQueueCount(sessionId);
-            markSetPending(setId);
-            setEditingSetId(null);
-            setUpdatingSet(false);
-            return;
-        }
+      updateQueuedAddSetByTempId(setId, payload);
+      refreshPendingQueueCount(sessionId);
+      markSetPending(setId);
+      setEditingSetId(null);
+      setUpdatingSet(false);
+      return;
+    }
 
     const realSetId: number = setId;
 
     try {
-        const res = await apiFetch(`/sets/${realSetId}`, {
-            method: "PATCH",
-            body: JSON.stringify(payload),
-        });
+      const res = await apiFetch(`/sets/${realSetId}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
 
-        if (!res.ok) {
-            const text = await res.text();
-            setSession(previousSession);
-            setUpdateSetError(text || `Failed to update set: ${res.status}`);
-            return;
-        }
-
-        clearPendingSet(realSetId);
-        await loadSession(sessionId);
-        setEditingSetId(null);
-      } catch (err: any) {
-        enqueueOrReplaceEditSetAction({
-            id: `queue-edit-set-${sessionId}-${realSetId}`,
-            type: "edit-set",
-            sessionId,
-            setId: realSetId,
-            payload,
-            createdAt: Date.now(),
-        });
-
-        refreshPendingQueueCount(sessionId);
-        markSetPending(realSetId);
-
-        setUpdateSetError("Connection issue. Saved offline and will retry.");
-        setEditingSetId(null);
-      } finally {
-        setUpdatingSet(false);
+      if (!res.ok) {
+        const text = await res.text();
+        setSession(previousSession);
+        setUpdateSetError(text || `Failed to update set: ${res.status}`);
+        return;
       }
+
+      clearPendingSet(realSetId);
+      await loadSession(sessionId);
+      setEditingSetId(null);
+    } catch (err: any) {
+      enqueueOrReplaceEditSetAction({
+        id: `queue-edit-set-${sessionId}-${realSetId}`,
+        type: "edit-set",
+        sessionId,
+        setId: realSetId,
+        payload,
+        createdAt: Date.now(),
+      });
+
+      refreshPendingQueueCount(sessionId);
+      markSetPending(realSetId);
+
+      setUpdateSetError("Connection issue. Saved offline and will retry.");
+      setEditingSetId(null);
+    } finally {
+      setUpdatingSet(false);
     }
+  }
 
   async function handleDeleteSession() {
     if (!sessionId) return;
@@ -594,23 +587,23 @@ export default function SessionPage({ params }: SessionPageProps) {
     setDeletingSession(true);
 
     try {
-        const res = await apiFetch(`/sessions/${sessionId}`, {
-            method: "DELETE",
-        });
+      const res = await apiFetch(`/sessions/${sessionId}`, {
+        method: "DELETE",
+      });
 
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(text || `Failed to delete session: ${res.status}`);
-        }
-
-        router.push("/sessions");
-      } catch (err: any) {
-        setDeleteSessionError(err?.message ?? "Failed to delete session");
-      } finally {
-        setDeletingSession(false);
-        setShowDeleteSessionModal(false);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Failed to delete session: ${res.status}`);
       }
+
+      router.push("/sessions");
+    } catch (err: any) {
+      setDeleteSessionError(err?.message ?? "Failed to delete session");
+    } finally {
+      setDeletingSession(false);
+      setShowDeleteSessionModal(false);
     }
+  }
 
   async function handleUpdateSession(e: React.FormEvent) {
     e.preventDefault();
@@ -679,15 +672,15 @@ export default function SessionPage({ params }: SessionPageProps) {
     };
 
     if (!payload.exercise) {
-        setUpdateExerciseError("Exercise name cannot be empty.");
-        setUpdatingExercise(false);
-        return;
+      setUpdateExerciseError("Exercise name cannot be empty.");
+      setUpdatingExercise(false);
+      return;
     }
 
     const previousSession = session;
 
     setSession((prev) =>
-        prev ? updateExerciseInSession(prev, exerciseId, payload) : prev
+      prev ? updateExerciseInSession(prev, exerciseId, payload) : prev
     );
 
     try {
@@ -704,7 +697,6 @@ export default function SessionPage({ params }: SessionPageProps) {
       }
 
       clearPendingExercise(exerciseId);
-
       refreshPendingQueueCount(sessionId);
 
       await loadSession(sessionId);
@@ -720,7 +712,6 @@ export default function SessionPage({ params }: SessionPageProps) {
       });
 
       refreshPendingQueueCount(sessionId);
-
       markExercisePending(exerciseId);
 
       setUpdateExerciseError("Connection issue. Saved offline and will retry.");
@@ -790,63 +781,101 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
+  const syncTone = !isOnline
+    ? "warning"
+    : pendingQueueCount > 0
+    ? "warning"
+    : "success";
+
+  const syncMessage = !isOnline
+    ? pendingQueueCount > 0
+      ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending — offline, will sync later`
+      : "Offline"
+    : pendingQueueCount > 0
+    ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending`
+    : "All changes synced";
+
   if (loading) {
     return (
-      <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
-        <p>Loading session...</p>
+      <main className="page-shell">
+        <section className="section-card">
+          <p
+            style={{
+              margin: 0,
+              fontSize: 15,
+              color: "var(--text-muted)",
+              fontWeight: 600,
+            }}
+          >
+            Loading session...
+          </p>
+        </section>
       </main>
     );
   }
 
   if (pageError || !session) {
     return (
-      <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
-        <h1>Session Detail</h1>
-        <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-          {pageError ?? "Session not found"}
-        </p>
+      <main className="page-shell">
+        <section className="section-card">
+          <h1
+            style={{
+              margin: "0 0 10px",
+              fontSize: 28,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Session Detail
+          </h1>
+
+          <p
+            style={{
+              margin: 0,
+              color: "var(--danger)",
+              whiteSpace: "pre-wrap",
+              fontWeight: 600,
+            }}
+          >
+            {pageError ?? "Session not found"}
+          </p>
+        </section>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 700, margin: "16px auto", padding: 16 }}>
+    <main className="page-shell">
       <Link
         href="/sessions"
         style={{
-          display: "inline-block",
-          marginBottom: 16,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          marginBottom: 18,
           textDecoration: "none",
+          color: "var(--text-muted)",
+          fontWeight: 700,
         }}
       >
         ← Back to Sessions
       </Link>
 
       <div
+        className={`badge ${syncTone === "success" ? "badge-success" : "badge-warning"}`}
         style={{
-            marginBottom: 16,
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1px solid #d9d9d9",
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-            background: !isOnline
-                ? "#fff7e6"
-                : pendingQueueCount > 0
-                ? "#fffbe6"
-                : "#f6ffed",
-            color: "#111",
-            fontWeight: 600,
+          marginBottom: 16,
+          padding: "10px 14px",
+          borderRadius: 14,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          width: "100%",
+          minHeight: 48,
+          fontSize: 14,
         }}
       >
-        {!isOnline
-            ? pendingQueueCount > 0
-                ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending — offline, will sync later`
-                : "Offline"
-            : pendingQueueCount > 0
-            ? `${pendingQueueCount} ${pendingQueueCount === 1 ? "change" : "changes"} pending`
-            : "All changes synced"}
+        {syncMessage}
       </div>
 
       <SessionHeader
@@ -885,24 +914,81 @@ export default function SessionPage({ params }: SessionPageProps) {
         cardText={cardText}
       />
 
-      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>
-        Exercises
-      </h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 14,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: "var(--text)",
+            }}
+          >
+            Exercises
+          </h2>
+
+          <p
+            style={{
+              margin: "6px 0 0",
+              color: "var(--text-muted)",
+              fontSize: 14,
+            }}
+          >
+            {session.exercises.length === 0
+              ? "No exercises added yet."
+              : `${session.exercises.length} ${session.exercises.length === 1 ? "exercise" : "exercises"} in this session`}
+          </p>
+        </div>
+      </div>
 
       {deleteExerciseError && (
-        <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+        <div
+          style={{
+            marginBottom: 12,
+            color: "var(--danger)",
+            whiteSpace: "pre-wrap",
+            fontWeight: 600,
+          }}
+        >
           {deleteExerciseError}
         </div>
       )}
 
       {deleteSetError && (
-        <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+        <div
+          style={{
+            marginBottom: 12,
+            color: "var(--danger)",
+            whiteSpace: "pre-wrap",
+            fontWeight: 600,
+          }}
+        >
           {deleteSetError}
         </div>
       )}
 
       {session.exercises.length === 0 ? (
-        <p>No exercises yet.</p>
+        <section className="section-card">
+          <p
+            style={{
+              margin: 0,
+              color: "var(--text-muted)",
+              fontSize: 15,
+            }}
+          >
+            No exercises yet.
+          </p>
+        </section>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           {session.exercises.map((exercise, index) => (
@@ -956,6 +1042,7 @@ export default function SessionPage({ params }: SessionPageProps) {
           ))}
         </div>
       )}
+
       <ConfirmModal
         open={showDeleteSessionModal}
         title="Delete Session?"
@@ -964,11 +1051,11 @@ export default function SessionPage({ params }: SessionPageProps) {
         confirmLoading={deletingSession}
         onConfirm={handleDeleteSession}
         onCancel={() => {
-            if (!deletingSession) {
-                setShowDeleteSessionModal(false);
-            }
+          if (!deletingSession) {
+            setShowDeleteSessionModal(false);
+          }
         }}
-        />
+      />
     </main>
   );
 }
