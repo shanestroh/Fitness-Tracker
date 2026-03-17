@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useIdleLogout } from "@/hooks/useIdleLogout";
 import type { ExerciseEntry, SetEntry, SessionFull } from "@/types/workout";
 import ExerciseCard from "./ExerciseCard";
 import SessionHeader from "./SessionHeader";
@@ -53,7 +52,6 @@ function normalizeCustomSplit(value: string) {
 }
 
 export default function SessionPage({ params }: SessionPageProps) {
-  useIdleLogout();
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string>("");
   const [session, setSession] = useState<SessionFull | null>(null);
