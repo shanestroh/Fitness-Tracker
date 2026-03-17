@@ -29,7 +29,8 @@ export default function ConfirmModal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0, 0, 0, 0.35)",
+        background: "rgba(15, 23, 42, 0.42)",
+        backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -39,38 +40,61 @@ export default function ConfirmModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="surface-card"
         style={{
           width: "100%",
-          maxWidth: 420,
-          background: "#fff",
-          borderRadius: 16,
-          border: "1px solid #ddd",
-          padding: 20,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+          maxWidth: 440,
+          padding: 22,
+          boxShadow: "var(--shadow-md)",
         }}
       >
-        <h2 style={{ margin: "0 0 8px 0", fontSize: 22, fontWeight: 700 }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
+          <span className="badge badge-danger">Danger zone</span>
+        </div>
+
+        <h2
+          style={{
+            margin: "0 0 8px 0",
+            fontSize: 24,
+            lineHeight: 1.2,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            color: "var(--text)",
+          }}
+        >
           {title}
         </h2>
 
-        <p style={{ margin: "0 0 20px 0", color: "#444", lineHeight: 1.5 }}>
+        <p
+          style={{
+            margin: "0 0 22px 0",
+            color: "var(--text-muted)",
+            lineHeight: 1.6,
+            fontSize: 15,
+          }}
+        >
           {message}
         </p>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "flex-end",
+            flexWrap: "wrap",
+          }}
+        >
           <button
             type="button"
             onClick={onCancel}
             disabled={confirmLoading}
-            style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid #d0d0d0",
-              background: "#fff",
-              cursor: confirmLoading ? "not-allowed" : "pointer",
-              fontWeight: 700,
-              color: "#444",
-            }}
+            className="btn btn-secondary"
           >
             {cancelText}
           </button>
@@ -79,15 +103,7 @@ export default function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={confirmLoading}
-            style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid #d0d0d0",
-              background: "#fff",
-              cursor: confirmLoading ? "not-allowed" : "pointer",
-              fontWeight: 700,
-              color: "#b00020",
-            }}
+            className="btn btn-danger"
           >
             {confirmLoading ? "Deleting..." : confirmText}
           </button>

@@ -34,6 +34,18 @@ type SessionHeaderProps = {
   setShowDeleteSessionModal: (value: boolean) => void;
 };
 
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function SessionHeader({
   split,
   date,
@@ -71,184 +83,247 @@ export default function SessionHeader({
 
   return (
     <section
+      className="section-card"
       style={{
-        background: "#fff",
-        border: "1px solid #ddd",
-        borderRadius: 16,
-        padding: 20,
         marginBottom: 24,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         color: cardText,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 16,
-          marginBottom: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ flex: "1 1 260px", minWidth: 0 }}>
-          {!isEditingSession ? (
-            <>
-              <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 8px 0" }}>
-                {split}
-              </h1>
-
-              <p style={{ margin: "0 0 8px 0", color: "#555" }}>{date}</p>
-
-              {notes && (
-                <p
+      {!isEditingSession ? (
+        <>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 10,
+                }}
+              >
+                <h1
                   style={{
                     margin: 0,
-                    lineHeight: 1.5,
-                    wordBreak: "break-word",
+                    fontSize: 32,
+                    lineHeight: 1.1,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: "var(--text)",
                   }}
                 >
-                  <strong>Notes:</strong> {notes}
+                  {split}
+                </h1>
+
+                <span className="badge badge-neutral">Session</span>
+              </div>
+
+              <p
+                style={{
+                  margin: 0,
+                  color: "var(--text-muted)",
+                  fontSize: 15,
+                  fontWeight: 600,
+                }}
+              >
+                {formatDate(date)}
+              </p>
+
+              {notes ? (
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 14,
+                    background: "var(--surface-alt)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <div
+                    style={{
+                      marginBottom: 6,
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Notes
+                  </div>
+
+                  <p
+                    style={{
+                      margin: 0,
+                      lineHeight: 1.6,
+                      color: "var(--text)",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {notes}
+                  </p>
+                </div>
+              ) : (
+                <p
+                  style={{
+                    margin: "14px 0 0",
+                    color: "var(--text-muted)",
+                    fontSize: 15,
+                  }}
+                >
+                  No notes added for this session.
                 </p>
               )}
-            </>
-          ) : (
-            <form onSubmit={handleUpdateSession} style={{ display: "grid", gap: 12 }}>
-              <SplitSelector
-                splitOption={editSplitOption}
-                setSplitOption={setEditSplitOption}
-                customSplit={editCustomSplit}
-                setCustomSplit={setEditCustomSplit}
-              />
+            </div>
 
-              <label style={{ display: "grid", gap: 6 }}>
-                <span>Date</span>
-                <input
-                  type="date"
-                  value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
-                  required
-                  style={{
-                    padding: 10,
-                    border: "1px solid #ccc",
-                    borderRadius: 8,
-                    background: "#fff",
-                    color: "#111",
-                  }}
-                />
-              </label>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditingSession(true);
+                  setUpdateSessionError(null);
+                }}
+                className="btn btn-secondary"
+              >
+                Edit Session
+              </button>
 
-              <label style={{ display: "grid", gap: 6 }}>
-                <span>Notes</span>
-                <textarea
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  rows={3}
-                  style={{
-                    padding: 10,
-                    border: "1px solid #ccc",
-                    borderRadius: 8,
-                    background: "#fff",
-                    color: "#111",
-                  }}
-                />
-              </label>
+              <button
+                type="button"
+                onClick={() => setShowDeleteSessionModal(true)}
+                disabled={deletingSession}
+                className="btn btn-danger"
+              >
+                {deletingSession ? "Deleting..." : "Delete Session"}
+              </button>
+            </div>
+          </div>
 
-              {updateSessionError && (
-                <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-                  {updateSessionError}
-                </div>
-              )}
-
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button
-                  type="submit"
-                  disabled={
-                    updatingSession ||
-                    (editSplitOption === "Other" && !editCustomSplit.trim())
-                  }
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #d0d0d0",
-                    background: "#fff",
-                    cursor:
-                      updatingSession ||
-                      (editSplitOption === "Other" && !editCustomSplit.trim())
-                        ? "not-allowed"
-                        : "pointer",
-                    fontWeight: 700,
-                    color: cardText,
-                  }}
-                >
-                  {updatingSession ? "Saving..." : "Save Changes"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={resetEditForm}
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    border: "1px solid #d0d0d0",
-                    background: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                    color: cardText,
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-
-        {!isEditingSession && (
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditingSession(true);
-                setUpdateSessionError(null);
-              }}
+          {deleteSessionError && (
+            <div
               style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid #d0d0d0",
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 700,
-                color: cardText,
+                marginTop: 14,
+                color: "var(--danger)",
+                whiteSpace: "pre-wrap",
+                fontWeight: 600,
               }}
             >
-              Edit Session
+              {deleteSessionError}
+            </div>
+          )}
+        </>
+      ) : (
+        <form onSubmit={handleUpdateSession} className="stack-md">
+          <div>
+            <div
+              style={{
+                marginBottom: 8,
+                fontSize: 13,
+                fontWeight: 800,
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Edit session
+            </div>
+
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 26,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Update workout details
+            </h2>
+          </div>
+
+          <SplitSelector
+            splitOption={editSplitOption}
+            setSplitOption={setEditSplitOption}
+            customSplit={editCustomSplit}
+            setCustomSplit={setEditCustomSplit}
+          />
+
+          <label className="stack-sm">
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--text)",
+              }}
+            >
+              Date
+            </span>
+            <input
+              type="date"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+              required
+            />
+          </label>
+
+          <label className="stack-sm">
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--text)",
+              }}
+            >
+              Notes
+            </span>
+            <textarea
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              rows={4}
+              placeholder="Optional notes for this workout"
+            />
+          </label>
+
+          {updateSessionError && (
+            <div
+              style={{
+                color: "var(--danger)",
+                whiteSpace: "pre-wrap",
+                fontWeight: 600,
+              }}
+            >
+              {updateSessionError}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="submit"
+              disabled={
+                updatingSession ||
+                (editSplitOption === "Other" && !editCustomSplit.trim())
+              }
+              className="btn btn-primary"
+            >
+              {updatingSession ? "Saving..." : "Save Changes"}
             </button>
 
             <button
               type="button"
-              onClick={() => setShowDeleteSessionModal(true)}
-              disabled={deletingSession}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid #f0b8c1",
-                background: "#fff",
-                color: "#b00020",
-                cursor: deletingSession ? "not-allowed" : "pointer",
-                fontWeight: 700,
-              }}
+              onClick={resetEditForm}
+              className="btn btn-secondary"
             >
-              {deletingSession ? "Deleting..." : "Delete Session"}
+              Cancel
             </button>
           </div>
-        )}
-      </div>
-
-      {deleteSessionError && (
-        <div style={{ color: "crimson", whiteSpace: "pre-wrap", marginTop: 12 }}>
-          {deleteSessionError}
-        </div>
+        </form>
       )}
     </section>
   );

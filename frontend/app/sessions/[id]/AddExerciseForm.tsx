@@ -31,63 +31,76 @@ export default function AddExerciseForm({
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          style={{
-            padding: "12px 16px",
-            borderRadius: 10,
-            border: "1px solid #111",
-            background: "#111",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
+          className="btn btn-primary"
         >
-          Add Exercise
+          + Add Exercise
         </button>
       ) : (
         <section
+          className="section-card"
           style={{
-            background: "#fff",
-            border: "1px solid #e5e5e5",
-            borderRadius: 16,
-            padding: 20,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             color: cardText,
           }}
         >
-          <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>
-            Add Exercise
-          </h2>
+          <div style={{ marginBottom: 14 }}>
+            <div
+              style={{
+                marginBottom: 6,
+                fontSize: 13,
+                fontWeight: 800,
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              New exercise
+            </div>
 
-          <form onSubmit={handleAddExercise} style={{ display: "grid", gap: 12 }}>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span>Exercise name</span>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 24,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "var(--text)",
+              }}
+            >
+              Add Exercise
+            </h2>
+          </div>
+
+          <form onSubmit={handleAddExercise} className="stack-md">
+            <label className="stack-sm">
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                }}
+              >
+                Exercise name
+              </span>
               <input
                 value={exerciseName}
                 onChange={(e) => setExerciseName(e.target.value)}
                 placeholder="Bench Press"
                 required
-                style={{
-                  padding: 10,
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                  background: "#fff",
-                  color: "#111",
-                }}
               />
             </label>
 
-            <label style={{ display: "grid", gap: 6 }}>
-              <span>Exercise type</span>
+            <label className="stack-sm">
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                }}
+              >
+                Exercise type
+              </span>
               <select
                 value={exerciseType}
                 onChange={(e) => setExerciseType(e.target.value as "lift" | "cardio")}
-                style={{
-                  padding: 10,
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                  background: "#fff",
-                  color: "#111",
-                }}
               >
                 <option value="lift">Lift</option>
                 <option value="cardio">Cardio</option>
@@ -95,24 +108,22 @@ export default function AddExerciseForm({
             </label>
 
             {exerciseError && (
-              <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
+              <div
+                style={{
+                  color: "var(--danger)",
+                  whiteSpace: "pre-wrap",
+                  fontWeight: 600,
+                }}
+              >
                 {exerciseError}
               </div>
             )}
 
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 type="submit"
                 disabled={addingExercise}
-                style={{
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid #111",
-                  background: "#111",
-                  color: "#fff",
-                  cursor: addingExercise ? "not-allowed" : "pointer",
-                  fontWeight: 700,
-                }}
+                className="btn btn-primary"
               >
                 {addingExercise ? "Adding..." : "Save Exercise"}
               </button>
@@ -120,15 +131,7 @@ export default function AddExerciseForm({
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                style={{
-                  padding: "12px 16px",
-                  borderRadius: 10,
-                  border: "1px solid #d0d0d0",
-                  background: "#fff",
-                  color: "#111",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
