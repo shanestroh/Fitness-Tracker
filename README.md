@@ -138,4 +138,4 @@ Database:
 
 ## Author
 
-Built by **Skrunch** as a portfolio project while learning full-stack development.
+Built by **Shane Stroh** as a portfolio project while learning full-stack development.
