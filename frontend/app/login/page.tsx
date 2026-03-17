@@ -56,48 +56,45 @@ export default function LoginPage() {
           textAlign: "center",
         }}
       >
-          <h1
-            style={{
-              fontSize: "clamp(20px, 5vw, 26px)",
-              fontWeight: 800,
-              marginBottom: 8,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Skrunch&apos;s Fitness Tracker
-          </h1>
+        <h1
+          style={{
+            fontSize: "clamp(20px, 5vw, 26px)",
+            fontWeight: 800,
+            margin: "0 0 8px",
+            letterSpacing: "-0.02em",
+            color: "var(--text)",
+          }}
+        >
+          Skrunch&apos;s Fitness Tracker
+        </h1>
 
-          <p
-            style={{
-              marginTop: 0,
-              marginBottom: 20,
-              fontSize: 15,
-              color: "var(--text-muted)",
-              textAlign: "center",
-            }}
-          >
-            Enter your password to continue
-          </p>
+        <p
+          style={{
+            margin: "0 0 20px",
+            fontSize: 15,
+            color: "var(--text-muted)",
+            textAlign: "center",
+          }}
+        >
+          Enter your password to continue
+        </p>
 
         <form onSubmit={handleSubmit} className="stack-md">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              autoFocus
-            />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            autoFocus
+          />
 
-            {error && (
-              <div className="danger-text">
-                {error}
-              </div>
-            )}
+          {error && <div className="danger-text">{error}</div>}
 
           <button
             type="submit"
             disabled={loading}
             className="btn btn-primary"
+            style={{ width: "100%" }}
           >
             {loading ? "Checking..." : "Enter"}
           </button>
@@ -105,3 +102,4 @@ export default function LoginPage() {
       </div>
     </main>
   );
+}
