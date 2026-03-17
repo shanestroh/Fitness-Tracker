@@ -56,11 +56,13 @@ export default function LoginPage() {
       >
         <div style={{ marginBottom: 18 }}>
           <h1
-            className="section-heading"
             style={{
-              fontSize: 30,
-              lineHeight: 1.1,
+              fontSize: "clamp(20px, 5vw, 28px)",
+              fontWeight: 800,
               marginBottom: 8,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             Skrunch&apos;s Fitness Tracker
