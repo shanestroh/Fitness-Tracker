@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 import type { ExerciseEntry, SetEntry, SessionFull } from "@/types/workout";
 import ExerciseCard from "./ExerciseCard";
 import SessionHeader from "./SessionHeader";
