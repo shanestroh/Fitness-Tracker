@@ -127,7 +127,7 @@ def delete_exercise_entry(
     if exercise_row is None:
         raise HTTPException(status_code=404, detail="Exercise Entry Not Found")
 
-    session_id = exercise_row.session.id
+    session_id = exercise_row.session_id
 
     #Delete sets for this exercise
     db.query(SetEntry).filter(SetEntry.exercise_entry_id == exercise_entry_id).delete()
