@@ -340,7 +340,13 @@ export default function ExerciseCard({
                   type="button"
                   onClick={() => handleMoveExercise(exercise.id, "up")}
                   className="btn btn-secondary"
-                  style={{ minWidth: 44, paddingInline: 12 }}
+                  style={{
+                    minWidth: 40,
+                    width: 40,
+                    height: 40,
+                    padding: 0,
+                    borderRadius: 12,
+                  }}
                   aria-label="Move exercise up"
                   title="Move up"
                 >
@@ -353,7 +359,13 @@ export default function ExerciseCard({
                   type="button"
                   onClick={() => handleMoveExercise(exercise.id, "down")}
                   className="btn btn-secondary"
-                  style={{ minWidth: 44, paddingInline: 12 }}
+                  style={{
+                    minWidth: 40,
+                    width: 40,
+                    height: 40,
+                    padding: 0,
+                    borderRadius: 12,
+                  }}
                   aria-label="Move exercise down"
                   title="Move down"
                 >
