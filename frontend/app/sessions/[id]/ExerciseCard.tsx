@@ -21,12 +21,13 @@ type ExerciseCardProps = {
       reps: string;
       weight: string;
       time_seconds: string;
+      time_minutes: string;
       intensity: string;
     }
   >;
   updateSetForm: (
     exerciseId: number,
-    field: "reps" | "weight" | "time_seconds" | "intensity",
+    field: "reps" | "weight" | "time_minutes" | "time_seconds" | "intensity",
     value: string
   ) => void;
   handleAddSet: (e: React.FormEvent, exerciseId: number) => Promise<void>;
