@@ -328,6 +328,8 @@ export default function ExerciseCard({
               setEditSetWeight={setEditSetWeight}
               editSetTimeSeconds={editSetTimeSeconds}
               setEditSetTimeSeconds={setEditSetTimeSeconds}
+              editSetTimeMinutes={editSetTimeMinutes}
+              setEditSetTimeMinutes={setEditSetTimeMinutes}
               editSetIntensity={editSetIntensity}
               setEditSetIntensity={setEditSetIntensity}
               updateSetError={updateSetError}
@@ -436,24 +438,51 @@ export default function ExerciseCard({
         </>
         ) : (
             <>
-          <label style={{ display: "grid", gap: 4 }}>
-            <span>Time (seconds)</span>
-            <input
-                type="number"
-                value={setFormByExercise[exercise.id]?.time_seconds ?? ""}
-                onChange={(e) =>
-                    updateSetForm(exercise.id, "time_seconds", e.target.value)
-                }
-                placeholder="300"
-                style={{
-                    padding: 10,
-                    border: "1px solid #ccc",
-                    borderRadius: 8,
-                    background: "#fff",
-                    color: "#111",
-                }}
-            />
-          </label>
+          <div style={{ display: "grid", gap: 8 }}>
+            <span>Time</span>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                 <label style={{ display: "grid", gap: 4 }}>
+                    <span>Minutes</span>
+                    <input
+                        type="number"
+                        min="0"
+                        value={setFormByExercise[exercise.id]?.time_minutes ?? ""}
+                        onChange={(e) =>
+                            updateSetForm(exercise.id, "time_minutes", e.target.value)
+                        }
+                        placeholder="5"
+                        style={{
+                            padding: 10,
+                            border: "1px solid #ccc",
+                            borderRadius: 8,
+                            background: "#fff",
+                            color: "#111",
+                        }}
+                    />
+                </label>
+
+                <label style={{ display: "grid", gap: 4 }}>
+                    <span>Seconds</span>
+                    <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={setFormByExercise[exercise.id]?.time_seconds ?? ""}
+                        onChange={(e) =>
+                            updateSetForm(exercise.id, "time_seconds", e.target.value)
+                        }
+                        placeholder="30"
+                        style={{
+                            padding: 10,
+                            border: "1px solid #ccc",
+                            borderRadius: 8,
+                            background: "#fff",
+                            color: "#111",
+                        }}
+                    />
+                </label>
+            </div>
+          </div>
 
           <label style={{ display: "grid", gap: 4 }}>
             <span>Intensity</span>

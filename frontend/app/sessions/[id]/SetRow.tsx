@@ -10,6 +10,8 @@ type SetRowProps = {
   setEditSetWeight: (value: string) => void;
   editSetTimeSeconds: string;
   setEditSetTimeSeconds: (value: string) => void;
+  editSetTimeMinutes: string
+  setEditSetTimeMinutes: (value: string) => void
   editSetIntensity: string;
   setEditSetIntensity: (value: string) => void;
   updateSetError: string | null;
@@ -34,6 +36,8 @@ export default function SetRow({
   setEditSetWeight,
   editSetTimeSeconds,
   setEditSetTimeSeconds,
+  editSetTimeMinutes,
+  setEditSetTimeMinutes,
   editSetIntensity,
   setEditSetIntensity,
   updateSetError,
@@ -96,10 +100,33 @@ export default function SetRow({
           </>
       ) : (
           <>
+          <div style={{ display: "grid", gap: 8 }}>
+            <span>Time</span>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <label style={{ display: "grid", gap: 4 }}>
+                    <span>Minutes</span>
+                    <input
+                        type="number"
+                        min="0"
+                        value={editSetTimeMinutes}
+                        onChange={(e) => setEditSetTimeMinutes(e.target.value)}
+                        style={{
+                            padding: 10,
+                            border: "1px solid #ccc",
+                            borderRadius: 8,
+                            background: "#fff",
+                            color: "#111",
+                        }}
+                    />
+          </label>
+
           <label style={{ display: "grid", gap: 4 }}>
-            <span>Time in seconds</span>
+            <span>Seconds</span>
             <input
               type="number"
+              min="0"
+              max="59"
               value={editSetTimeSeconds}
               onChange={(e) => setEditSetTimeSeconds(e.target.value)}
               style={{
@@ -111,6 +138,8 @@ export default function SetRow({
               }}
             />
           </label>
+      </div>
+    </div>
 
           <label style={{ display: "grid", gap: 4 }}>
             <span>Intensity</span>
