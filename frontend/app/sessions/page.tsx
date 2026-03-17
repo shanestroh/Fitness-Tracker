@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { apiFetch } from "@/lib/apiFetch";
 import EmptyState from "@/app/components/EmptyState";
+import ErrorState from "@/app/components/ErrorState";
 import SessionCard from "@/app/components/SessionCard";
 
 type SessionSummary = {
@@ -13,25 +14,39 @@ type SessionSummary = {
   exercise_count: number;
 };
 
-async function getSessions(): Promise<SessionSummary[]> {
+type SessionsResult = {
+  sessions: SessionSummary[];
+  error: string | null;
+};
+
+async function getSessions(): Promise<SessionsResult> {
   try {
     const res = await apiFetch("/sessions");
 
     if (!res.ok) {
       const text = await res.text();
       console.error("Failed to fetch sessions:", res.status, text);
-      return [];
+      return {
+        sessions: [],
+        error: text || `Failed to fetch sessions: ${res.status}`,
+      };
     }
 
-    return await res.json();
-  } catch (error) {
+    return {
+      sessions: await res.json(),
+      error: null,
+    };
+  } catch (error: any) {
     console.error("Error fetching sessions:", error);
-    return [];
+    return {
+      sessions: [],
+      error: error?.message ?? "Failed to load sessions",
+    };
   }
 }
 
 export default async function SessionsPage() {
-  const sessions = await getSessions();
+  const { sessions, error } = await getSessions();
 
   return (
     <main className="page-shell">
@@ -48,7 +63,12 @@ export default async function SessionsPage() {
         </Link>
       </div>
 
-      {sessions.length === 0 ? (
+      {error ? (
+        <ErrorState
+          title="Could not load sessions"
+          message={error}
+        />
+      ) : sessions.length === 0 ? (
         <EmptyState
           title="No sessions yet"
           description="Create your first workout session to start tracking your progress."

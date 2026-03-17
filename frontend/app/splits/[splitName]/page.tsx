@@ -18,20 +18,32 @@ type Props = {
   }>;
 };
 
-async function getSessions(): Promise<SessionSummary[]> {
+type SessionsResult = {
+  sessions: SessionSummary[];
+  error: string | null;
+};
+
+async function getSessions(): Promise<SessionsResult> {
   try {
     const res = await apiFetch("/sessions");
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("Failed to fetch sessions:", res.status, text);
-      return [];
+      return {
+        sessions: [],
+        error: text || `Failed to fetch sessions: ${res.status}`,
+      };
     }
 
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching sessions:", error);
-    return [];
+    return {
+      sessions: await res.json(),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      sessions: [],
+      error: error?.message ?? "Failed to load sessions",
+    };
   }
 }
 

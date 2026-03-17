@@ -10,6 +10,9 @@ import { apiFetch } from "@/lib/apiFetch";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import Link from "next/link";
 import { useOfflineSessionSync } from "@/hooks/useOfflineSessionSync";
+import LoadingState from "@/app/components/LoadingState";
+import ErrorState from "@/app/components/ErrorState";
+import EmptyState from "@/app/components/EmptyState";
 
 import {
   enqueueAddSetAction,
@@ -798,18 +801,10 @@ export default function SessionPage({ params }: SessionPageProps) {
   if (loading) {
     return (
       <main className="page-shell">
-        <section className="section-card">
-          <p
-            style={{
-              margin: 0,
-              fontSize: 15,
-              color: "var(--text-muted)",
-              fontWeight: 600,
-            }}
-          >
-            Loading session...
-          </p>
-        </section>
+        <LoadingState
+          title="Loading session..."
+          description="Fetching your workout details."
+        />
       </main>
     );
   }
@@ -817,29 +812,10 @@ export default function SessionPage({ params }: SessionPageProps) {
   if (pageError || !session) {
     return (
       <main className="page-shell">
-        <section className="section-card">
-          <h1
-            style={{
-              margin: "0 0 10px",
-              fontSize: 28,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Session Detail
-          </h1>
-
-          <p
-            style={{
-              margin: 0,
-              color: "var(--danger)",
-              whiteSpace: "pre-wrap",
-              fontWeight: 600,
-            }}
-          >
-            {pageError ?? "Session not found"}
-          </p>
-        </section>
+        <ErrorState
+          title="Session Detail"
+          message={pageError ?? "Session not found"}
+        />
       </main>
     );
   }
@@ -914,33 +890,13 @@ export default function SessionPage({ params }: SessionPageProps) {
         cardText={cardText}
       />
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 14,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 24,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "var(--text)",
-            }}
-          >
-            Exercises
-          </h2>
+      <div style={{ marginBottom: 14 }}>
+          <h2 className="section-heading section-heading-lg">Exercises</h2>
 
           <p
+          className="muted-copy"
             style={{
               margin: "6px 0 0",
-              color: "var(--text-muted)",
               fontSize: 14,
             }}
           >
@@ -949,46 +905,24 @@ export default function SessionPage({ params }: SessionPageProps) {
               : `${session.exercises.length} ${session.exercises.length === 1 ? "exercise" : "exercises"} in this session`}
           </p>
         </div>
-      </div>
 
       {deleteExerciseError && (
-        <div
-          style={{
-            marginBottom: 12,
-            color: "var(--danger)",
-            whiteSpace: "pre-wrap",
-            fontWeight: 600,
-          }}
-        >
+        <div className="danger-text" style={{ marginBottom: 12 }}>
           {deleteExerciseError}
         </div>
       )}
 
       {deleteSetError && (
-        <div
-          style={{
-            marginBottom: 12,
-            color: "var(--danger)",
-            whiteSpace: "pre-wrap",
-            fontWeight: 600,
-          }}
-        >
+        <div className="danger-text" style={{ marginBottom: 12 }}>
           {deleteSetError}
         </div>
       )}
 
       {session.exercises.length === 0 ? (
-        <section className="section-card">
-          <p
-            style={{
-              margin: 0,
-              color: "var(--text-muted)",
-              fontSize: 15,
-            }}
-          >
-            No exercises yet.
-          </p>
-        </section>
+        <EmptyState
+          title="No exercises yet"
+          description="Add your first exercise to start building this workout."
+        />
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           {session.exercises.map((exercise, index) => (
