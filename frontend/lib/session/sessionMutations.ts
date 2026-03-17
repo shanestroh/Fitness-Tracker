@@ -67,7 +67,7 @@ export function updateSetInSession(
   };
 }
 
-export function updateExerciseNameInSession(
+export function updateExerciseInSession(
   session: SessionFull,
   exerciseId: number,
   updates: {
