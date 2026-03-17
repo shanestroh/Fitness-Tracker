@@ -39,48 +39,47 @@ export default function LoginPage() {
 
   return (
     <main
-      className="page-shell"
       style={{
-        minHeight: "calc(100vh - 80px)",
-        display: "grid",
-        placeItems: "center",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
       }}
     >
-      <section
-        className="section-card"
+      <div
+        className="surface-card"
         style={{
           width: "100%",
-          maxWidth: 440,
-          padding: 24,
+          maxWidth: 460,
+          padding: 28,
+          textAlign: "center",
         }}
       >
-        <div style={{ marginBottom: 18 }}>
           <h1
             style={{
-              fontSize: "clamp(20px, 5vw, 28px)",
+              fontSize: "clamp(20px, 5vw, 26px)",
               fontWeight: 800,
               marginBottom: 8,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              letterSpacing: "-0.02em",
             }}
           >
             Skrunch&apos;s Fitness Tracker
           </h1>
 
           <p
-            className="muted-copy"
             style={{
-              margin: 0,
+              marginTop: 0,
+              marginBottom: 20,
+              fontSize: 15,
+              color: "var(--text-muted)",
+              textAlign: "center",
             }}
           >
-            Enter your password to continue.
+            Enter your password to continue
           </p>
-        </div>
 
         <form onSubmit={handleSubmit} className="stack-md">
-          <label className="stack-sm">
-            <span className="field-label">Password</span>
             <input
               type="password"
               value={password}
@@ -88,20 +87,21 @@ export default function LoginPage() {
               placeholder="Password"
               autoFocus
             />
-          </label>
 
-          {error && <div className="danger-text">{error}</div>}
+            {error && (
+              <div className="danger-text">
+                {error}
+              </div>
+            )}
 
           <button
             type="submit"
             disabled={loading}
             className="btn btn-primary"
-            style={{ width: "100%" }}
           >
             {loading ? "Checking..." : "Enter"}
           </button>
         </form>
-      </section>
+      </div>
     </main>
   );
-}
