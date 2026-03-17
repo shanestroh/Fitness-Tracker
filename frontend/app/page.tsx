@@ -13,24 +13,7 @@ export default async function HomePage() {
   return (
     <main className="page-shell">
       {/* Hero */}
-      <section style={{ marginBottom: 28 }}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "6px 10px",
-            borderRadius: 999,
-            background: "var(--surface-alt)",
-            border: "1px solid var(--border)",
-            color: "var(--text-muted)",
-            fontSize: 13,
-            fontWeight: 700,
-            marginBottom: 14,
-          }}
-        >
-          Personal Fitness Tracker
-        </div>
-
+      <section style={{ marginBottom: 20 }}>
         <h1
           style={{
             margin: 0,
@@ -73,18 +56,6 @@ export default async function HomePage() {
               boxShadow: "var(--shadow-md)",
             }}
           >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 800,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                opacity: 0.9,
-                marginBottom: 10,
-              }}
-            >
-              Main action
-            </div>
 
             <div
               style={{
