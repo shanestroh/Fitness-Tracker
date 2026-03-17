@@ -38,51 +38,68 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ maxWidth: 420, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
-        Personal Fitness Tracker
-      </h1>
+    <main
+      className="page-shell"
+      style={{
+        minHeight: "calc(100vh - 80px)",
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
+      <section
+        className="section-card"
+        style={{
+          width: "100%",
+          maxWidth: 440,
+          padding: 24,
+        }}
+      >
+        <div style={{ marginBottom: 18 }}>
+          <h1
+            className="section-heading"
+            style={{
+              fontSize: 30,
+              lineHeight: 1.1,
+              marginBottom: 8,
+            }}
+          >
+            Skrunch&apos;s Fitness Tracker
+          </h1>
 
-      <p style={{ marginTop: 0, marginBottom: 16, color: "#555" }}>
-        Enter password to continue
-      </p>
+          <p
+            className="muted-copy"
+            style={{
+              margin: 0,
+            }}
+          >
+            Enter your password to continue.
+          </p>
+        </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          autoFocus
-          style={{
-            padding: 12,
-            border: "1px solid #ccc",
-            borderRadius: 8,
-          }}
-        />
+        <form onSubmit={handleSubmit} className="stack-md">
+          <label className="stack-sm">
+            <span className="field-label">Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              autoFocus
+            />
+          </label>
 
-        {error && (
-          <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
-            {error}
-          </div>
-        )}
+          {error && <div className="danger-text">{error}</div>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "12px 16px",
-            borderRadius: 10,
-            border: "1px solid #d0d0d0",
-            background: "#fff",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontWeight: 700,
-            color: "#444",
-          }}
-        >
-          {loading ? "Checking..." : "Enter"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+            style={{ width: "100%" }}
+          >
+            {loading ? "Checking..." : "Enter"}
+          </button>
+        </form>
+      </section>
     </main>
   );
 }
