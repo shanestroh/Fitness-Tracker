@@ -392,6 +392,7 @@ export default function ExerciseCard({
               </button>
             </div>
           </div>
+        </div>
 
           {isExpanded && (
             <>
