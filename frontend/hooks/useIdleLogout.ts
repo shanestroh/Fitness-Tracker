@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
-const IDLE_TIMEOUT_MS = 10 * 1000;
+const IDLE_TIMEOUT_MS = 10 * 1000; // change back later
 
 export function useIdleLogout() {
-  const router = useRouter();
-  const timeoutRef = useRef<number | null>(null);
+  const pathname = usePathname();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // Do not run idle logout on login page
+    if (pathname === "/login") return;
+
     function clearExistingTimer() {
-      if (timeoutRef.current !== null) {
-        window.clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     }
 
@@ -23,15 +26,17 @@ export function useIdleLogout() {
           credentials: "include",
         });
       } catch {
-        // even if logout request fails, still redirect
+        // ignore
       } finally {
-        router.push("/login");
+        window.location.href = "/login";
       }
     }
 
     function resetTimer() {
       clearExistingTimer();
-      timeoutRef.current = window.setTimeout(() => {
+
+      timeoutRef.current = setTimeout(() => {
+        console.log("Idle timeout reached");
         logoutUser();
       }, IDLE_TIMEOUT_MS);
     }
@@ -56,5 +61,5 @@ export function useIdleLogout() {
         window.removeEventListener(event, resetTimer);
       }
     };
-  }, [router]);
+  }, [pathname]);
 }
