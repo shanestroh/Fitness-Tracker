@@ -39,6 +39,42 @@ type SetRowProps = {
   exerciseType: "lift" | "cardio";
 };
 
+function statBox(value: string | number, label: string, minWidth = 140) {
+  return (
+    <div
+      style={{
+        padding: "14px 18px",
+        borderRadius: 14,
+        background: "var(--surface-alt)",
+        border: "1px solid var(--border)",
+        minWidth,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 800,
+          color: "var(--text)",
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          marginTop: 4,
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--text-muted)",
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  );
+}
+
 export default function SetRow({
   set,
   cardText,
@@ -256,172 +292,151 @@ export default function SetRow({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr auto",
-            gap: 16,
+            gridTemplateColumns: "auto minmax(0, 1fr) auto",
             alignItems: "center",
+            gap: 16,
           }}
         >
           <div
             style={{
-              minWidth: 0,
+              alignSelf: "start",
+              minWidth: 72,
             }}
           >
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-                marginBottom: 10,
+                fontSize: 16,
+                fontWeight: 800,
+                color: "var(--text)",
+                whiteSpace: "nowrap",
               }}
             >
-              <span
+              Set {set.set_number ?? "?"}:
+            </div>
+
+            {isPending && (
+              <div style={{ marginTop: 8 }}>
+                <span className="badge badge-warning">Pending sync</span>
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minWidth: 0,
+            }}
+          >
+            {exerciseType === "lift" ? (
+              <div
                 style={{
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: "var(--text)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 20,
+                  flexWrap: "wrap",
+                  width: "100%",
                 }}
               >
-                Set {set.set_number ?? "?"}
-              </span>
+                {set.reps !== undefined && statBox(set.reps, "reps", 120)}
 
-              {isPending && <span className="badge badge-warning">Pending sync</span>}
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
-              }}
-            >
-              {set.reps !== undefined && (
-                <div
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: 14,
-                    background: "var(--surface-alt)",
-                    border: "1px solid var(--border)",
-                    minWidth: 120,
-                    textAlign: "center",
-                  }}
-                >
+                {set.reps !== undefined && set.weight !== undefined && (
                   <div
                     style={{
-                      fontSize: 22,
+                      fontSize: 28,
                       fontWeight: 800,
-                      color: "var(--text)",
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    {set.reps}
-                  </div>
-                  <div
-                    style={{
-                      marginTop: 4,
-                      fontSize: 13,
-                      fontWeight: 700,
                       color: "var(--text-muted)",
+                      lineHeight: 1,
                     }}
                   >
-                    reps
+                    ×
                   </div>
-                </div>
-              )}
+                )}
 
-              {set.weight !== undefined && (
-                <div
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: 14,
-                    background: "var(--surface-alt)",
-                    border: "1px solid var(--border)",
-                    minWidth: 120,
-                    textAlign: "center",
-                  }}
-                >
+                {set.weight !== undefined && statBox(set.weight, "lbs", 120)}
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    set.time_seconds !== undefined && set.intensity
+                      ? "minmax(180px, 1fr) minmax(180px, 1fr)"
+                      : "minmax(260px, 420px)",
+                  gap: 14,
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                {set.time_seconds !== undefined && (
                   <div
                     style={{
-                      fontSize: 22,
-                      fontWeight: 800,
-                      color: "var(--text)",
-                      lineHeight: 1.1,
+                      padding: "16px 18px",
+                      borderRadius: 14,
+                      background: "var(--surface-alt)",
+                      border: "1px solid var(--border)",
+                      textAlign: "center",
                     }}
                   >
-                    {set.weight}
+                    <div
+                      style={{
+                        fontSize: 22,
+                        fontWeight: 800,
+                        color: "var(--text)",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {formatTime(set.time_seconds)}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      time
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      marginTop: 4,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    lbs
-                  </div>
-                </div>
-              )}
+                )}
 
-              {set.time_seconds !== undefined && (
-                <div
-                  style={{
-                    padding: "12px 18px",
-                    borderRadius: 14,
-                    background: "var(--surface-alt)",
-                    border: "1px solid var(--border)",
-                    minWidth: 150,
-                    textAlign: "center",
-                  }}
-                >
+                {set.intensity && (
                   <div
                     style={{
-                      fontSize: 22,
-                      fontWeight: 800,
-                      color: "var(--text)",
-                      lineHeight: 1.1,
+                      padding: "16px 18px",
+                      borderRadius: 14,
+                      background: "var(--surface-alt)",
+                      border: "1px solid var(--border)",
+                      textAlign: "center",
                     }}
                   >
-                    {formatTime(set.time_seconds)}
+                    <div
+                      style={{
+                        fontSize: 22,
+                        fontWeight: 800,
+                        color: "var(--text)",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {set.intensity}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      intensity
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {set.intensity && (
-                <div
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: 14,
-                    background: "var(--surface-alt)",
-                    border: "1px solid var(--border)",
-                    minWidth: 140,
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 800,
-                      color: "var(--text)",
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    {set.intensity}
-                  </div>
-                  <div
-                    style={{
-                      marginTop: 4,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    intensity
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div
