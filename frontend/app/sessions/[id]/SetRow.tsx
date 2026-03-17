@@ -48,6 +48,7 @@ function statBox(value: string | number, label: string, minWidth = 140) {
         background: "var(--surface-alt)",
         border: "1px solid var(--border)",
         minWidth,
+        width: "100%",
         textAlign: "center",
       }}
     >
