@@ -4,8 +4,11 @@ function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
 
-  if (minutes > 0) {
+  if (minutes > 0 && remaining > 0) {
     return `${minutes}m ${remaining}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m`;
   }
   return `${remaining}s`;
 }
