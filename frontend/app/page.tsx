@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const authCookie = cookieStore.get("app_auth");
+
+  if (!authCookie) {
+    redirect("/login");
+  }
+
   return (
     <main style={{ maxWidth: 720, margin: "32px auto", padding: "0 16px" }}>
       <h1
