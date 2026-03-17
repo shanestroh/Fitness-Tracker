@@ -69,7 +69,7 @@ export default function AppHeader() {
             letterSpacing: "-0.02em",
           }}
         >
-          Skrunch’s Fitness Tracker
+          Skrunch's Fitness Tracker
         </Link>
 
         <div
