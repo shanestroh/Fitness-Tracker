@@ -127,11 +127,26 @@ def delete_exercise_entry(
     if exercise_row is None:
         raise HTTPException(status_code=404, detail="Exercise Entry Not Found")
 
+    session_id = exercise_row.session.id
+
     #Delete sets for this exercise
     db.query(SetEntry).filter(SetEntry.exercise_entry_id == exercise_entry_id).delete()
 
     #Delete exercise entry
     db.delete(exercise_row)
+    db.flush()
+
+    #Renumber remaining exercises
+    remaining_exercises = (
+        db.query(ExerciseEntry)
+        .filter(ExerciseEntry.session_id == session_id)
+        .order_by(ExerciseEntry.order_index.asc(), ExerciseEntry.id.asc())
+        .all()
+    )
+
+    for index, exercise in enumerate(remaining_exercises, start=1):
+        exercise.order_index = index
+
     db.commit()
 
     return {"deleted": True, "exercise_entry_id": exercise_entry_id}

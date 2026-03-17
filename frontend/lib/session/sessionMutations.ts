@@ -10,16 +10,6 @@ export function addOptimisticExercise(
   };
 }
 
-export function removeExerciseFromSession(
-  session: SessionFull,
-  exerciseId: number
-): SessionFull {
-  return {
-    ...session,
-    exercises: session.exercises.filter((exercise) => exercise.id !== exerciseId),
-  };
-}
-
 export function addOptimisticSet(
   session: SessionFull,
   exerciseId: number,
@@ -89,5 +79,26 @@ export function updateExerciseNameInSession(
         ? { ...exercise, exercise: newName }
         : exercise
     ),
+  };
+}
+
+function normalizeExerciseOrder(
+  exercises: SessionFull["exercises"]
+): SessionFull["exercises"] {
+  return exercises.map((exercise, index) => ({
+    ...exercise,
+    order_index: index + 1,
+  }));
+}
+
+export function removeExerciseFromSession(
+  session: SessionFull,
+  exerciseId: number
+): SessionFull {
+  const remaining = session.exercises.filter((exercise) => exercise.id !== exerciseId);
+
+  return {
+    ...session,
+    exercises: normalizeExerciseOrder(remaining),
   };
 }
