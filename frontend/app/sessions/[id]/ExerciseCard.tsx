@@ -85,6 +85,8 @@ export default function ExerciseCard({
   setEditSetWeight,
   editSetTimeSeconds,
   setEditSetTimeSeconds,
+  editSetTimeMinutes,
+  setEditSetTimeMinutes,
   editSetIntensity,
   setEditSetIntensity,
   updateSetError,
