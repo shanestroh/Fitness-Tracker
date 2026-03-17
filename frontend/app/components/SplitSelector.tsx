@@ -23,19 +23,21 @@ export default function SplitSelector({
   setCustomSplit,
 }: SplitSelectorProps) {
   return (
-    <>
-      <label style={{ display: "grid", gap: 6 }}>
-        <span>Split</span>
+    <div className="stack-md">
+      <label className="stack-sm">
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: "var(--text)",
+          }}
+        >
+          Split
+        </span>
+
         <select
           value={splitOption}
           onChange={(e) => setSplitOption(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            background: "#fff",
-            color: "#111",
-          }}
         >
           {PRESET_SPLITS.map((split) => (
             <option key={split} value={split}>
@@ -46,23 +48,25 @@ export default function SplitSelector({
       </label>
 
       {splitOption === "Other" && (
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Custom Split Name</span>
+        <label className="stack-sm">
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--text)",
+            }}
+          >
+            Custom split name
+          </span>
+
           <input
             value={customSplit}
             onChange={(e) => setCustomSplit(e.target.value)}
             placeholder="Enter custom split"
             required
-            style={{
-              padding: 10,
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              background: "#fff",
-              color: "#111",
-            }}
           />
         </label>
       )}
-    </>
+    </div>
   );
 }
