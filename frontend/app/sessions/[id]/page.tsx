@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SetEntry } from "@/types/workout";
+import type { ExerciseEntry, SetEntry, SessionFull } from "@/types/workout";
 import ExerciseCard from "./ExerciseCard";
 import SessionHeader from "./SessionHeader";
 import AddExerciseForm from "./AddExerciseForm";
 import { apiFetch } from "@/lib/apiFetch";
-import type { SessionFull } from "@/types/workout";
 import ConfirmModal from "@/app/components/ConfirmModal";
 import Link from "next/link";
 import { useOfflineSessionSync } from "@/hooks/useOfflineSessionSync";
