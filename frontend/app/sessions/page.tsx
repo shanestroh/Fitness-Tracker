@@ -48,6 +48,7 @@ function formatDate(dateString: string) {
 }
 
 export default async function SessionsPage() {
+  useIdleLogout();
   const sessions = await getSessions();
 
   return (

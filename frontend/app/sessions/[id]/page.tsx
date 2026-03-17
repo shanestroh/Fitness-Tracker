@@ -52,6 +52,7 @@ function normalizeCustomSplit(value: string) {
 }
 
 export default function SessionPage({ params }: SessionPageProps) {
+  useIdleLogout();
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string>("");
   const [session, setSession] = useState<SessionFull | null>(null);
@@ -89,6 +90,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [exerciseType, setExerciseType] = useState<"lift" | "cardio">("lift");
   const [editSetTimeMinutes, setEditSetTimeMinutes] = useState("");
   const cardText = "#111";
+  useIdleLogout();
 
 
 
