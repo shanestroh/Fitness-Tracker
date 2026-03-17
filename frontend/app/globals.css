@@ -139,6 +139,12 @@ textarea {
   box-shadow: var(--shadow-sm);
 }
 
+.surface-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  transition: all 0.15s ease;
+}
+
 .section-card {
   background: var(--surface);
   border: 1px solid var(--border);
