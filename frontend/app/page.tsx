@@ -17,7 +17,7 @@ export default async function HomePage() {
         <h1
           style={{
             margin: 0,
-            fontSize: 42,
+            fontSize: "clamp(28px, 6vw, 42px)"
             lineHeight: 1.05,
             fontWeight: 900,
             letterSpacing: "-0.03em",
@@ -25,7 +25,7 @@ export default async function HomePage() {
             maxWidth: 700,
           }}
         >
-          Ready to train today?
+          Ready to train?
         </h1>
 
         <p
@@ -86,7 +86,7 @@ export default async function HomePage() {
                     color: "rgba(255,255,255,0.9)",
                   }}
                 >
-                  Create a new session and begin logging your workout.
+                  Create a new session and log your workout.
                 </p>
               </div>
 

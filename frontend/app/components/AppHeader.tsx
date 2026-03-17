@@ -35,14 +35,20 @@ export default function AppHeader() {
         style={{
           maxWidth: "var(--max-content-width)",
           margin: "0 auto",
-          padding: "12px 16px",
-          display: "flex",
+          padding: "10px 12px",
+          display: "grid",
+          gridTemplateColumns: "auto 1fr auto",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
+          gap: 10,
         }}
       >
-        <div style={{ minWidth: 84 }}>
+        <div
+          style={{
+            minWidth: isHomePage ? 0 : 72,
+            display: "flex",
+            justifyContent: "flex-start",
+          }}
+        >
           {!isHomePage ? (
             <button
               onClick={() => router.back()}
@@ -52,6 +58,7 @@ export default function AppHeader() {
                 padding: "8px 12px",
                 borderRadius: 10,
                 fontWeight: 700,
+                whiteSpace: "nowrap",
               }}
             >
               ← Back
@@ -59,22 +66,33 @@ export default function AppHeader() {
           ) : null}
         </div>
 
-        <Link
-          href="/"
+        <div
           style={{
-            textDecoration: "none",
-            color: "var(--text)",
-            fontWeight: 800,
-            fontSize: 18,
-            letterSpacing: "-0.02em",
+            display: "flex",
+            justifyContent: "center",
+            minWidth: 0,
           }}
         >
-          Skrunch's Fitness Tracker
-        </Link>
+          <Link
+            href="/"
+            style={{
+              textDecoration: "none",
+              color: "var(--text)",
+              fontWeight: 800,
+              fontSize: "clamp(15px, 4vw, 18px)",
+              letterSpacing: "-0.01em",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            Skrunch&apos;s Fitness Tracker
+          </Link>
+        </div>
 
         <div
           style={{
-            minWidth: 84,
+            minWidth: 72,
             display: "flex",
             justifyContent: "flex-end",
           }}
@@ -87,6 +105,7 @@ export default function AppHeader() {
               padding: "8px 12px",
               borderRadius: 10,
               fontWeight: 700,
+              whiteSpace: "nowrap",
             }}
           >
             Logout
