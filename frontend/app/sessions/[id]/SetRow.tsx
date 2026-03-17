@@ -1,5 +1,15 @@
 import { SetEntry } from "@/types/workout";
 
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+
+  if (minutes > 0) {
+    return `${minutes}m ${remaining}s`;
+  }
+  return `${remaining}s`;
+}
+
 type SetRowProps = {
   set: SetEntry;
   cardText: string;
@@ -216,7 +226,7 @@ export default function SetRow({
             <span style={{ marginLeft: 12 }}>
               {set.reps !== undefined ? `${set.reps} reps` : ""}
               {set.weight !== undefined ? ` x ${set.weight} lbs` : ""}
-              {set.time_seconds !== undefined ? ` · ${set.time_seconds}s` : ""}
+              {set.time_seconds !== undefined && formatTime(set.time_seconds)}
               {set.intensity ? ` · ${set.intensity}` : ""}
             </span>
             {pendingSetEditsById[String(set.id)] && (
