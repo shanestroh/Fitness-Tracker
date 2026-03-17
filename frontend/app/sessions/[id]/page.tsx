@@ -477,7 +477,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
-  function startEditingSet(set: SetEntry) {
+  function startEditingSet(set: SetEntry, exerciseType: "lift" | "cardio") {
     setEditingSetId(set.id);
     setUpdateSetError(null);
 
