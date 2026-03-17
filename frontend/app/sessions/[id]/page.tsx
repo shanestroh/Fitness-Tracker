@@ -661,7 +661,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     }
   }
 
-  function startEditingExercise(exercise: {
+  function startEditingExercise(exercise: ExerciseEntry) {
     setEditingExerciseId(exercise.id);
     setEditExerciseName(exercise.exercise);
     setEditExerciseType(exercise.exercise_type);
