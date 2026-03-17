@@ -5,10 +5,10 @@ function formatTime(seconds: number) {
   const remaining = seconds % 60;
 
   if (minutes > 0 && remaining > 0) {
-    return `${minutes}m ${remaining}s`;
+    return `${minutes} mins ${remaining}s`;
   }
   if (minutes > 0) {
-    return `${minutes}m`;
+    return `${minutes} mins`;
   }
   return `${remaining}s`;
 }
@@ -255,26 +255,29 @@ export default function SetRow({
       ) : (
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            gap: 16,
             alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
           }}
         >
-          <div style={{ minWidth: 0, flex: "1 1 240px" }}>
+          <div
+            style={{
+              minWidth: 0,
+            }}
+          >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
                 flexWrap: "wrap",
-                marginBottom: 6,
+                marginBottom: 10,
               }}
             >
               <span
                 style={{
-                  fontSize: 15,
+                  fontSize: 16,
                   fontWeight: 800,
                   color: "var(--text)",
                 }}
@@ -288,31 +291,147 @@ export default function SetRow({
             <div
               style={{
                 display: "flex",
-                gap: 8,
+                alignItems: "center",
+                gap: 12,
                 flexWrap: "wrap",
               }}
             >
               {set.reps !== undefined && (
-                <span className="badge badge-neutral">{set.reps} reps</span>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 14,
+                    background: "var(--surface-alt)",
+                    border: "1px solid var(--border)",
+                    minWidth: 120,
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 800,
+                      color: "var(--text)",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {set.reps}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    reps
+                  </div>
+                </div>
               )}
 
               {set.weight !== undefined && (
-                <span className="badge badge-neutral">{set.weight} lbs</span>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 14,
+                    background: "var(--surface-alt)",
+                    border: "1px solid var(--border)",
+                    minWidth: 120,
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 800,
+                      color: "var(--text)",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {set.weight}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    lbs
+                  </div>
+                </div>
               )}
 
               {set.time_seconds !== undefined && (
-                <span className="badge badge-neutral">
-                  {formatTime(set.time_seconds)}
-                </span>
+                <div
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: 14,
+                    background: "var(--surface-alt)",
+                    border: "1px solid var(--border)",
+                    minWidth: 150,
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 800,
+                      color: "var(--text)",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {formatTime(set.time_seconds)}
+                  </div>
+                </div>
               )}
 
               {set.intensity && (
-                <span className="badge badge-neutral">{set.intensity}</span>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 14,
+                    background: "var(--surface-alt)",
+                    border: "1px solid var(--border)",
+                    minWidth: 140,
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 800,
+                      color: "var(--text)",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {set.intensity}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    intensity
+                  </div>
+                </div>
               )}
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              justifyContent: "flex-end",
+            }}
+          >
             <button
               type="button"
               onClick={() => startEditingSet(set)}

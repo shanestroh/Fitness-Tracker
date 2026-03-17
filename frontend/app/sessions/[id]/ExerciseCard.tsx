@@ -118,8 +118,6 @@ export default function ExerciseCard({
   const [showAddSetForm, setShowAddSetForm] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const exerciseCountLabel =
-    exercise.sets.length === 1 ? "1 set" : `${exercise.sets.length} sets`;
 
   return (
     <section
@@ -308,16 +306,6 @@ export default function ExerciseCard({
                   flexWrap: "wrap",
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 14,
-                    color: "var(--text-muted)",
-                    fontWeight: 600,
-                  }}
-                >
-                  {exerciseCountLabel}
-                </span>
-
                 <span
                   style={{
                     fontSize: 14,
