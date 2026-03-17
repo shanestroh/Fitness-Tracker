@@ -232,11 +232,10 @@ export default function ExerciseCard({
         <>
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) auto auto",
+              alignItems: "center",
               gap: 16,
-              flexWrap: "wrap",
               marginBottom: isExpanded ? 16 : 0,
             }}
           >
@@ -261,7 +260,6 @@ export default function ExerciseCard({
                 cursor: "pointer",
                 textAlign: "left",
                 color: "inherit",
-                flex: "1 1 260px",
                 minWidth: 0,
               }}
             >
@@ -292,31 +290,42 @@ export default function ExerciseCard({
                 <span className="badge badge-neutral">
                   {exercise.exercise_type === "lift" ? "Lift" : "Cardio"}
                 </span>
-
-                {pendingExerciseEditsById[exercise.id] && (
-                  <span className="badge badge-warning">Pending sync</span>
-                )}
               </div>
 
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
+                  fontSize: 14,
+                  color: "var(--primary)",
+                  fontWeight: 700,
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 14,
-                    color: "var(--primary)",
-                    fontWeight: 700,
-                  }}
-                >
-                  {isExpanded ? "Hide details ▲" : "Show details ▼"}
-                </span>
+                {isExpanded ? "Hide details ▲" : "Show details ▼"}
               </div>
             </button>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minWidth: 120,
+                }}
+              >
+                {pendingExerciseEditsById[exercise.id] ? (
+                  <span className="badge badge-warning">Pending sync</span>
+                ) : (
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--text-muted)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {exercise.sets.length} {exercise.sets.length === 1 ? "set" : "sets"}
+                </span>
+              )}
+            </div>
 
             <div
               style={{
