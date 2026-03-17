@@ -26,14 +26,14 @@ export default function AppHeader() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "#ffffff",
-        borderBottom: "1px solid #d1d5db",
-        boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+        backdropFilter: "blur(10px)",
+        background: "rgba(255,255,255,0.88)",
+        borderBottom: "1px solid var(--border)",
       }}
     >
       <div
         style={{
-          maxWidth: 700,
+          maxWidth: "var(--max-content-width)",
           margin: "0 auto",
           padding: "12px 16px",
           display: "flex",
@@ -42,18 +42,16 @@ export default function AppHeader() {
           gap: 12,
         }}
       >
-        <div style={{ minWidth: 70 }}>
+        <div style={{ minWidth: 84 }}>
           {!isHomePage ? (
             <button
               onClick={() => router.back()}
+              className="btn btn-secondary"
               style={{
-                border: "none",
-                background: "transparent",
-                color: "#111",
-                cursor: "pointer",
-                fontSize: 15,
-                padding: 0,
-                fontWeight: 600
+                minHeight: 36,
+                padding: "8px 12px",
+                borderRadius: 10,
+                fontWeight: 700,
               }}
             >
               ← Back
@@ -65,25 +63,30 @@ export default function AppHeader() {
           href="/"
           style={{
             textDecoration: "none",
-            color: "#111",
-            fontWeight: 700,
+            color: "var(--text)",
+            fontWeight: 800,
             fontSize: 18,
+            letterSpacing: "-0.02em",
           }}
         >
           Fitness Tracker
         </Link>
 
-        <div style={{ minWidth: 70, display: "flex", justifyContent: "flex-end" }}>
+        <div
+          style={{
+            minWidth: 84,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
           <button
             onClick={handleLogout}
+            className="btn btn-secondary"
             style={{
-              border: "1px solid #d1d5db",
-              background: "#fff",
-              color: "#111",
-              borderRadius: 8,
-              padding: "6px 10px",
-              cursor: "pointer",
-              fontWeight: 600,
+              minHeight: 36,
+              padding: "8px 12px",
+              borderRadius: 10,
+              fontWeight: 700,
             }}
           >
             Logout

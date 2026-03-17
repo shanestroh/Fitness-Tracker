@@ -51,52 +51,68 @@ export default async function SessionsPage() {
   const sessions = await getSessions();
 
   return (
-    <main style={{ maxWidth: 700, margin: "32px auto", padding: "0 16px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 20,
-        }}
-      >
-        <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0 }}>
-            Workout Sessions
-        </h1>
+    <main className="page-shell">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Workout Sessions</h1>
+          <p className="page-subtitle">
+            View, manage, and continue your training history.
+          </p>
+        </div>
 
-        <Link
-          href="/sessions/new"
-          style={{
-            padding: "12px 16px",
-            border: "1px solid #111",
-            borderRadius: 10,
-            textDecoration: "none",
-            background: "#111",
-            color: "#fff",
-            fontWeight: 700,
-          }}
-        >
+        <Link href="/sessions/new" className="btn btn-primary">
           + New Session
         </Link>
       </div>
 
       {sessions.length === 0 ? (
-        <p>No sessions yet.</p>
+        <section
+          className="section-card"
+          style={{
+            textAlign: "center",
+            padding: "32px 20px",
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 20,
+              fontWeight: 800,
+              color: "var(--text)",
+            }}
+          >
+            No sessions yet
+          </h2>
+
+          <p
+            style={{
+              margin: "10px 0 0",
+              color: "var(--text-muted)",
+              fontSize: 15,
+            }}
+          >
+            Create your first workout session to start tracking progress.
+          </p>
+
+          <div style={{ marginTop: 18 }}>
+            <Link href="/sessions/new" className="btn btn-primary">
+              Create First Session
+            </Link>
+          </div>
+        </section>
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 14 }}>
           {sessions.map((session) => (
             <Link
               key={session.id}
               href={`/sessions/${session.id}`}
+              className="surface-card"
               style={{
                 display: "block",
-                border: "1px solid #e5e5e5",
-                borderRadius: 16,
                 padding: 18,
                 textDecoration: "none",
-                color: "inherit",
-                background: "#fff",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                transition:
+                  "transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease",
               }}
             >
               <div
@@ -104,36 +120,92 @@ export default async function SessionsPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-start",
-                  marginBottom: session.notes ? 6 : 0,
-                  gap: 12,
+                  gap: 16,
                   flexWrap: "wrap",
                 }}
               >
-                <h2 style={{ fontSize: 21, fontWeight: 800, margin: 0, lineHeight: 1.3 }}>
-                  {session.split}
+                <div style={{ minWidth: 0, flex: "1 1 260px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      flexWrap: "wrap",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <h2
+                      style={{
+                        margin: 0,
+                        fontSize: 22,
+                        lineHeight: 1.2,
+                        fontWeight: 800,
+                        letterSpacing: "-0.02em",
+                        color: "var(--text)",
+                      }}
+                    >
+                      {session.split}
+                    </h2>
+
+                    <span className="badge badge-neutral">
+                      {session.exercise_count}{" "}
+                      {session.exercise_count === 1 ? "exercise" : "exercises"}
+                    </span>
+                  </div>
+
+                  {session.notes ? (
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "var(--text-muted)",
+                        fontSize: 15,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {session.notes}
+                    </p>
+                  ) : (
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "var(--text-muted)",
+                        fontSize: 15,
+                      }}
+                    >
+                      No notes added
+                    </p>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    justifyItems: "end",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "var(--text-muted)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {formatDate(session.date)}
+                  </span>
+
                   <span
                     style={{
                       fontSize: 14,
-                      fontWeight: 500,
-                      color: "#666",
-                      marginLeft: 8,
+                      fontWeight: 700,
+                      color: "var(--primary)",
                     }}
                   >
-                    {session.exercise_count}{" "}
-                    {session.exercise_count === 1 ? "Exercise" : "Exercises"}
+                    Open session →
                   </span>
-                </h2>
-
-                <span
-                  style={{ color: "#666", fontSize: 14, whiteSpace: "nowrap" }}
-                >
-                  {formatDate(session.date)}
-                </span>
+                </div>
               </div>
-
-              {session.notes && (
-                <p style={{ margin: 0, color: "#555" }}>{session.notes}</p>
-              )}
             </Link>
           ))}
         </div>

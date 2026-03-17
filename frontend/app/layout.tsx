@@ -25,9 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <IdleLogoutWrapper>{children}</IdleLogoutWrapper>
+        <IdleLogoutWrapper>
+          <AppHeader />
+          {children}
+        </IdleLogoutWrapper>
       </body>
     </html>
   );
