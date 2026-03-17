@@ -34,7 +34,7 @@ import {
   addOptimisticSet,
   removeSetFromSession,
   updateSetInSession,
-  updateExerciseNameInSession,
+  updateExerciseInSession,
 } from "@/lib/session/sessionMutations";
 
 type SessionPageProps = {
@@ -83,6 +83,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [updateSetError, setUpdateSetError] = useState<string | null>(null);
   const [editingExerciseId, setEditingExerciseId] = useState<number | null>(null);
   const [editExerciseName, setEditExerciseName] = useState("");
+  const [editExerciseType, setEditExerciseType] = useState<"lift" | "cardio">("lift");
   const [updatingExercise, setUpdatingExercise] = useState(false);
   const [updateExerciseError, setUpdateExerciseError] = useState<string | null>(null);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
@@ -661,8 +662,13 @@ export default function SessionPage({ params }: SessionPageProps) {
   }
 
   function startEditingExercise(exercise: { id: number; exercise: string }) {
+    id: number;
+    exercise: string;
+    exercise_type: "lift" | "cardio";
+  }) {
     setEditingExerciseId(exercise.id);
     setEditExerciseName(exercise.exercise);
+    setEditExerciseType(exercise.exercise_type);
     setUpdateExerciseError(null);
   }
 
@@ -674,6 +680,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     const payload = {
       exercise: editExerciseName.trim(),
+      exercise_type: editExerciseType,
     };
 
     if (!payload.exercise) {
@@ -685,7 +692,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     const previousSession = session;
 
     setSession((prev) =>
-        prev ? updateExerciseNameInSession(prev, exerciseId, payload.exercise) : prev
+        prev ? updateExerciseInSession(prev, exerciseId, payload) : prev
     );
 
     try {
@@ -940,6 +947,8 @@ export default function SessionPage({ params }: SessionPageProps) {
               editingExerciseId={editingExerciseId}
               editExerciseName={editExerciseName}
               setEditExerciseName={setEditExerciseName}
+              editExerciseType={editExerciseType}
+              setEditExerciseType={setEditExerciseType}
               updatingExercise={updatingExercise}
               updateExerciseError={updateExerciseError}
               setUpdateExerciseError={setUpdateExerciseError}

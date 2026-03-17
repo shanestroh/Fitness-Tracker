@@ -57,6 +57,8 @@ type ExerciseCardProps = {
   editingExerciseId: number | null;
   editExerciseName: string;
   setEditExerciseName: (value: string) => void;
+  editExerciseType: "lift" | "cardio";
+  setEditExerciseType: (value: "lift" | "cardio") => void;
   updatingExercise: boolean;
   updateExerciseError: string | null;
   setUpdateExerciseError: (value: string | null) => void;
@@ -102,6 +104,8 @@ export default function ExerciseCard({
   editingExerciseId,
   editExerciseName,
   setEditExerciseName,
+  editExerciseType,
+  setEditExerciseType,
   updatingExercise,
   updateExerciseError,
   setUpdateExerciseError,
@@ -140,6 +144,26 @@ export default function ExerciseCard({
             color: "#111",
         }}
       />
+    </label>
+
+    <label style={{ display: "grid", gap: 6 }}>
+      <span>Exercise type</span>
+      <select
+        value={editExerciseType}
+        onChange={(e) =>
+          setEditExerciseType(e.target.value as "lift" | "cardio")
+        }
+        style={{
+          padding: 10,
+          border: "1px solid #ccc",
+          borderRadius: 8,
+          background: "#fff",
+          color: "#111",
+        }}
+      >
+        <option value="lift">Lift</option>
+        <option value="cardio">Cardio</option>
+      </select>
     </label>
 
     {updateExerciseError && (

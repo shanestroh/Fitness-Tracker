@@ -70,13 +70,20 @@ export function updateSetInSession(
 export function updateExerciseNameInSession(
   session: SessionFull,
   exerciseId: number,
-  newName: string
+  updates: {
+    exercise: string;
+    exercise_type: "lift" | "cardio";
+  }
 ): SessionFull {
   return {
     ...session,
     exercises: session.exercises.map((exercise) =>
       exercise.id === exerciseId
-        ? { ...exercise, exercise: newName }
+        ? {
+            ...exercise,
+            exercise: updates.exercise,
+            exercise_type: updates.exercise_type,
+          }
         : exercise
     ),
   };
