@@ -972,6 +972,13 @@ export default function SessionPage({ params }: SessionPageProps) {
               handleUpdateExercise={handleUpdateExercise}
               handleMoveExercise={handleMoveExercise}
               pendingExerciseEditsById={pendingExerciseEditsById}
+              isExpanded={openExerciseId === exercise.id}
+              onToggle={() =>
+                setOpenExerciseId((prev) =>
+                  prev === exercise.id ? null : exercise.id
+                )
+              }
+              onStartAddSet={() => setOpenExerciseId(exercise.id)}
             />
           ))}
         </div>

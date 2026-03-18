@@ -15,6 +15,10 @@ type ExerciseCardProps = {
   deletingExerciseById: Record<number, boolean>;
   pendingExerciseEditsById: Record<number, boolean>;
 
+  isExpanded: boolean;
+  onToggle: () => void;
+  onStartAddSet: () => void;
+
   setFormByExercise: Record<
     number,
     {
@@ -114,9 +118,11 @@ export default function ExerciseCard({
   handleUpdateExercise,
   handleMoveExercise,
   pendingExerciseEditsById,
+  isExpanded,
+  onToggle,
+  onStartAddSet,
 }: ExerciseCardProps) {
   const [showAddSetForm, setShowAddSetForm] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <section
@@ -192,15 +198,12 @@ export default function ExerciseCard({
             <button
               type="button"
               onClick={() => {
-                setIsExpanded((prev) => {
-                  const next = !prev;
-                  if (!next) {
+                if (isExpanded) {
                     setShowAddSetForm(false);
                     setEditingSetId(null);
                     setUpdateSetError(null);
                   }
-                  return next;
-                });
+                  onToggle();
               }}
               style={{
                 background: "none",
@@ -359,6 +362,7 @@ export default function ExerciseCard({
                   <button
                     type="button"
                     onClick={() => {
+                      onStartAddSet();
                       setEditingSetId(null);
                       setUpdateSetError(null);
 
