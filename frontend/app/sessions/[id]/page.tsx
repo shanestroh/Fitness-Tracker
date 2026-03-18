@@ -91,6 +91,7 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [exerciseType, setExerciseType] = useState<"lift" | "cardio">("lift");
   const [editSetTimeMinutes, setEditSetTimeMinutes] = useState("");
+  const [openExerciseId, setOpenExerciseId] = useState<number | null>(null);
   const cardText = "#111";
 
   const [setFormByExercise, setSetFormByExercise] = useState<
@@ -219,7 +220,7 @@ export default function SessionPage({ params }: SessionPageProps) {
     };
 
     setSession((prev) => (prev ? addOptimisticExercise(prev, optimisticExercise) : prev));
-
+    setOpenExerciseId(tempExerciseId);
     setExerciseName("");
     setExerciseType("lift");
 
@@ -256,6 +257,7 @@ export default function SessionPage({ params }: SessionPageProps) {
 
   async function handleAddSet(e: React.FormEvent, exerciseId: number) {
     e.preventDefault();
+    setOpenExerciseId(exerciseId);
 
     setSetErrorByExercise((prev) => ({
       ...prev,
