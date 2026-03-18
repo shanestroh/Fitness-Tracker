@@ -111,16 +111,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
 
   const [pendingDelete, setPendingDelete] = useState<
-    | {
-        type: "exercise";
-        id: number;
-        name?: string;
-      }
-    | {
-        type: "set";
-        id: number | string;
-        setNumber?: number;
-      }
+    | { type: "exercise"; id: number; name?: string }
+    | { type: "set"; id: number | string; setNumber?: number }
     | null
   >(null);
 
@@ -1058,7 +1050,32 @@ export default function SessionPage({ params }: SessionPageProps) {
           }
         }}
       />
-
+      <ConfirmModal
+        open={pendingDelete !== null}
+        title={
+            pendingDelete?.type === "exercise"
+            ? "Delete Exercise?"
+            : "Delete Set?"
+        }
+        message={
+            pendingDelete?.type === "exercise"
+                ? `This will permanently delete${
+                    pendingDelete.name ? ` "${pendingDelete.name}"` : " this exercise"
+                  } and all of its sets.`
+                : `This will permanently delete${
+                  pendingDelete?.setNumber
+                    ? ` Set ${pendingDelete.setNumber}`
+                    : " this set"
+                  }.`
+        }
+        confirmText={
+            pendingDelete?.type === "exercise"
+                ? "Delete Exercise"
+                : "Delete Set"
+        }
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </main>
   );
 }
