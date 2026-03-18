@@ -13,14 +13,19 @@ database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError("DATABASE_URL is not set")
 
+is_sqlite = database_url.startswith("sqlite")
+
 engine = create_engine(
     database_url,
-    connect_args={"check_same_thread": False} if database_url.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False} if is_sqlite else {},
+    pool_pre_ping=not is_sqlite,
+    pool_recycle=300 if not is_sqlite else -1,
 )
 
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
