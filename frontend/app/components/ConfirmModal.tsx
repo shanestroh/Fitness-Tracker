@@ -29,15 +29,6 @@ export default function ConfirmModal({
         onClick={(e) => e.stopPropagation()}
         className="surface-card modal-card"
       >
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            marginBottom: 12,
-          }}
-        >
-          <span className="badge badge-danger">Danger zone</span>
-        </div>
 
         <h2
           className="section-heading section-heading-lg"

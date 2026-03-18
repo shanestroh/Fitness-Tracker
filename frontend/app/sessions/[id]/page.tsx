@@ -110,6 +110,20 @@ export default function SessionPage({ params }: SessionPageProps) {
   const [setErrorByExercise, setSetErrorByExercise] = useState<Record<number, string | null>>({});
   const [addingSetByExercise, setAddingSetByExercise] = useState<Record<number, boolean>>({});
 
+  const [pendingDelete, setPendingDelete] = useState<
+    | {
+        type: "exercise";
+        id: number;
+        name?: string;
+      }
+    | {
+        type: "set";
+        id: number | string;
+        setNumber?: number;
+      }
+    | null
+  >(null);
+
   async function loadSession(id: string) {
     setLoading(true);
     setPageError(null);
@@ -167,6 +181,34 @@ export default function SessionPage({ params }: SessionPageProps) {
 
     unwrapParams();
   }, [params]);
+
+  function requestDeleteExercise(exerciseId: number, exerciseName?: string) {
+    setPendingDelete({
+        type: "exercise",
+        id: exerciseId,
+        name: exerciseName,
+    });
+  }
+
+  function requestDeleteSet(setId: number | string, setNumber?: number) {
+    setPendingDelete({
+        type: "set",
+        id: setId,
+        setNumber,
+    });
+  }
+
+  async function handleConfirmDelete() {
+    if (!pendingDelete) return;
+
+    if (pendingDelete.type === "exercise") {
+        await handleDeleteExercise(pendingDelete.id);
+    } else {
+        await handleDeleteSet(pendingDelete.id);
+    }
+
+    setPendingDelete(null);
+  }
 
   function updateSetForm(
     exerciseId: number,
@@ -934,7 +976,11 @@ export default function SessionPage({ params }: SessionPageProps) {
               cardText={cardText}
               isFirst={index === 0}
               isLast={index === session.exercises.length - 1}
-              handleDeleteExercise={handleDeleteExercise}
+              handleDeleteExercise={(exerciseId) => {
+                const targetExercise = session.exercises.find((ex) => ex.id === exerciseId);
+                requestDeleteExercise(exerciseId, targetExercise?.exercise);
+                return Promise.resolve();
+              }}
               deletingExerciseById={deletingExerciseById}
               setFormByExercise={setFormByExercise}
               updateSetForm={updateSetForm}
@@ -956,7 +1002,20 @@ export default function SessionPage({ params }: SessionPageProps) {
               updatingSet={updatingSet}
               handleUpdateSet={handleUpdateSet}
               startEditingSet={startEditingSet}
-              handleDeleteSet={handleDeleteSet}
+              handleDeleteSet={(setId) => {
+                let setNumber: number | undefined;
+
+                for (const exercise of session.exercises) {
+                  const foundSet = exercise.sets.find((set) => set.id === setId);
+                  if (foundSet) {
+                    setNumber = foundSet.set_number;
+                    break;
+                  }
+                }
+
+                requestDeleteSet(setId, setNumber);
+                return Promise.resolve();
+              }}
               deletingSetById={deletingSetById}
               pendingSetEditsById={pendingSetEditsById}
               setEditingSetId={setEditingSetId}
@@ -999,6 +1058,7 @@ export default function SessionPage({ params }: SessionPageProps) {
           }
         }}
       />
+
     </main>
   );
 }
