@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-const IDLE_TIMEOUT_MS = 10 * 1000; // 10 mins
+const IDLE_TIMEOUT_MS = 20 * 60 * 1000; // 20 min idle timer
 
 export function useIdleLogout() {
   const pathname = usePathname();
