@@ -1,6 +1,7 @@
 "use client";
 
 import SplitSelector from "@/app/components/SplitSelector";
+import { formatWorkoutDate } from "@/lib/formatDate";
 
 const PRESET_SPLITS = ["Push", "Pull", "Legs", "Shoulders", "Cardio"];
 
@@ -35,11 +36,14 @@ type SessionHeaderProps = {
 };
 
 function formatDate(dateString: string) {
-  const date = new Date(dateString);
+  if (!dateString) return "";
 
-  if (Number.isNaN(date.getTime())) return dateString;
+  const [year, month, day] = dateString.split("-").map(Number);
+  if (!year || !month || !day) return dateString;
 
-  return date.toLocaleDateString("en-US", {
+  const localDate = new Date(year, month - 1, day);
+
+  return localDate.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -121,7 +125,7 @@ export default function SessionHeader({
                   fontWeight: 600,
                 }}
               >
-                {formatDate(date)}
+                {formatWorkoutDate(date, "long")}
               </p>
 
               {notes ? (
