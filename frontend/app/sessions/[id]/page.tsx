@@ -374,7 +374,26 @@ export default function SessionPage({ params }: SessionPageProps) {
         return;
       }
 
-      await loadSession(sessionId);
+      const saved = await res.json();
+
+      // Swap the temp ID for the real one — no full reload, no scroll reset
+      setSession((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          exercises: prev.exercises.map((ex) => {
+            if (ex.id !== exerciseId) return ex;
+            return {
+              ...ex,
+              sets: ex.sets.map((s) =>
+                s.id === tempSetId
+                  ? { ...s, id: saved.id, set_number: saved.set_number }
+                  : s
+              ),
+            };
+          }),
+        };
+      });
     } catch (err: any) {
       enqueueAddSetAction({
         id: `queue-${Date.now()}-${exerciseId}`,

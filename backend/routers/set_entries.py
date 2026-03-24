@@ -103,7 +103,7 @@ def create_set_entry(
     db.refresh(set_row)
 
     record = {
-        #"id": set_row.id,
+        "id": set_row.id,
         "exercise_entry_id": set_row.exercise_entry_id,
         "set_number": set_row.set_number,
         "reps": set_row.reps,
